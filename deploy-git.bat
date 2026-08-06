@@ -36,9 +36,9 @@ echo 🔄 [2/2] Menghubungi server via SSH (%SERVER_USER%@%SERVER_IP%:%SERVER_PO
 echo *(Jika diminta password SSH, silakan masukkan password akun server)*
 echo.
 
-set "REMOTE_PHP_PATH=C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe;C:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64\php.exe;C:\laragon\bin\php\php-8.1.*\php.exe;C:\laragon\bin\php\php-8.0.*\php.exe;C:\laragon\bin\php\php-7.4.*\php.exe"
+set "PHP_PATHS=C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64;C:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64;C:\laragon\bin\php\php-8.2.0;C:\laragon\bin\php\php-8.1.0;C:\laragon\bin\php\php-8.0.0;D:\laragon\bin\php\php-8.1.10-Win32-vs16-x64"
 
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH% && (for /d %p in (C:\laragon\bin\php\php-*) do if exist %p\php.exe (%p\php.exe migrate.php && goto :done)) || php migrate.php & :done"
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "set PATH=%%PATH%%;%PHP_PATHS% && cd /d %REMOTE_DIR% && git pull origin %BRANCH% && php migrate.php"
 
 if %errorlevel% neq 0 (
     echo.
