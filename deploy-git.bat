@@ -36,8 +36,8 @@ echo 🔄 [2/2] Menghubungi server via SSH (%SERVER_USER%@%SERVER_IP%:%SERVER_PO
 echo *(Jika diminta password SSH, silakan masukkan password akun server)*
 echo.
 
-:: Menggunakan perintah PowerShell/CMD cross-compatible di server Windows
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "powershell -Command \"Set-Location '%REMOTE_DIR%'; git pull origin %BRANCH%\""
+:: Perintah CMD native untuk server Windows
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
 
 if %errorlevel% neq 0 (
     echo.
