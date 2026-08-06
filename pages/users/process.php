@@ -1,0 +1,142 @@
+<?php
+// pages/users/process.php
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ' . BASE_URL . '/index.php?page=users');
+    exit;
+}
+
+require_login();
+verify_csrf_token($_POST['csrf_token'] ?? '');
+
+$role = $_SESSION['user_role'] ?? '';
+if ($role !== 'admin') {
+    die("Akses ditolak. Hanya Admin yang dapat mengelola pengguna.");
+}
+
+global $pdo;
+
+$action = $_POST['action'] ?? '';
+$id = (int)($_POST['id'] ?? 0);
+
+try {
+    if ($action === 'toggle_status' && $id) {
+        // Cegah admin menonaktifkan akunnya sendiri yang sedang aktif
+        if ($id == $_SESSION['user_id']) {
+            die("Error: Anda tidak dapat menonaktifkan akun sendiri yang sedang aktif.");
+        }
+
+        $status_aktif = (int)$_POST['status_aktif'];
+        $stmt = $pdo->prepare("UPDATE users SET status_aktif = ? WHERE id = ?");
+        $stmt->execute([$status_aktif, $id]);
+        header('Location: ' . BASE_URL . '/index.php?page=users');
+        exit;
+    }
+
+    $role_id = (int)($_POST['role_id'] ?? 0);
+    $nip = trim($_POST['nip'] ?? '');
+    $nama = trim($_POST['nama'] ?? '');
+    $pangkat_golongan = trim($_POST['pangkat_golongan'] ?? '');
+    $jabatan = trim($_POST['jabatan'] ?? '');
+    $no_hp = trim($_POST['no_hp'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $wilayah_kerja_json = $_POST['wilayah_kerja_json'] ?? '[]';
+
+    if (!$role_id) {
+        die("Error: Role pengguna wajib dipilih.");
+    }
+
+    // Ambil kode role terpilih
+    $stmt_r = $pdo->prepare("SELECT kode FROM m_roles WHERE id = ?");
+    $stmt_r->execute([$role_id]);
+    $selected_role_kode = $stmt_r->fetchColumn();
+
+    // Decode JSON wilayah binaan
+    $wilayah_items = json_decode($wilayah_kerja_json, true) ?: [];
+
+    $user_id = $id;
+
+    $pdo->beginTransaction();
+
+    if ($action === 'create') {
+        if (empty($password)) {
+            die("Password wajib diisi untuk pengguna baru.");
+        }
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        
+        $sql = "INSERT INTO users (
+            nip, password, nama, role_id, pangkat_golongan, jabatan, no_hp, email, status_aktif
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            $nip, $hashed_password, $nama, $role_id, $pangkat_golongan, $jabatan, $no_hp, $email
+        ]);
+        $user_id = $pdo->lastInsertId();
+
+    } elseif ($action === 'update' && $id) {
+        if (!empty($password)) {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $sql = "UPDATE users SET 
+                nip = ?, password = ?, nama = ?, role_id = ?, pangkat_golongan = ?, jabatan = ?, no_hp = ?, email = ?
+                WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                $nip, $hashed_password, $nama, $role_id, $pangkat_golongan, $jabatan, $no_hp, $email, $id
+            ]);
+        } else {
+            $sql = "UPDATE users SET 
+                nip = ?, nama = ?, role_id = ?, pangkat_golongan = ?, jabatan = ?, no_hp = ?, email = ?
+                WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                $nip, $nama, $role_id, $pangkat_golongan, $jabatan, $no_hp, $email, $id
+            ]);
+        }
+    }
+
+    // Update Data Wilayah Kerja jika role_id = penyuluh
+    if ($user_id) {
+        // Hapus wilayah lama
+        $del_stmt = $pdo->prepare("DELETE FROM user_wilayah_kerja WHERE user_id = ?");
+        $del_stmt->execute([$user_id]);
+
+        if ($selected_role_kode === 'penyuluh') {
+            $ins_uwk = $pdo->prepare("INSERT INTO user_wilayah_kerja (user_id, kecamatan_id, desa_id) VALUES (?, ?, ?)");
+            
+            foreach ($wilayah_items as $item) {
+                $kec_id = (int)$item['kecamatan_id'];
+                if (!$kec_id) continue;
+
+                if (!empty($item['all_desas']) || empty($item['desas'])) {
+                    // Seluruh desa di kecamatan ini
+                    $ins_uwk->execute([$user_id, $kec_id, null]);
+                } else {
+                    // Desa-desa tertentu
+                    foreach ($item['desas'] as $d) {
+                        $desa_id = (int)$d['id'];
+                        if ($desa_id) {
+                            $ins_uwk->execute([$user_id, $kec_id, $desa_id]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    $from = $_POST['from'] ?? '';
+    $redirect_page = ($from === 'penyuluh') ? 'penyuluh' : 'users';
+
+    $pdo->commit();
+
+    header('Location: ' . BASE_URL . '/index.php?page=' . $redirect_page);
+    exit;
+
+} catch (\PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    if ($e->getCode() == 23000) {
+        die("Error: NIP / Username sudah terdaftar di sistem.");
+    }
+    die("Database Error: " . $e->getMessage());
+}
