@@ -25,20 +25,28 @@ git commit -m "!msg!"
 git push origin %BRANCH%
 
 if %errorlevel% neq 0 (
-    echo ❌ Gagal melakukan git push ke repository!
+    echo ❌ Gagal melakukan git push dari laptop!
     pause
     exit /b 1
 )
 
 :: 2. Kirim perintah SSH ke Server Windows untuk jalankan Git Pull
 echo.
-echo 🔄 [2/2] Menjalankan 'git pull' di server via Cloudflare Tunnel (127.0.0.1:2222)...
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
+echo 🔄 [2/2] Menghubungi server via SSH (%SERVER_USER%@%SERVER_IP%:%SERVER_PORT%)...
+echo *(Jika diminta password SSH, silakan masukkan password akun server)*
+echo.
+
+:: Menggunakan perintah PowerShell/CMD cross-compatible di server Windows
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "powershell -Command \"Set-Location '%REMOTE_DIR%'; git pull origin %BRANCH%\""
 
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ Gagal melakukan git pull di server!
-    echo Pastikan tunnel cloudflared sedang berjalan di port 2222.
+    echo ❌ SSH atau Git Pull di server gagal.
+    echo.
+    echo Periksa kemungkinan berikut:
+    echo 1. Apakah 'cloudflared access tcp' masih berjalan di port 2222?
+    echo 2. Apakah password SSH salah / terputus?
+    echo 3. Apakah folder %REMOTE_DIR% di server sudah di-clone git repository-nya?
     pause
     exit /b 1
 )
