@@ -11,11 +11,11 @@ set REMOTE_DIR=c:\laragon\www\sigaluh2
 set BRANCH=main
 
 echo ======================================================
-echo 🚀 MEMULAI DEPLOYMENT DENGAN GIT PULL & MIGRASI DB
+echo 🚀 MEMULAI DEPLOYMENT DENGAN GIT PULL DAN MIGRASI DB
 echo ======================================================
 
 :: 1. Simpan dan Push perubahan dari Laptop ke GitHub / Remote Git
-echo 📤 [1/2] Mendorong perubahan lokal ke Repository...
+echo 📤 [1/3] Mendorong perubahan lokal ke Repository...
 git add .
 
 set /p msg="Masukkan pesan commit (tekan Enter untuk default 'update'): "
@@ -30,26 +30,32 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: 2. Kirim perintah SSH ke Server Windows untuk jalankan Git Pull & PHP Migrate
+:: 2. Jalankan Git Pull di Server via SSH
 echo.
-echo 🔄 [2/2] Menghubungi server via SSH (%SERVER_USER%@%SERVER_IP%:%SERVER_PORT%)...
-echo *(Jika diminta password SSH, silakan masukkan password akun server)*
+echo 🔄 [2/3] Menjalankan 'git pull' di server...
+echo *(Jika diminta password SSH, masukkan password akun server)*
 echo.
-
-set "PHP_PATHS=C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64;C:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64;C:\laragon\bin\php\php-8.2.0;C:\laragon\bin\php\php-8.1.0;C:\laragon\bin\php\php-8.0.0;D:\laragon\bin\php\php-8.1.10-Win32-vs16-x64"
-
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "set PATH=%%PATH%%;%PHP_PATHS% && cd /d %REMOTE_DIR% && git pull origin %BRANCH% && php migrate.php"
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
 
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ Deployment atau Git Pull di server gagal.
-    echo.
+    echo ❌ Git Pull di server gagal.
     pause
     exit /b 1
 )
 
+:: 3. Jalankan PHP Migration di Server via SSH
+echo.
+echo 🗄️ [3/3] Menjalankan migrasi database di server...
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && (if exist C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe (C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe migrate.php) else (php migrate.php))"
+
+if %errorlevel% neq 0 (
+    echo.
+    echo ⚠️ Migrasi CLI server gagal. Anda juga bisa membuka http://file.cdkbojonegoro.my.id/migrate.php di browser.
+)
+
 echo.
 echo ======================================================
-echo ✅ DEPLOYMENT & MIGRASI DATABASE BERHASIL!
+echo ✅ DEPLOYMENT & MIGRASI SELESAI!
 echo ======================================================
 pause
