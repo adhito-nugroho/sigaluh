@@ -7,7 +7,7 @@ setlocal enabledelayedexpansion
 set SERVER_USER=adit
 set SERVER_IP=127.0.0.1
 set SERVER_PORT=2222
-set REMOTE_DIR=d:\laragon\www\sigaluh2
+set REMOTE_DIR=c:\laragon\www\sigaluh2
 set BRANCH=main
 
 echo ======================================================
