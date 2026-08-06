@@ -56,6 +56,6 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ======================================================
-echo ✅ DEPLOYMENT & MIGRASI SELESAI!
+echo ✅ DEPLOYMENT DAN MIGRASI SELESAI!
 echo ======================================================
 pause
