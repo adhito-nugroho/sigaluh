@@ -11,7 +11,7 @@ set REMOTE_DIR=c:\laragon\www\sigaluh2
 set BRANCH=main
 
 echo ======================================================
-echo 🚀 MEMULAI DEPLOYMENT DENGAN GIT PULL
+echo 🚀 MEMULAI DEPLOYMENT DENGAN GIT PULL & MIGRASI DB
 echo ======================================================
 
 :: 1. Simpan dan Push perubahan dari Laptop ke GitHub / Remote Git
@@ -30,29 +30,26 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: 2. Kirim perintah SSH ke Server Windows untuk jalankan Git Pull
+:: 2. Kirim perintah SSH ke Server Windows untuk jalankan Git Pull & PHP Migrate
 echo.
 echo 🔄 [2/2] Menghubungi server via SSH (%SERVER_USER%@%SERVER_IP%:%SERVER_PORT%)...
 echo *(Jika diminta password SSH, silakan masukkan password akun server)*
 echo.
 
-:: Perintah CMD native untuk server Windows
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
+set "REMOTE_PHP_PATH=C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe;C:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64\php.exe;C:\laragon\bin\php\php-8.1.*\php.exe;C:\laragon\bin\php\php-8.0.*\php.exe;C:\laragon\bin\php\php-7.4.*\php.exe"
+
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH% && (for /d %p in (C:\laragon\bin\php\php-*) do if exist %p\php.exe (%p\php.exe migrate.php && goto :done)) || php migrate.php & :done"
 
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ SSH atau Git Pull di server gagal.
+    echo ❌ Deployment atau Git Pull di server gagal.
     echo.
-    echo Periksa kemungkinan berikut:
-    echo 1. Apakah 'cloudflared access tcp' masih berjalan di port 2222?
-    echo 2. Apakah password SSH salah / terputus?
-    echo 3. Apakah folder %REMOTE_DIR% di server sudah di-clone git repository-nya?
     pause
     exit /b 1
 )
 
 echo.
 echo ======================================================
-echo ✅ DEPLOYMENT SELESAI! Server berhasil diperbarui.
+echo ✅ DEPLOYMENT & MIGRASI DATABASE BERHASIL!
 echo ======================================================
 pause
