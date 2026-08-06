@@ -69,8 +69,8 @@ if ($f_bulan && $f_tahun) {
 
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h1 class="text-2xl font-bold text-slate-900">Laporan Renja Kegiatan</h1>
-        <p class="text-sm text-slate-500 mt-1">Preview dan export laporan kegiatan penyuluh.</p>
+        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Laporan Renja Kegiatan</h1>
+        <p class="text-sm text-neutral-500 mt-1 font-medium">Preview dan export laporan kegiatan penyuluh.</p>
     </div>
     
     <div class="mt-4 sm:mt-0 flex space-x-2">
@@ -79,7 +79,7 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-green-600 text-sm font-medium rounded-lg text-green-700 bg-white hover:bg-green-50 shadow-sm transition-colors">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-success-600 text-sm font-medium rounded-lg text-success-700 bg-white hover:bg-success-50 shadow-sm transition-colors">
                 <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i> Download Excel
             </button>
         </form>
@@ -88,7 +88,7 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 shadow-sm transition-colors">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors">
                 <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Download PDF
             </button>
         </form>
@@ -96,14 +96,14 @@ if ($f_bulan && $f_tahun) {
 </div>
 
 <!-- Filter -->
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 mb-6">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-4 items-end">
         <input type="hidden" name="page" value="laporan">
         
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto">
-            <label class="block text-xs font-medium text-slate-700 mb-1">Penyuluh</label>
-            <select name="penyuluh_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary outline-none bg-white min-w-[200px]">
+            <label class="block text-xs font-medium text-neutral-700 mb-1">Penyuluh</label>
+            <select name="penyuluh_id" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white min-w-[200px]">
                 <option value="">-- Pilih Penyuluh --</option>
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -113,8 +113,8 @@ if ($f_bulan && $f_tahun) {
         <?php endif; ?>
 
         <div class="w-full sm:w-auto">
-            <label class="block text-xs font-medium text-slate-700 mb-1">Bulan</label>
-            <select name="bulan" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+            <label class="block text-xs font-medium text-neutral-700 mb-1">Bulan</label>
+            <select name="bulan" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
                 <option value="">Semua</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -125,8 +125,8 @@ if ($f_bulan && $f_tahun) {
         </div>
 
         <div class="w-full sm:w-auto">
-            <label class="block text-xs font-medium text-slate-700 mb-1">Tahun</label>
-            <select name="tahun" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+            <label class="block text-xs font-medium text-neutral-700 mb-1">Tahun</label>
+            <select name="tahun" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
                 <option value="">Semua</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
@@ -135,7 +135,7 @@ if ($f_bulan && $f_tahun) {
         </div>
 
         <div class="w-full sm:w-auto">
-            <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 font-medium py-2 px-6 rounded-lg text-sm transition-colors">
+            <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-6 rounded-xl text-sm transition-colors">
                 Tampilkan Preview
             </button>
         </div>
@@ -143,10 +143,10 @@ if ($f_bulan && $f_tahun) {
 </div>
 
 <!-- Preview Laporan -->
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden overflow-x-auto p-8 font-sans">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden overflow-x-auto p-8 font-sans">
     <?php if (empty($f_penyuluh) && $role !== 'penyuluh'): ?>
-        <div class="text-center py-10 text-slate-500">
-            <i data-lucide="filter" class="w-12 h-12 mx-auto text-gray-300 mb-3"></i>
+        <div class="text-center py-10 text-neutral-500">
+            <i data-lucide="filter" class="w-12 h-12 mx-auto text-neutral-300 mb-3"></i>
             <p>Silakan pilih penyuluh terlebih dahulu untuk melihat preview laporan.</p>
         </div>
     <?php else: ?>
@@ -184,7 +184,7 @@ if ($f_bulan && $f_tahun) {
 
         <!-- Tabel Laporan -->
         <table class="w-full border-collapse border border-gray-900 text-xs">
-            <thead class="bg-gray-100">
+            <thead class="bg-neutral-100">
                 <tr>
                     <th class="border border-gray-900 px-2 py-2 w-8 text-center">NO</th>
                     <th class="border border-gray-900 px-2 py-2 w-20 text-center">WAKTU</th>
@@ -197,15 +197,15 @@ if ($f_bulan && $f_tahun) {
                     <th class="border border-gray-900 px-2 py-2 text-center">SOLUSI</th>
                 </tr>
                 <tr>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">1</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">2</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">3</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">4</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">5</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">6</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">7</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">8</th>
-                    <th class="border border-gray-900 px-1 py-1 text-center bg-slate-50/80 text-slate-500 font-normal">9</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">1</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">2</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">3</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">4</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">5</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">6</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">7</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">8</th>
+                    <th class="border border-gray-900 px-1 py-1 text-center bg-neutral-50/50 text-neutral-500 font-normal">9</th>
                 </tr>
             </thead>
             <tbody>

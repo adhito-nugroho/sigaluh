@@ -28,6 +28,7 @@ if ($id) {
 $provinsi_list = $pdo->query("SELECT id, nama FROM m_provinsi ORDER BY nama ASC")->fetchAll();
 $tusi_list = $pdo->query("SELECT id, kode, nama FROM m_tusi ORDER BY id ASC")->fetchAll();
 $kth_list = $pdo->query("SELECT id, nama, provinsi_id, kabupaten_id, kecamatan_id, desa_id FROM m_kth ORDER BY nama ASC")->fetchAll();
+$aktivitas_harian_list = $pdo->query("SELECT id, nama_aktivitas, satuan, wpt_menit FROM m_aktivitas_harian ORDER BY id ASC")->fetchAll();
 
 $is_edit = $kegiatan !== null;
 $selected_provinsi_id = $is_edit ? $kegiatan['provinsi_id'] : null;
@@ -44,11 +45,11 @@ if (!$selected_provinsi_id) {
 
 <div class="mb-6 flex items-center justify-between">
     <div>
-        <h1 class="text-2xl font-bold text-slate-900"><?= $is_edit ? 'Edit Kegiatan' : 'Tambah Kegiatan Baru' ?></h1>
-        <p class="text-sm text-slate-500 mt-1">Isi detail pelaksanaan tugas dan fungsi penyuluh.</p>
+        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight"><?= $is_edit ? 'Edit Kegiatan' : 'Tambah Kegiatan Baru' ?></h1>
+        <p class="text-sm text-neutral-500 mt-1 font-medium">Isi detail pelaksanaan tugas dan fungsi penyuluh.</p>
     </div>
-    <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="text-sm font-medium text-gray-600 hover:text-slate-900 flex items-center">
-        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i> Kembali
+    <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="inline-flex items-center text-sm font-semibold text-neutral-500 hover:text-neutral-700 transition-colors bg-neutral-50 hover:bg-neutral-100 px-4 py-2 rounded-xl border border-neutral-200/60">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1.5"></i> Kembali
     </a>
 </div>
 
@@ -60,26 +61,66 @@ if (!$selected_provinsi_id) {
     <?php endif; ?>
 
     <!-- Section 1: Informasi Dasar -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden" x-data="{ open: true }">
-        <div class="px-6 py-4 border-b border-slate-200/80 bg-slate-50/80 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-semibold text-slate-900 flex items-center">
-                <span class="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm mr-3">1</span>
+    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
+            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
                 Informasi Dasar
             </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-500 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
         </div>
         <div class="p-6" x-show="open">
-            <div class="mb-6 p-3.5 bg-indigo-50/80 border border-indigo-100 rounded-xl flex items-center text-xs font-semibold text-indigo-800">
-                <i data-lucide="info" class="w-4 h-4 mr-2 text-indigo-600 flex-shrink-0"></i>
-                <span>Pilihan Kabupaten, Kecamatan, dan Desa/Kelurahan secara otomatis disesuaikan dengan Wilayah Kerja Binaan Anda atau data KTH yang dipilih.</span>
+            <div class="mb-6 p-3.5 bg-primary-50 border border-primary-100 rounded-xl flex items-center text-xs font-semibold text-primary-800">
+                <i data-lucide="info" class="w-4 h-4 mr-2 text-primary-600 flex-shrink-0"></i>
+                <span>Anda dapat memilih seluruh wilayah kegiatan secara bebas. Jika Anda memilih KTH dari database, pilihan wilayah akan terisi secara otomatis.</span>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Aktivitas Harian (Master) -->
+                <div class="md:col-span-2 bg-primary-50/70 p-4 rounded-xl border border-primary-200">
+                    <label class="block text-sm font-bold text-primary-900 mb-1">Aktivitas Harian <span class="text-error-500">*</span></label>
+                    <p class="text-xs text-primary-700 mb-2">Pilih jenis aktivitas harian penyuluhan untuk menghitung alokasi Waktu Penyelesaian Tugas (WPT).</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-2">
+                            <select name="aktivitas_harian_id" id="aktivitas_harian_id" required onchange="calculateWptDuration()"
+                                class="w-full px-4 py-2.5 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm transition-all bg-white font-semibold">
+                                <option value="">-- Pilih Aktivitas Harian --</option>
+                                <?php foreach($aktivitas_harian_list as $act): ?>
+                                    <option value="<?= $act['id'] ?>"
+                                            data-satuan="<?= e($act['satuan']) ?>"
+                                            data-wpt="<?= $act['wpt_menit'] ?>"
+                                            data-nama="<?= e($act['nama_aktivitas']) ?>"
+                                            <?= ($is_edit && ($kegiatan['aktivitas_harian_id'] ?? 0) == $act['id']) ? 'selected' : '' ?>>
+                                        <?= e($act['nama_aktivitas']) ?> (WPT: <?= $act['wpt_menit'] ?> mnt / <?= e($act['satuan']) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" name="volume" id="volume_input" min="1" value="<?= $is_edit ? ($kegiatan['volume'] ?? 1) : 1 ?>" oninput="calculateWptDuration()" required
+                                    class="w-24 px-3 py-2.5 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm font-bold bg-white text-center">
+                                <span id="satuan_badge" class="text-xs font-bold text-primary-800 bg-primary-200/80 px-2.5 py-2 rounded-lg whitespace-nowrap">Satuan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Kalkulasi WPT -->
+                    <div class="mt-3 pt-3 border-t border-primary-200/80 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-primary-900">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-primary-600"></i>
+                            <span>Estimasi Waktu: <strong id="wpt_single_display">0 Menit</strong> / satuan</span>
+                        </div>
+                        <div class="bg-primary-700 text-white px-3 py-1 rounded-lg font-extrabold text-xs shadow-sm">
+                            Total Durasi: <span id="wpt_total_display">0 Menit (0 Jam)</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Kegiatan <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Kegiatan <span class="text-error-500">*</span></label>
                     <input type="date" name="tanggal" required value="<?= $is_edit ? $kegiatan['tanggal'] : date('Y-m-d') ?>"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none">
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none">
                 </div>
 
                 <div>
@@ -88,18 +129,18 @@ if (!$selected_provinsi_id) {
                     <!-- Mode toggle -->
                     <div class="flex items-center mb-2 gap-2" id="kth_mode_toggle">
                         <button type="button" id="btn_kth_db" onclick="setKthMode('db')"
-                            class="px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-indigo-600 text-white border-indigo-600">
+                            class="px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-primary-600 text-white border-info-600">
                             <i class="inline-block mr-1">&#x1F4CB;</i> Pilih dari Database KTH
                         </button>
                         <button type="button" id="btn_kth_manual" onclick="setKthMode('manual')"
-                            class="px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-700">
+                            class="px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700">
                             <i class="inline-block mr-1">&#x270F;&#xFE0F;</i> Ketik Manual
                         </button>
                     </div>
 
                     <!-- Mode DB: dropdown -->
                     <div id="kth_db_wrap">
-                        <select name="kth_id" id="kth_id" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all bg-white">
+                        <select name="kth_id" id="kth_id" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
                             <option value="">-- Pilih KTH (Opsional) --</option>
                             <?php foreach($kth_list as $k): ?>
                                 <option value="<?= $k['id'] ?>"
@@ -120,15 +161,15 @@ if (!$selected_provinsi_id) {
                         <input type="text" id="kth_nama_manual_input" name="kth_nama_manual"
                             value="<?= e($is_edit ? ($kegiatan['kth_nama_manual'] ?? '') : '') ?>"
                             placeholder="Contoh: Balai Desa Nganjuk, Kantor Cabang, dll."
-                            class="w-full px-4 py-2.5 border border-amber-200 bg-amber-50/40 rounded-xl focus:ring-4 focus:ring-amber-400/20 focus:border-amber-500 outline-none text-sm transition-all">
+                            class="w-full px-4 py-2.5 border border-warning-200 bg-warning-50/40 rounded-xl focus:ring-4 focus:ring-amber-400/20 focus:border-warning-500 outline-none text-sm transition-all">
                         <p class="text-xs text-slate-400 mt-1">Isi nama tempat/sasaran yang dikunjungi (bukan dari master KTH).</p>
                     </div>
                 </div>
 
                 <!-- Cascading Wilayah -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi <span class="text-red-500">*</span></label>
-                    <select id="provinsi_id" name="provinsi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi <span class="text-error-500">*</span></label>
+                    <select id="provinsi_id" name="provinsi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
                         <option value="">-- Pilih Provinsi --</option>
                         <?php foreach($provinsi_list as $p): ?>
                             <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -137,31 +178,31 @@ if (!$selected_provinsi_id) {
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kabupaten/Kota <span class="text-red-500">*</span></label>
-                    <select id="kabupaten_id" name="kabupaten_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Kabupaten/Kota <span class="text-error-500">*</span></label>
+                    <select id="kabupaten_id" name="kabupaten_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
                         <option value="">-- Pilih Kabupaten --</option>
                         <!-- Diisi via AJAX -->
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kecamatan <span class="text-red-500">*</span></label>
-                    <select id="kecamatan_id" name="kecamatan_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Kecamatan <span class="text-error-500">*</span></label>
+                    <select id="kecamatan_id" name="kecamatan_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
                         <option value="">-- Pilih Kecamatan --</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Desa/Kelurahan <span class="text-red-500">*</span></label>
-                    <select id="desa_id" name="desa_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Desa/Kelurahan <span class="text-error-500">*</span></label>
+                    <select id="desa_id" name="desa_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
                         <option value="">-- Pilih Desa --</option>
                     </select>
                 </div>
 
                 <!-- TUSI -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">TUSI <span class="text-red-500">*</span></label>
-                    <select id="tusi_id" name="tusi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">TUSI <span class="text-error-500">*</span></label>
+                    <select id="tusi_id" name="tusi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
                         <option value="">-- Pilih TUSI --</option>
                         <?php foreach($tusi_list as $t): ?>
                             <option value="<?= $t['id'] ?>" <?= ($is_edit && $kegiatan['tusi_id'] == $t['id']) ? 'selected' : '' ?>><?= e($t['nama']) ?></option>
@@ -170,8 +211,8 @@ if (!$selected_provinsi_id) {
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kegiatan TUSI <span class="text-red-500">*</span></label>
-                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-white">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Kegiatan TUSI <span class="text-error-500">*</span></label>
+                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
                         <option value="">-- Pilih Kegiatan --</option>
                     </select>
                 </div>
@@ -181,44 +222,43 @@ if (!$selected_provinsi_id) {
     </div>
 
     <!-- Section 2: Uraian Kegiatan -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden" x-data="{ open: true }">
-        <div class="px-6 py-4 border-b border-slate-200/80 bg-slate-50/80 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-semibold text-slate-900 flex items-center">
-                <span class="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm mr-3">2</span>
+    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
+            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
                 Uraian Kegiatan
             </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-500 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
         </div>
         <div class="p-6 space-y-6" x-show="open">
             
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">TUSI yang Dilaksanakan (Otomatis dari Master) <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">TUSI yang Dilaksanakan (Otomatis dari Master) <span class="text-error-500">*</span></label>
                 <textarea id="uraian_kegiatan" name="uraian_kegiatan" required rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none bg-slate-50/80"><?= $is_edit ? e($kegiatan['uraian_kegiatan']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-slate-50/80"><?= $is_edit ? e($kegiatan['uraian_kegiatan']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Substansi Materi (Template dapat diubah)</label>
                 <textarea id="substansi_materi" name="substansi_materi" rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['substansi_materi']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['substansi_materi']) : '' ?></textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Uraian Tugas / Aktivitas (Detail) <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Uraian Tugas / Aktivitas (Detail) <span class="text-error-500">*</span></label>
                 <textarea name="detail_kegiatan" required rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Sasaran / Peserta yang Hadir</label>
                     <textarea name="sasaran_hadir" rows="2"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['sasaran_hadir']) : '' ?></textarea>
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['sasaran_hadir']) : '' ?></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Detail Lokasi (Alamat spesifik)</label>
                     <textarea name="lokasi" rows="2"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['lokasi']) : '' ?></textarea>
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['lokasi']) : '' ?></textarea>
                 </div>
             </div>
 
@@ -226,38 +266,37 @@ if (!$selected_provinsi_id) {
     </div>
 
     <!-- Section 3: Hasil & Evaluasi -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden" x-data="{ open: true }">
-        <div class="px-6 py-4 border-b border-slate-200/80 bg-slate-50/80 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-semibold text-slate-900 flex items-center">
-                <span class="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm mr-3">3</span>
-                Hasil & Evaluasi
+    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
+            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
+                Hasil &amp; Evaluasi
             </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-slate-500 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
         </div>
         <div class="p-6 space-y-6" x-show="open">
             
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Penjelasan Hasil Pelaksanaan Kegiatan <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-neutral-700 mb-1">Penjelasan Hasil Pelaksanaan Kegiatan <span class="text-error-500">*</span></label>
                 <textarea name="pelaksanaan_kegiatan" required rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['pelaksanaan_kegiatan']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['pelaksanaan_kegiatan']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Kendala / Permasalahan</label>
                 <textarea name="permasalahan_kendala" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['permasalahan_kendala']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['permasalahan_kendala']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Solusi / Pemecahan Masalah</label>
                 <textarea name="solusi" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['solusi']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['solusi']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Kesimpulan & Saran</label>
                 <textarea name="kesimpulan_saran" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all focus:ring-2 focus:ring-brand-primary outline-none"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
             </div>
 
         </div>
@@ -265,11 +304,11 @@ if (!$selected_provinsi_id) {
 
     <!-- Actions -->
     <div class="flex justify-end space-x-3">
-        <button type="submit" name="action" value="save_draft" class="px-6 py-2 border border-gray-300 bg-white text-slate-700 rounded-lg hover:bg-slate-50/80 font-medium transition-colors">
-            Simpan sebagai Draft
+        <button type="submit" name="action" value="save_draft" class="px-6 py-2.5 border border-neutral-200 bg-white text-neutral-700 rounded-xl hover:bg-neutral-50 font-bold transition-all text-sm">
+            <i data-lucide="save" class="w-4 h-4 inline mr-1.5"></i> Simpan Draft
         </button>
-        <button type="submit" name="action" value="submit" class="px-6 py-2 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-medium transition-colors shadow-sm">
-            Kirim Laporan
+        <button type="submit" name="action" value="submit" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20 text-sm active:scale-[0.98]">
+            <i data-lucide="send" class="w-4 h-4 inline mr-1.5"></i> Simpan &amp; Ajukan
         </button>
     </div>
 
@@ -500,16 +539,16 @@ document.addEventListener('DOMContentLoaded', function() {
             kthSel.disabled = true;
             kthSel.value = '';
             manInp.disabled = false;
-            btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-amber-500 text-white border-amber-500';
-            btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-700';
+            btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-warning-500 text-white border-warning-500';
+            btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
         } else {
             dbWrap.classList.remove('hidden');
             manWrap.classList.add('hidden');
             kthSel.disabled = false;
             manInp.disabled = true;
             manInp.value = '';
-            btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-indigo-600 text-white border-indigo-600';
-            btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:text-indigo-700';
+            btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-primary-600 text-white border-info-600';
+            btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
         }
     };
 
@@ -520,5 +559,42 @@ document.addEventListener('DOMContentLoaded', function() {
     setKthMode('db');
     <?php endif; ?>
 
+    // ── Calculate WPT & Duration ─────────────────────────────────
+    window.calculateWptDuration = function() {
+        const actSelect = document.getElementById('aktivitas_harian_id');
+        const volInput = document.getElementById('volume_input');
+        const satBadge = document.getElementById('satuan_badge');
+        const singleDisp = document.getElementById('wpt_single_display');
+        const totalDisp = document.getElementById('wpt_total_display');
+
+        if (!actSelect || !actSelect.value) {
+            satBadge.textContent = 'Satuan';
+            singleDisp.textContent = '0 Menit';
+            totalDisp.textContent = '0 Menit (0 Jam)';
+            return;
+        }
+
+        const selectedOpt = actSelect.options[actSelect.selectedIndex];
+        const satuan = selectedOpt.getAttribute('data-satuan') || 'Satuan';
+        const wpt = parseInt(selectedOpt.getAttribute('data-wpt') || '0', 10);
+        const nama = selectedOpt.getAttribute('data-nama') || '';
+        const vol = parseInt(volInput.value || '1', 10);
+
+        satBadge.textContent = satuan;
+        singleDisp.textContent = `${wpt} Menit / ${satuan}`;
+
+        const totalMenit = wpt * Math.max(1, vol);
+        const totalJam = (totalMenit / 60).toFixed(1);
+        totalDisp.textContent = `${totalMenit} Menit (${totalJam} Jam)`;
+
+        // Auto fill Uraian Kegiatan if empty
+        const uraianInput = document.getElementsByName('uraian_kegiatan')[0];
+        if (uraianInput && !uraianInput.value) {
+            uraianInput.value = nama;
+        }
+    };
+
+    // Calculate on page load
+    calculateWptDuration();
 });
 </script>

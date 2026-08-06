@@ -42,61 +42,61 @@ $kth_list = $stmt_data->fetchAll();
 
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h1 class="text-2xl font-bold text-slate-900">Kelompok Tani Hutan (KTH)</h1>
-        <p class="text-sm text-slate-500 mt-1">Kelola master data KTH di wilayah kerja CDK Nganjuk.</p>
+        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Kelompok Tani Hutan (KTH)</h1>
+        <p class="text-sm text-neutral-500 mt-1 font-medium">Kelola master data KTH di wilayah kerja CDK Nganjuk.</p>
     </div>
     <div class="mt-4 sm:mt-0">
-        <a href="<?= BASE_URL ?>/index.php?page=kth/form" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all">
+        <a href="<?= BASE_URL ?>/index.php?page=kth/form" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all">
             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah KTH
         </a>
     </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 mb-6 flex justify-between items-center">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6 flex justify-between items-center">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex items-center w-full max-w-md">
         <input type="hidden" name="page" value="kth">
         <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama, No SK, ketua..." 
-            class="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:ring-2 focus:ring-brand-primary outline-none border-r-0">
-        <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 font-medium py-2 px-4 rounded-r-lg text-sm transition-colors">
+            class="w-full px-3 py-2 border border-neutral-200 rounded-l-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none border-r-0">
+        <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-4 rounded-r-xl text-sm transition-colors">
             Cari
         </button>
     </form>
 </div>
 
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-slate-50/80">
+        <table class="min-w-full divide-y divide-neutral-100">
+            <thead class="bg-neutral-50/50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama KTH</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No SK</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ketua</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Desa/Kecamatan</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Nama KTH</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">No SK</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Ketua</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Desa/Kecamatan</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-neutral-100">
                 <?php if (empty($kth_list)): ?>
                 <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-slate-500">
+                    <td colspan="5" class="px-6 py-8 text-center text-neutral-500">
                         <p>Data KTH tidak ditemukan.</p>
                     </td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($kth_list as $row): ?>
-                    <tr class="hover:bg-slate-50/80">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900"><?= e($row['nama']) ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500"><?= e($row['no_sk'] ?: '-') ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500"><?= e($row['ketua'] ?: '-') ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <tr class="hover:bg-neutral-50/50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900"><?= e($row['nama']) ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500"><?= e($row['no_sk'] ?: '-') ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500"><?= e($row['ketua'] ?: '-') ?></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                             <?= e($row['desa_nama']) ?><br>
-                            <span class="text-xs text-gray-400"><?= e($row['kecamatan_nama']) ?></span>
+                            <span class="text-xs text-neutral-400"><?= e($row['kecamatan_nama']) ?></span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="<?= BASE_URL ?>/index.php?page=kth/detail&id=<?= $row['id'] ?>" class="text-indigo-600 hover:text-indigo-900 inline-flex items-center mr-3" title="Detail">
+                            <a href="<?= BASE_URL ?>/index.php?page=kth/detail&id=<?= $row['id'] ?>" class="text-primary-600 hover:text-primary-900 inline-flex items-center mr-3" title="Detail">
                                 <i data-lucide="eye" class="w-4 h-4"></i>
                             </a>
-                            <a href="<?= BASE_URL ?>/index.php?page=kth/form&id=<?= $row['id'] ?>" class="text-amber-600 hover:text-amber-900 inline-flex items-center mr-3" title="Edit">
+                            <a href="<?= BASE_URL ?>/index.php?page=kth/form&id=<?= $row['id'] ?>" class="text-warning-600 hover:text-warning-900 inline-flex items-center mr-3" title="Edit">
                                 <i data-lucide="edit" class="w-4 h-4"></i>
                             </a>
                             <?php if ($role === 'admin'): ?>

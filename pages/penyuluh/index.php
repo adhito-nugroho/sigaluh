@@ -30,12 +30,28 @@ $stmt_count->execute($params);
 $total_rows = $stmt_count->fetchColumn();
 $total_pages = ceil($total_rows / $limit);
 
+$f_bln = sprintf('%02d', (int)($_GET['bulan'] ?? date('m')));
+$f_thn = (int)($_GET['tahun'] ?? date('Y'));
+$f_sort = $_GET['sort'] ?? 'waktu_desc';
+
+$order_sql = "ORDER BY total_durasi_bulan_ini DESC, u.nama ASC";
+if ($f_sort === 'waktu_asc') {
+    $order_sql = "ORDER BY total_durasi_bulan_ini ASC, u.nama ASC";
+} elseif ($f_sort === 'nama_asc') {
+    $order_sql = "ORDER BY u.nama ASC";
+}
+
 $sql_data = "
-    SELECT u.*
+    SELECT u.*,
+           COALESCE((
+               SELECT SUM(k.durasi_menit) 
+               FROM kegiatan k 
+               WHERE k.user_id = u.id AND MONTH(k.tanggal) = $f_bln AND YEAR(k.tanggal) = $f_thn
+           ), 0) as total_durasi_bulan_ini
     FROM users u
     JOIN m_roles r ON u.role_id = r.id
     $where_sql
-    ORDER BY u.nama ASC
+    $order_sql
     LIMIT $limit OFFSET $offset
 ";
 $stmt_data = $pdo->prepare($sql_data);
@@ -83,69 +99,100 @@ if (!empty($user_ids)) {
 
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Data Penyuluh Kehutanan</h1>
-        <p class="text-xs font-medium text-slate-500 mt-1">Daftar tenaga fungsional penyuluh kehutanan dan alokasi wilayah binaan.</p>
+        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Data Penyuluh Kehutanan</h1>
+        <p class="text-xs font-medium text-neutral-500 mt-1">Daftar tenaga fungsional penyuluh kehutanan dan alokasi wilayah binaan.</p>
     </div>
     <div class="mt-4 sm:mt-0">
         <?php if ($role === 'admin'): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all">
+        <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all">
             <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i> Tambah Penyuluh
         </a>
         <?php endif; ?>
     </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 mb-6 flex justify-between items-center">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex items-center w-full max-w-md">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6">
+    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <input type="hidden" name="page" value="penyuluh">
-        <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari Nama atau NIP Penyuluh..." 
-            class="w-full px-4 py-2 border border-slate-200 rounded-l-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none border-r-0">
-        <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 px-4 py-2 rounded-r-xl text-sm transition-colors">
-            Cari
-        </button>
+        
+        <div class="relative flex-1">
+            <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
+            <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama penyuluh atau NIP..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-xl text-xs focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <select name="bulan" class="text-xs font-semibold border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:border-primary-600 outline-none">
+                <?php for ($m = 1; $m <= 12; $m++): ?>
+                    <option value="<?= sprintf('%02d', $m) ?>" <?= $f_bln == sprintf('%02d', $m) ? 'selected' : '' ?>>
+                        <?= get_bulan_indo($m) ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
+
+            <select name="tahun" class="text-xs font-semibold border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:border-primary-600 outline-none">
+                <?php for ($y = date('Y'); $y >= date('Y') - 4; $y--): ?>
+                    <option value="<?= $y ?>" <?= $f_thn == $y ? 'selected' : '' ?>><?= $y ?></option>
+                <?php endfor; ?>
+            </select>
+
+            <select name="sort" class="text-xs font-semibold border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:border-primary-600 outline-none">
+                <option value="waktu_desc" <?= $f_sort === 'waktu_desc' ? 'selected' : '' ?>>Waktu Tertinggi</option>
+                <option value="waktu_asc" <?= $f_sort === 'waktu_asc' ? 'selected' : '' ?>>Waktu Terendah</option>
+                <option value="nama_asc" <?= $f_sort === 'nama_asc' ? 'selected' : '' ?>>Nama A-Z</option>
+            </select>
+
+            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-xl text-xs font-bold transition-colors shadow-sm">
+                Filter
+            </button>
+
+            <?php if (!empty($f_q) || $f_bln != date('m') || $f_thn != date('Y') || $f_sort != 'waktu_desc'): ?>
+                <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="px-3 py-2 bg-neutral-100 text-neutral-600 rounded-xl text-xs font-medium hover:bg-neutral-200 transition-colors">Reset</a>
+            <?php endif; ?>
+        </div>
     </form>
 </div>
 
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-100">
-            <thead class="bg-slate-50/80">
+            <thead class="bg-neutral-50/50">
                 <tr>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Nama / NIP</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Jabatan / Golongan</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Wilayah Kerja Binaan</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Nama / NIP</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Jabatan / Golongan</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Wilayah Kerja Binaan</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Capaian Target Waktu (Bulan Ini)</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Status</th>
                     <?php if ($role === 'admin'): ?>
-                    <th class="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                    <th class="px-6 py-3.5 text-right text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Aksi</th>
                     <?php endif; ?>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
                 <?php if (empty($users_list)): ?>
                 <tr>
-                    <td colspan="<?= $role === 'admin' ? 5 : 4 ?>" class="px-6 py-8 text-center text-slate-500 text-sm">
+                    <td colspan="<?= $role === 'admin' ? 6 : 5 ?>" class="px-6 py-8 text-center text-neutral-500 text-sm">
                         Data penyuluh tidak ditemukan.
                     </td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($users_list as $row): ?>
-                    <tr class="hover:bg-slate-50/80 transition-colors">
+                    <tr class="hover:bg-neutral-50/50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200/60">
+                                    <div class="h-10 w-10 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200/60">
                                         <?= strtoupper(substr($row['nama'], 0, 1)) ?>
                                     </div>
                                 </div>
                                 <div class="ml-4">
-                                    <div class="text-sm font-bold text-slate-900"><?= e($row['nama']) ?></div>
-                                    <div class="text-xs font-mono text-slate-500"><?= e($row['nip']) ?></div>
+                                    <div class="text-sm font-bold text-neutral-900"><?= e($row['nama']) ?></div>
+                                    <div class="text-xs font-mono text-neutral-500"><?= e($row['nip']) ?></div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-xs font-semibold text-slate-900"><?= e($row['jabatan'] ?: '-') ?></div>
-                            <div class="text-xs text-slate-500"><?= e($row['pangkat_golongan'] ?: '-') ?></div>
+                            <div class="text-xs font-semibold text-neutral-900"><?= e($row['jabatan'] ?: '-') ?></div>
+                            <div class="text-xs text-neutral-500"><?= e($row['pangkat_golongan'] ?: '-') ?></div>
                         </td>
                         <td class="px-6 py-4">
                             <?php 
@@ -153,16 +200,16 @@ if (!empty($user_ids)) {
                             $w_items = $wilayah_map[$uid] ?? [];
                             ?>
                             <?php if (empty($w_items)): ?>
-                                <span class="text-xs text-slate-400 italic">Belum diatur</span>
+                                <span class="text-xs text-neutral-400 italic">Belum diatur</span>
                             <?php else: ?>
                                 <div class="space-y-1 max-w-xs">
                                     <?php foreach ($w_items as $item): ?>
                                         <div class="text-xs">
-                                            <span class="font-bold text-slate-800">Kec. <?= e($item['kecamatan_nama']) ?></span>
+                                            <span class="font-bold text-neutral-800">Kec. <?= e($item['kecamatan_nama']) ?></span>
                                             <?php if ($item['all_desas']): ?>
                                                 <span class="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-semibold ml-1">Seluruh Desa</span>
                                             <?php else: ?>
-                                                <span class="text-[10px] text-slate-600 block pl-2 font-medium">
+                                                <span class="text-[10px] text-neutral-600 block pl-2 font-medium">
                                                     - <?= e(implode(', ', $item['desas'])) ?>
                                                 </span>
                                             <?php endif; ?>
@@ -170,6 +217,20 @@ if (!empty($user_ids)) {
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php 
+                            $cur_menit = (int)($row['total_durasi_bulan_ini'] ?? 0);
+                            $cur_jam = round($cur_menit / 60, 1);
+                            $cur_pct = min(100, round(($cur_menit / 6750) * 100, 1));
+                            ?>
+                            <div class="flex items-center justify-between text-xs font-bold mb-1">
+                                <span class="text-neutral-900"><?= number_format($cur_menit, 0, ',', '.') ?> Mnt (<?= $cur_jam ?> Jam)</span>
+                                <span class="<?= $cur_pct >= 100 ? 'text-success-700 font-black' : 'text-accent-600 font-bold' ?>"><?= $cur_pct ?>%</span>
+                            </div>
+                            <div class="w-36 h-2 bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
+                                <div class="h-full <?= $cur_pct >= 100 ? 'bg-success-500' : 'bg-gradient-to-r from-primary-600 to-accent-500' ?> rounded-full" style="width: <?= $cur_pct ?>%"></div>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <?php if ($row['status_aktif']): ?>
@@ -180,7 +241,7 @@ if (!empty($user_ids)) {
                         </td>
                         <?php if ($role === 'admin'): ?>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form&id=<?= $row['id'] ?>" class="text-amber-600 hover:text-amber-900 bg-amber-50 p-2 rounded-xl border border-amber-200/60 inline-flex items-center mr-2 transition-all" title="Edit Penyuluh & Wilayah">
+                            <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form&id=<?= $row['id'] ?>" class="text-warning-600 hover:text-warning-900 bg-warning-50 p-2 rounded-xl border border-warning-200/60 inline-flex items-center mr-2 transition-all" title="Edit Penyuluh & Wilayah">
                                 <i data-lucide="edit" class="w-4 h-4"></i>
                             </a>
                         </td>

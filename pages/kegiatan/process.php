@@ -34,6 +34,21 @@ if ($kth_nama_manual) {
 }
 $tusi_id = $_POST['tusi_id'] ?? null;
 $kegiatan_tusi_id = $_POST['kegiatan_tusi_id'] ?? null;
+$aktivitas_harian_id = $_POST['aktivitas_harian_id'] ?: null;
+$volume = (int)($_POST['volume'] ?? 1);
+if ($volume < 1) $volume = 1;
+
+// Fetch WPT menit from m_aktivitas_harian
+$durasi_menit = 0;
+if ($aktivitas_harian_id) {
+    $stmt_act = $pdo->prepare("SELECT wpt_menit FROM m_aktivitas_harian WHERE id = ?");
+    $stmt_act->execute([$aktivitas_harian_id]);
+    $wpt_row = $stmt_act->fetch();
+    if ($wpt_row) {
+        $durasi_menit = (int)$wpt_row['wpt_menit'] * $volume;
+    }
+}
+
 $uraian_kegiatan = trim($_POST['uraian_kegiatan'] ?? '');
 $detail_kegiatan = trim($_POST['detail_kegiatan'] ?? '');
 $substansi_materi = trim($_POST['substansi_materi'] ?? '');
@@ -59,17 +74,17 @@ try {
 
         $sql = "UPDATE kegiatan SET 
             tanggal = ?, provinsi_id = ?, kabupaten_id = ?, kecamatan_id = ?, desa_id = ?, 
-            kth_id = ?, kth_nama_manual = ?, tusi_id = ?, kegiatan_tusi_id = ?, uraian_kegiatan = ?, detail_kegiatan = ?, 
-            substansi_materi = ?, lokasi = ?, sasaran_hadir = ?, pelaksanaan_kegiatan = ?, 
-            kesimpulan_saran = ?, permasalahan_kendala = ?, solusi = ?, status = ?
+            kth_id = ?, kth_nama_manual = ?, tusi_id = ?, kegiatan_tusi_id = ?, aktivitas_harian_id = ?, volume = ?, durasi_menit = ?,
+            uraian_kegiatan = ?, detail_kegiatan = ?, substansi_materi = ?, lokasi = ?, sasaran_hadir = ?, 
+            pelaksanaan_kegiatan = ?, kesimpulan_saran = ?, permasalahan_kendala = ?, solusi = ?, status = ?
             WHERE id = ? AND user_id = ?";
             
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             $tanggal, $provinsi_id, $kabupaten_id, $kecamatan_id, $desa_id,
-            $kth_id, $kth_nama_manual, $tusi_id, $kegiatan_tusi_id, $uraian_kegiatan, $detail_kegiatan,
-            $substansi_materi, $lokasi, $sasaran_hadir, $pelaksanaan_kegiatan,
-            $kesimpulan_saran, $permasalahan_kendala, $solusi, $status,
+            $kth_id, $kth_nama_manual, $tusi_id, $kegiatan_tusi_id, $aktivitas_harian_id, $volume, $durasi_menit,
+            $uraian_kegiatan, $detail_kegiatan, $substansi_materi, $lokasi, $sasaran_hadir,
+            $pelaksanaan_kegiatan, $kesimpulan_saran, $permasalahan_kendala, $solusi, $status,
             $id, $user_id
         ]);
         
@@ -77,19 +92,19 @@ try {
         // Create mode
         $sql = "INSERT INTO kegiatan (
             user_id, tanggal, provinsi_id, kabupaten_id, kecamatan_id, desa_id, 
-            kth_id, kth_nama_manual, tusi_id, kegiatan_tusi_id, uraian_kegiatan, detail_kegiatan, 
-            substansi_materi, lokasi, sasaran_hadir, pelaksanaan_kegiatan, 
-            kesimpulan_saran, permasalahan_kendala, solusi, status
+            kth_id, kth_nama_manual, tusi_id, kegiatan_tusi_id, aktivitas_harian_id, volume, durasi_menit,
+            uraian_kegiatan, detail_kegiatan, substansi_materi, lokasi, sasaran_hadir, 
+            pelaksanaan_kegiatan, kesimpulan_saran, permasalahan_kendala, solusi, status
         ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             $user_id, $tanggal, $provinsi_id, $kabupaten_id, $kecamatan_id, $desa_id,
-            $kth_id, $kth_nama_manual, $tusi_id, $kegiatan_tusi_id, $uraian_kegiatan, $detail_kegiatan,
-            $substansi_materi, $lokasi, $sasaran_hadir, $pelaksanaan_kegiatan,
-            $kesimpulan_saran, $permasalahan_kendala, $solusi, $status
+            $kth_id, $kth_nama_manual, $tusi_id, $kegiatan_tusi_id, $aktivitas_harian_id, $volume, $durasi_menit,
+            $uraian_kegiatan, $detail_kegiatan, $substansi_materi, $lokasi, $sasaran_hadir,
+            $pelaksanaan_kegiatan, $kesimpulan_saran, $permasalahan_kendala, $solusi, $status
         ]);
         $id = $pdo->lastInsertId();
     }

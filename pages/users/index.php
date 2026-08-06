@@ -57,12 +57,12 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
 
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen Pengguna</h1>
-        <p class="text-xs font-medium text-slate-500 mt-1">Kelola data akun pengguna, hak akses/role, dan otentikasi login sistem.</p>
+        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Manajemen Pengguna</h1>
+        <p class="text-xs font-medium text-neutral-500 mt-1">Kelola data akun pengguna, hak akses/role, dan otentikasi login sistem.</p>
     </div>
     <div class="mt-4 sm:mt-0">
         <?php if ($role === 'admin'): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=users/form" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all">
+        <a href="<?= BASE_URL ?>/index.php?page=users/form" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all">
             <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i> Tambah Pengguna Baru
         </a>
         <?php endif; ?>
@@ -70,18 +70,18 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
 </div>
 
 <!-- Filter Bar -->
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col sm:flex-row items-center gap-3 w-full max-w-2xl">
         <input type="hidden" name="page" value="users">
         
         <div class="w-full sm:w-64">
             <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari Nama atau NIP/Username..." 
-                class="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                class="w-full px-4 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none">
         </div>
 
         <?php if ($role === 'admin'): ?>
         <div class="w-full sm:w-48">
-            <select name="role_filter" onchange="this.form.submit()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+            <select name="role_filter" onchange="this.form.submit()" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
                 <option value="">Semua Role</option>
                 <?php foreach ($roles_list as $r): ?>
                     <option value="<?= $r['kode'] ?>" <?= $f_role === $r['kode'] ? 'selected' : '' ?>><?= e($r['nama']) ?></option>
@@ -90,51 +90,51 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
         </div>
         <?php endif; ?>
 
-        <button type="submit" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 px-4 py-2 rounded-xl text-sm transition-colors">
+        <button type="submit" class="w-full sm:w-auto bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-semibold border border-neutral-200 px-4 py-2 rounded-xl text-sm transition-colors">
             Filter
         </button>
         <?php if (!empty($f_q) || !empty($f_role)): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=users" class="text-xs font-semibold text-slate-500 hover:text-slate-700 underline">Reset</a>
+        <a href="<?= BASE_URL ?>/index.php?page=users" class="text-xs font-semibold text-neutral-500 hover:text-neutral-700 underline">Reset</a>
         <?php endif; ?>
     </form>
 </div>
 
 <!-- Table -->
-<div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-100">
-            <thead class="bg-slate-50/80">
+            <thead class="bg-neutral-50/50">
                 <tr>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pengguna / Username</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Jabatan & Golongan</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Kontak</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Pengguna / Username</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Jabatan & Golongan</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Kontak</th>
+                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Status</th>
                     <?php if ($role === 'admin'): ?>
-                    <th class="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
+                    <th class="px-6 py-3.5 text-right text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Aksi</th>
                     <?php endif; ?>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
                 <?php if (empty($users_list)): ?>
                 <tr>
-                    <td colspan="<?= $role === 'admin' ? 6 : 5 ?>" class="px-6 py-8 text-center text-slate-500 text-sm">
+                    <td colspan="<?= $role === 'admin' ? 6 : 5 ?>" class="px-6 py-8 text-center text-neutral-500 text-sm">
                         Data pengguna tidak ditemukan.
                     </td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($users_list as $row): ?>
-                    <tr class="hover:bg-slate-50/80 transition-colors">
+                    <tr class="hover:bg-neutral-50/50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200/60">
+                                    <div class="h-10 w-10 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200/60">
                                         <?= strtoupper(substr($row['nama'], 0, 1)) ?>
                                     </div>
                                 </div>
                                 <div class="ml-4">
-                                    <div class="text-sm font-bold text-slate-900"><?= e($row['nama']) ?></div>
-                                    <div class="text-xs font-mono text-slate-500"><?= e($row['nip']) ?></div>
+                                    <div class="text-sm font-bold text-neutral-900"><?= e($row['nama']) ?></div>
+                                    <div class="text-xs font-mono text-neutral-500"><?= e($row['nip']) ?></div>
                                 </div>
                             </div>
                         </td>
@@ -142,18 +142,18 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
                             <?php if ($row['role_kode'] === 'admin'): ?>
                                 <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-purple-50 text-purple-700 border border-purple-200/70 inline-flex items-center"><i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> Admin</span>
                             <?php elseif ($row['role_kode'] === 'pimpinan'): ?>
-                                <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200/70 inline-flex items-center"><i data-lucide="award" class="w-3 h-3 mr-1"></i> Pimpinan</span>
+                                <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-warning-50 text-warning-700 border border-warning-200/70 inline-flex items-center"><i data-lucide="award" class="w-3 h-3 mr-1"></i> Pimpinan</span>
                             <?php else: ?>
                                 <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/70 inline-flex items-center"><i data-lucide="tree-pine" class="w-3 h-3 mr-1"></i> Penyuluh</span>
                             <?php endif; ?>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-xs font-semibold text-slate-900"><?= e($row['jabatan'] ?: '-') ?></div>
-                            <div class="text-xs text-slate-500"><?= e($row['pangkat_golongan'] ?: '-') ?></div>
+                            <div class="text-xs font-semibold text-neutral-900"><?= e($row['jabatan'] ?: '-') ?></div>
+                            <div class="text-xs text-neutral-500"><?= e($row['pangkat_golongan'] ?: '-') ?></div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-xs font-medium text-slate-800"><?= e($row['no_hp'] ?: '-') ?></div>
-                            <div class="text-xs text-slate-400"><?= e($row['email'] ?: '-') ?></div>
+                            <div class="text-xs font-medium text-neutral-800"><?= e($row['no_hp'] ?: '-') ?></div>
+                            <div class="text-xs text-neutral-400"><?= e($row['email'] ?: '-') ?></div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <?php if ($row['status_aktif']): ?>
@@ -164,7 +164,7 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
                         </td>
                         <?php if ($role === 'admin'): ?>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="<?= BASE_URL ?>/index.php?page=users/form&id=<?= $row['id'] ?>" class="text-amber-600 hover:text-amber-900 bg-amber-50 p-2 rounded-xl border border-amber-200/60 inline-flex items-center mr-2 transition-all" title="Edit User">
+                            <a href="<?= BASE_URL ?>/index.php?page=users/form&id=<?= $row['id'] ?>" class="text-warning-600 hover:text-warning-900 bg-warning-50 p-2 rounded-xl border border-warning-200/60 inline-flex items-center mr-2 transition-all" title="Edit User">
                                 <i data-lucide="edit" class="w-4 h-4"></i>
                             </a>
                             <?php if ($row['id'] != $_SESSION['user_id']): ?>

@@ -75,15 +75,15 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
 
 <div class="mb-6 flex items-center justify-between">
     <div>
-        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight"><?= $is_edit ? 'Edit Data Pengguna' : 'Tambah Pengguna Baru' ?></h1>
-        <p class="text-xs font-medium text-slate-500 mt-1">Kelola informasi akun pengguna, role/peran, dan otentikasi login.</p>
+        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight"><?= $is_edit ? 'Edit Data Pengguna' : 'Tambah Pengguna Baru' ?></h1>
+        <p class="text-xs font-medium text-neutral-500 mt-1">Kelola informasi akun pengguna, role/peran, dan otentikasi login.</p>
     </div>
-    <a href="<?= BASE_URL ?>/index.php?page=users" class="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-xs transition-all">
+    <a href="<?= BASE_URL ?>/index.php?page=users" class="text-xs font-semibold text-neutral-600 hover:text-neutral-900 flex items-center bg-white border border-neutral-200 px-3.5 py-2 rounded-xl shadow-xs transition-all">
         <i data-lucide="arrow-left" class="w-4 h-4 mr-1.5"></i> Kembali ke Kelola User
     </a>
 </div>
 
-<div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden max-w-4xl" x-data="userManager('<?= $init_role_kode ?>')">
+<div class="bg-white rounded-3xl border border-neutral-200/60 shadow-card overflow-hidden max-w-4xl" x-data="userManager('<?= $init_role_kode ?>')">
     <form action="<?= BASE_URL ?>/index.php?page=users/process" method="POST" class="p-6 sm:p-8 space-y-6">
         <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= $is_edit ? 'update' : 'create' ?>">
@@ -94,16 +94,16 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
 
         <!-- Form User Info -->
         <div>
-            <h3 class="text-base font-bold text-slate-900 tracking-tight mb-4 flex items-center">
-                <span class="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs font-bold mr-2.5 border border-indigo-100">1</span>
+            <h3 class="text-base font-bold text-neutral-900 tracking-tight mb-4 flex items-center">
+                <span class="w-7 h-7 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center text-xs font-bold mr-2.5 border border-primary-100">1</span>
                 Biodata & Akun Pengguna
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Role / Peran Pengguna <span class="text-rose-500">*</span></label>
-                    <select name="role_id" @change="onRoleChange($event)" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm font-bold bg-white transition-all">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Role / Peran Pengguna <span class="text-rose-500">*</span></label>
+                    <select name="role_id" @change="onRoleChange($event)" required class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold bg-white transition-all">
                         <?php foreach ($roles_list as $r): ?>
                             <option value="<?= $r['id'] ?>" data-kode="<?= e($r['kode']) ?>" <?= ($is_edit && $user_data['role_id'] == $r['id']) ? 'selected' : (! $is_edit && $r['kode'] === 'penyuluh' ? 'selected' : '') ?>><?= e($r['nama']) ?></option>
                         <?php endforeach; ?>
@@ -111,68 +111,68 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">NIP / Username <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">NIP / Username <span class="text-rose-500">*</span></label>
                     <input type="text" name="nip" required value="<?= $is_edit ? e($user_data['nip']) : '' ?>" placeholder="NIP atau Username login"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nama Lengkap <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Nama Lengkap <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama" required value="<?= $is_edit ? e($user_data['nama']) : '' ?>" placeholder="Nama beserta gelar"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Pangkat / Golongan</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Pangkat / Golongan</label>
                     <input type="text" name="pangkat_golongan" value="<?= $is_edit ? e($user_data['pangkat_golongan']) : '' ?>" placeholder="Contoh: Penata Tk. I / IIId"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Jabatan</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Jabatan</label>
                     <input type="text" name="jabatan" value="<?= $is_edit ? e($user_data['jabatan']) : '' ?>" placeholder="Contoh: Penyuluh Kehutanan Ahli Muda"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nomor HP / WhatsApp</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Nomor HP / WhatsApp</label>
                     <input type="text" name="no_hp" value="<?= $is_edit ? e($user_data['no_hp']) : '' ?>" placeholder="081234567890"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Email</label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Email</label>
                     <input type="email" name="email" value="<?= $is_edit ? e($user_data['email']) : '' ?>" placeholder="email@contoh.com"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Password <span class="text-xs text-slate-400 font-normal lowercase">(kosongkan jika tidak diubah)</span></label>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Password <span class="text-xs text-neutral-400 font-normal lowercase">(kosongkan jika tidak diubah)</span></label>
                     <input type="password" name="password" <?= $is_edit ? '' : 'required' ?> minlength="6" placeholder="••••••••"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 outline-none text-sm transition-all">
+                        class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
             </div>
         </div>
 
         <!-- Section 2: Dynamic Wilayah Kerja Manager (Khusus Penyuluh) -->
         <div x-show="roleKode === 'penyuluh'" class="space-y-6">
-            <hr class="border-slate-100">
+            <hr class="border-neutral-100">
 
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-base font-bold text-slate-900 tracking-tight flex items-center">
-                        <span class="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs font-bold mr-2.5 border border-indigo-100">2</span>
+                    <h3 class="text-base font-bold text-neutral-900 tracking-tight flex items-center">
+                        <span class="w-7 h-7 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center text-xs font-bold mr-2.5 border border-primary-100">2</span>
                         Alokasi Wilayah Kerja Binaan Penyuluh
                     </h3>
-                    <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/80">Multi-Kecamatan & Multi-Desa</span>
+                    <span class="text-xs font-medium text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200/60">Multi-Kecamatan & Multi-Desa</span>
                 </div>
 
                 <!-- Form Tambah Wilayah Temporary -->
-                <div class="bg-slate-50/80 rounded-2xl p-5 border border-slate-200/80 space-y-4 mb-6">
+                <div class="bg-neutral-50/50 rounded-2xl p-5 border border-neutral-200/60 space-y-4 mb-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kabupaten</label>
-                            <select id="input_kabupaten" @change="onKabupatenChange($event)" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <label class="block text-xs font-semibold text-neutral-700 mb-1">Kabupaten</label>
+                            <select id="input_kabupaten" @change="onKabupatenChange($event)" class="w-full px-3.5 py-2 border border-neutral-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none">
                                 <option value="">-- Pilih Kabupaten --</option>
                                 <?php foreach($kabupaten_list as $k): ?>
                                     <option value="<?= $k['id'] ?>" data-nama="<?= e($k['nama']) ?>"><?= e($k['nama']) ?></option>
@@ -181,8 +181,8 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Kecamatan</label>
-                            <select id="input_kecamatan" @change="onKecamatanChange($event)" :disabled="!selectedKabId" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-slate-100">
+                            <label class="block text-xs font-semibold text-neutral-700 mb-1">Kecamatan</label>
+                            <select id="input_kecamatan" @change="onKecamatanChange($event)" :disabled="!selectedKabId" class="w-full px-3.5 py-2 border border-neutral-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none disabled:bg-neutral-100">
                                 <option value="">-- Pilih Kecamatan --</option>
                                 <template x-for="k in kecamatanList" :key="k.id">
                                     <option :value="k.id" :data-nama="k.nama" x-text="k.nama"></option>
@@ -193,23 +193,23 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
 
                     <!-- Scope Option Desa -->
                     <div x-show="selectedKecId" class="pt-2">
-                        <label class="block text-xs font-semibold text-slate-700 mb-2">Cakupan Desa / Kelurahan:</label>
+                        <label class="block text-xs font-semibold text-neutral-700 mb-2">Cakupan Desa / Kelurahan:</label>
                         <div class="flex items-center space-x-4 mb-3">
-                            <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
-                                <input type="radio" name="scope_desa" value="all" x-model="scopeDesa" class="text-indigo-600 focus:ring-indigo-500">
+                            <label class="inline-flex items-center text-xs font-semibold text-neutral-700 cursor-pointer">
+                                <input type="radio" name="scope_desa" value="all" x-model="scopeDesa" class="text-primary-600 focus:ring-primary-500">
                                 <span class="ml-2">Seluruh Desa di Kecamatan Ini</span>
                             </label>
-                            <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
-                                <input type="radio" name="scope_desa" value="specific" x-model="scopeDesa" class="text-indigo-600 focus:ring-indigo-500">
+                            <label class="inline-flex items-center text-xs font-semibold text-neutral-700 cursor-pointer">
+                                <input type="radio" name="scope_desa" value="specific" x-model="scopeDesa" class="text-primary-600 focus:ring-primary-500">
                                 <span class="ml-2">Pilih Beberapa Desa Tertentu</span>
                             </label>
                         </div>
 
                         <!-- Checkboxes Desa Spesifik -->
-                        <div x-show="scopeDesa === 'specific'" class="bg-white rounded-xl p-4 border border-slate-200 max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div x-show="scopeDesa === 'specific'" class="bg-white rounded-xl p-4 border border-neutral-200 max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <template x-for="d in desaList" :key="d.id">
-                                <label class="flex items-center text-xs text-slate-700 hover:bg-slate-50 p-1.5 rounded-lg cursor-pointer">
-                                    <input type="checkbox" :value="d.id" :data-nama="d.nama" @change="toggleDesaSelection(d)" :checked="isDesaSelected(d.id)" class="rounded text-indigo-600 focus:ring-indigo-500 mr-2">
+                                <label class="flex items-center text-xs text-neutral-700 hover:bg-neutral-50 p-1.5 rounded-lg cursor-pointer">
+                                    <input type="checkbox" :value="d.id" :data-nama="d.nama" @change="toggleDesaSelection(d)" :checked="isDesaSelected(d.id)" class="rounded text-primary-600 focus:ring-primary-500 mr-2">
                                     <span x-text="d.nama"></span>
                                 </label>
                             </template>
@@ -217,7 +217,7 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
                     </div>
 
                     <div class="pt-2 flex justify-end">
-                        <button type="button" @click="addWilayah()" :disabled="!selectedKecId" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-all disabled:opacity-50 flex items-center">
+                        <button type="button" @click="addWilayah()" :disabled="!selectedKecId" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-all disabled:opacity-50 flex items-center">
                             <i data-lucide="plus" class="w-3.5 h-3.5 mr-1.5"></i> Simpan Wilayah Binaan
                         </button>
                     </div>
@@ -225,22 +225,22 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
 
                 <!-- List Wilayah Binaan Terpilih -->
                 <div class="space-y-3">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Wilayah Kerja Teralokasi (<span x-text="wilayahList.length"></span> Kecamatan)</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-neutral-500">Daftar Wilayah Kerja Teralokasi (<span x-text="wilayahList.length"></span> Kecamatan)</h4>
                     
                     <template x-if="wilayahList.length === 0">
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+                        <div class="p-4 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200 text-center text-xs text-neutral-400">
                             Belum ada wilayah kerja binaan yang ditambahkan. Gunakan form di atas untuk menambahkan.
                         </div>
                     </template>
                     <div class="grid grid-cols-1 gap-3">
                         <template x-for="(w, idx) in wilayahList" :key="w.kecamatan_id">
-                            <div class="bg-white rounded-2xl p-4.5 border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="bg-white rounded-2xl p-4.5 border border-neutral-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <div class="flex items-center space-x-2">
-                                        <span class="px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-bold text-xs border border-indigo-100" x-text="w.kabupaten_nama"></span>
-                                        <span class="text-sm font-extrabold text-slate-900" x-text="'Kecamatan ' + w.kecamatan_nama"></span>
+                                        <span class="px-2.5 py-0.5 rounded-md bg-primary-50 text-primary-700 font-bold text-xs border border-primary-100" x-text="w.kabupaten_nama"></span>
+                                        <span class="text-sm font-extrabold text-neutral-900" x-text="'Kecamatan ' + w.kecamatan_nama"></span>
                                     </div>
-                                    <div class="mt-2.5 text-xs text-slate-600">
+                                    <div class="mt-2.5 text-xs text-neutral-600">
                                         <template x-if="w.all_desas">
                                             <span class="inline-flex items-center text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70">
                                                 <i data-lucide="check-circle-2" class="w-3.5 h-3.5 mr-1.5"></i> Seluruh Desa / Kelurahan di Kecamatan Ini
@@ -248,10 +248,10 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
                                         </template>
                                         <template x-if="!w.all_desas">
                                             <div>
-                                                <span class="font-semibold text-slate-600">Desa Binaan (<span x-text="w.desas.length"></span> desa):</span>
+                                                <span class="font-semibold text-neutral-600">Desa Binaan (<span x-text="w.desas.length"></span> desa):</span>
                                                 <div class="flex flex-wrap gap-2 mt-2">
                                                     <template x-for="(d, dIdx) in w.desas" :key="d.id">
-                                                        <span class="inline-flex items-center bg-slate-100 text-slate-800 px-3 py-1 rounded-xl text-xs font-semibold border border-slate-200 shadow-2xs">
+                                                        <span class="inline-flex items-center bg-neutral-100 text-neutral-800 px-3 py-1 rounded-xl text-xs font-semibold border border-neutral-200 shadow-2xs">
                                                             <span x-text="d.nama"></span>
                                                             <button type="button" @click.prevent="removeDesaFromWilayah(idx, dIdx)" class="ml-2 w-4 h-4 rounded-full bg-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white flex items-center justify-center text-xs font-black transition-all cursor-pointer" title="Hapus Desa Ini">
                                                                 &times;
@@ -264,7 +264,7 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-2 flex-shrink-0">
-                                    <button type="button" @click.prevent="editWilayah(idx)" class="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-800 hover:bg-amber-600 hover:text-white border border-amber-200/80 font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer" title="Edit Pilihan Desa">
+                                    <button type="button" @click.prevent="editWilayah(idx)" class="inline-flex items-center px-3 py-1.5 bg-warning-50 text-warning-800 hover:bg-warning-600 hover:text-white border border-warning-200/80 font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer" title="Edit Pilihan Desa">
                                         <i data-lucide="edit-3" class="w-3.5 h-3.5 mr-1"></i> Edit
                                     </button>
                                     <button type="button" @click.prevent="removeWilayah(idx)" class="inline-flex items-center px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-600 hover:text-white border border-rose-200/80 font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer" title="Hapus Kecamatan Ini">
@@ -279,8 +279,8 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
         </div>
 
         <!-- Submit Button -->
-        <div class="flex justify-end pt-6 border-t border-slate-100">
-            <button type="submit" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md shadow-indigo-500/20 active:scale-[0.98]">
+        <div class="flex justify-end pt-6 border-t border-neutral-100">
+            <button type="submit" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-500/20 active:scale-[0.98]">
                 <?= $is_edit ? 'Simpan Perubahan' : 'Tambah Pengguna' ?>
             </button>
         </div>
