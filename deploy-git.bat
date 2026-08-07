@@ -7,55 +7,74 @@ setlocal enabledelayedexpansion
 set SERVER_USER=adit
 set SERVER_IP=127.0.0.1
 set SERVER_PORT=2222
-set REMOTE_DIR=c:\laragon\www\sigaluh2
+set "REMOTE_DIR=C:\laragon\www\sigaluh2"
 set BRANCH=main
 
+:: PATH tambahan di server (Git + PHP Laragon) — tanpa spasi di path
+set "REMOTE_PATH_ADDITION=C:\laragon\bin\git\bin;C:\laragon\bin\git\cmd;C:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64;C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64;D:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64;D:\laragon\bin\php\php-8.1.10-Win32-vs16-x64"
+
 echo ======================================================
-echo 🚀 MEMULAI DEPLOYMENT DENGAN GIT PULL DAN MIGRASI DB
+echo MEMULAI DEPLOYMENT DENGAN GIT PULL DAN MIGRASI DB
 echo ======================================================
 
-:: 1. Simpan dan Push perubahan dari Laptop ke GitHub / Remote Git
-echo 📤 [1/3] Mendorong perubahan lokal ke Repository...
+:: 1. Commit (jika ada perubahan) lalu Push ke remote
+echo [1/3] Mendorong perubahan lokal ke Repository...
+
 git add .
 
-set /p msg="Masukkan pesan commit (tekan Enter untuk default 'update'): "
-if "!msg!"=="" set msg=update aplikasi
+:: Cek staged changes setelah git add
+set "NEED_COMMIT=0"
+for /f %%i in ('git diff --cached --name-only') do set "NEED_COMMIT=1"
 
-git commit -m "!msg!"
+if "!NEED_COMMIT!"=="0" (
+    echo Tidak ada perubahan lokal. Skip commit, lanjut push/pull...
+) else (
+    set /p msg="Masukkan pesan commit (tekan Enter untuk default 'update aplikasi'): "
+    if "!msg!"=="" set "msg=update aplikasi"
+
+    git commit -m "!msg!"
+    if errorlevel 1 (
+        echo Gagal melakukan git commit!
+        pause
+        exit /b 1
+    )
+)
+
 git push origin %BRANCH%
-
-if %errorlevel% neq 0 (
-    echo ❌ Gagal melakukan git push dari laptop!
+if errorlevel 1 (
+    echo Gagal melakukan git push dari laptop!
     pause
     exit /b 1
 )
 
-:: 2. Jalankan Git Pull di Server via SSH
+:: 2. Git Pull di Server via SSH
 echo.
-echo 🔄 [2/3] Menjalankan 'git pull' di server...
+echo [2/3] Menjalankan 'git pull' di server...
 echo *(Jika diminta password SSH, masukkan password akun server)*
 echo.
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
 
-if %errorlevel% neq 0 (
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "set PATH=%%PATH%%;%REMOTE_PATH_ADDITION% && cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
+
+if errorlevel 1 (
     echo.
-    echo ❌ Git Pull di server gagal.
+    echo Git Pull di server gagal.
     pause
     exit /b 1
 )
 
 :: 3. Jalankan PHP Migration di Server via SSH
 echo.
-echo 🗄️ [3/3] Menjalankan migrasi database di server...
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && (if exist C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe (C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe migrate.php) else (php migrate.php))"
+echo [3/3] Menjalankan migrasi database di server...
 
-if %errorlevel% neq 0 (
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "set PATH=%%PATH%%;%REMOTE_PATH_ADDITION% && cd /d %REMOTE_DIR% && php migrate.php"
+
+if errorlevel 1 (
     echo.
-    echo ⚠️ Migrasi CLI server gagal. Anda juga bisa membuka http://file.cdkbojonegoro.my.id/migrate.php di browser.
+    echo Migrasi CLI server gagal. Anda juga bisa membuka http://file.cdkbojonegoro.my.id/migrate.php di browser.
 )
 
 echo.
 echo ======================================================
-echo ✅ DEPLOYMENT DAN MIGRASI SELESAI!
+echo DEPLOYMENT DAN MIGRASI SELESAI!
 echo ======================================================
 pause
