@@ -68,9 +68,12 @@ if (is_logged_in()) {
     <!-- ─── MAIN CONTENT ───────────────────────────────────────── -->
     <main class="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
         
+        <!-- Gradient depth subtle untuk card area -->
+        <div class="absolute inset-0 z-0 hidden lg:block" style="background: radial-gradient(circle at 75% 40%, rgba(255,255,255,0.6), transparent 60%);"></div>
+        
         <!-- Ornamen background + pattern titik halus -->
         <div class="absolute top-0 right-0 w-1/3 h-full bg-primary-50/50 -skew-x-12 transform origin-top translate-x-20 z-0 hidden lg:block"></div>
-        <div class="absolute inset-0 z-0 opacity-[0.35] pointer-events-none hidden lg:block" style="background-image: radial-gradient(circle, #9bc4b3 1px, transparent 1px); background-size: 22px 22px;"></div>
+        <div class="absolute inset-0 z-0 opacity-[0.25] pointer-events-none hidden lg:block" style="background-image: radial-gradient(circle, #9bc4b3 1px, transparent 1px); background-size: 22px 22px;"></div>
         
         <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative z-10 lg:items-start">
             
@@ -114,7 +117,7 @@ if (is_logged_in()) {
             
             <!-- Right: Login Box -->
             <div class="flex justify-center pt-1.5">
-                <div class="w-full max-w-md bg-white rounded-lg shadow-lg shadow-slate-200/60 border border-gray-100 p-8">
+                <div class="w-full max-w-md bg-white rounded-lg shadow-lg shadow-slate-200/60 border border-gray-100 px-8 py-10">
                     <div class="text-center mb-8">
                         <h3 class="text-xl font-bold text-neutral-900">Masuk ke Sistem</h3>
                         <p class="text-sm text-neutral-500 mt-2">Gunakan NIP dan kata sandi yang telah terdaftar.</p>
