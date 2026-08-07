@@ -66,13 +66,13 @@ if (is_logged_in()) {
     </header>
 
     <!-- ─── MAIN CONTENT ───────────────────────────────────────── -->
-    <main class="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
+    <main class="flex-grow flex items-center justify-center p-6 pb-16 relative overflow-hidden">
         
         <!-- Ornamen background + pattern titik halus -->
         <div class="absolute top-0 right-0 w-1/3 h-full bg-primary-50/50 -skew-x-12 transform origin-top translate-x-20 z-0 hidden lg:block"></div>
         <div class="absolute inset-0 z-0 opacity-[0.35] pointer-events-none hidden lg:block" style="background-image: radial-gradient(circle, #9bc4b3 1px, transparent 1px); background-size: 22px 22px;"></div>
         
-        <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative z-10">
+        <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative z-10 lg:items-start">
             
             <!-- Left: Info Sistem -->
             <div class="flex flex-col justify-center pb-12 sm:pb-14 lg:pb-16">
@@ -86,7 +86,7 @@ if (is_logged_in()) {
                     <span class="text-primary-700">(SI GALUH)</span>
                 </h2>
                 
-                <p class="text-neutral-600 mb-8 max-w-md leading-relaxed text-lg">
+                <p class="text-neutral-600 mb-8 max-w-md leading-normal text-lg">
                     Fasilitas pelaporan kegiatan operasional, pendataan Kelompok Tani Hutan (KTH), dan rekapitulasi capaian TUSI bagi Penyuluh Kehutanan di wilayah kerja CDK Nganjuk.
                 </p>
                 
@@ -113,7 +113,7 @@ if (is_logged_in()) {
             </div>
             
             <!-- Right: Login Box -->
-            <div class="flex items-center justify-center">
+            <div class="flex justify-center pt-1.5">
                 <div class="w-full max-w-md bg-white rounded-lg shadow-lg shadow-slate-200/60 border border-gray-100 p-8">
                     <div class="text-center mb-8">
                         <h3 class="text-xl font-bold text-neutral-900">Masuk ke Sistem</h3>
@@ -161,7 +161,7 @@ if (is_logged_in()) {
     </main>
 
     <!-- ─── FOOTER ─────────────────────────────────────────────── -->
-    <footer class="bg-neutral-800 text-neutral-400 py-6 border-t border-neutral-700">
+    <footer class="bg-neutral-800 text-neutral-400 py-8 border-t border-gray-300/20">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-xs">
             <p>&copy; <?= date('Y') ?> Cabang Dinas Kehutanan Wilayah Nganjuk.</p>
             <p class="mt-2 md:mt-0">Dinas Kehutanan Provinsi Jawa Timur.</p>
