@@ -68,18 +68,19 @@ if (is_logged_in()) {
     <!-- ─── MAIN CONTENT ───────────────────────────────────────── -->
     <main class="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
         
-        <!-- Ornamen background sederhana -->
+        <!-- Ornamen background + pattern titik halus -->
         <div class="absolute top-0 right-0 w-1/3 h-full bg-primary-50/50 -skew-x-12 transform origin-top translate-x-20 z-0 hidden lg:block"></div>
+        <div class="absolute inset-0 z-0 opacity-[0.35] pointer-events-none hidden lg:block" style="background-image: radial-gradient(circle, #9bc4b3 1px, transparent 1px); background-size: 22px 22px;"></div>
         
         <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative z-10">
             
             <!-- Left: Info Sistem -->
             <div class="flex flex-col justify-center">
                 <div class="mb-4">
-                    <span class="inline-block px-3 py-1 bg-primary-100 text-primary-800 text-xs font-bold tracking-wider rounded-sm border border-primary-200">PORTAL INTERNAL</span>
+                    <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold tracking-wider rounded-sm border border-emerald-200">PORTAL INTERNAL</span>
                 </div>
                 
-                <h2 class="text-4xl font-bold text-neutral-900 leading-tight mb-6">
+                <h2 class="text-4xl font-bold text-neutral-900 tracking-tight leading-[1.15] mb-6">
                     Sistem Informasi<br>
                     Kegiatan Penyuluh Kehutanan<br>
                     <span class="text-primary-700">(SI GALUH)</span>
@@ -91,33 +92,62 @@ if (is_logged_in()) {
                 
                 <div class="space-y-4 max-w-md">
                     <div class="flex items-start">
-                        <div class="mt-1"><i data-lucide="check-circle-2" class="w-5 h-5 text-primary-600"></i></div>
+                        <div class="mt-0.5 flex items-center justify-center rounded-full bg-emerald-50 p-1.5">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-emerald-700"></i>
+                        </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-bold text-neutral-900">Validasi Terpusat</h3>
                             <p class="text-xs text-neutral-500 mt-0.5">Laporan diverifikasi langsung oleh pimpinan.</p>
                         </div>
                     </div>
                     <div class="flex items-start">
-                        <div class="mt-1"><i data-lucide="check-circle-2" class="w-5 h-5 text-primary-600"></i></div>
+                        <div class="mt-0.5 flex items-center justify-center rounded-full bg-emerald-50 p-1.5">
+                            <i data-lucide="archive" class="w-6 h-6 text-emerald-700"></i>
+                        </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-bold text-neutral-900">Arsip Otomatis</h3>
                             <p class="text-xs text-neutral-500 mt-0.5">Penarikan laporan rekapitulasi bulanan secara instan.</p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Ilustrasi SVG flat bertema forestry/data -->
+                <div class="mt-10 max-w-md hidden sm:block" aria-hidden="true">
+                    <svg viewBox="0 0 420 160" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                        <!-- Soft ground -->
+                        <ellipse cx="210" cy="142" rx="180" ry="12" fill="#e1efe7"/>
+                        <!-- Trees -->
+                        <path d="M58 130 L58 95 L42 95 L60 55 L78 95 L62 95 L62 130 Z" fill="#346953"/>
+                        <path d="M108 130 L108 88 L90 88 L110 42 L130 88 L112 88 L112 130 Z" fill="#2c5443"/>
+                        <path d="M155 130 L155 100 L142 100 L157 65 L172 100 L159 100 L159 130 Z" fill="#46856b"/>
+                        <!-- Data card mock -->
+                        <rect x="200" y="28" width="190" height="100" rx="12" fill="#ffffff" stroke="#c3dfd1" stroke-width="1.5"/>
+                        <rect x="216" y="44" width="72" height="10" rx="5" fill="#e1efe7"/>
+                        <rect x="216" y="64" width="158" height="8" rx="4" fill="#edf1ef"/>
+                        <rect x="216" y="80" width="132" height="8" rx="4" fill="#edf1ef"/>
+                        <rect x="216" y="96" width="148" height="8" rx="4" fill="#edf1ef"/>
+                        <!-- Chart bars -->
+                        <rect x="330" y="48" width="12" height="36" rx="3" fill="#9bc4b3"/>
+                        <rect x="348" y="60" width="12" height="24" rx="3" fill="#6ba48d"/>
+                        <rect x="366" y="40" width="12" height="44" rx="3" fill="#346953"/>
+                        <!-- Accent leaf -->
+                        <path d="M188 70 C188 70 168 55 175 40 C190 42 198 58 188 70 Z" fill="#6ba48d" opacity="0.85"/>
+                    </svg>
+                </div>
             </div>
             
             <!-- Right: Login Box -->
             <div class="flex items-center justify-center">
-                <div class="w-full max-w-md bg-white rounded-lg shadow-card border border-neutral-200 p-8">
+                <div class="w-full max-w-md bg-white rounded-lg shadow-lg shadow-slate-200/60 border border-gray-100 p-8">
                     <div class="text-center mb-8">
                         <h3 class="text-xl font-bold text-neutral-900">Masuk ke Sistem</h3>
                         <p class="text-sm text-neutral-500 mt-2">Gunakan NIP dan kata sandi yang telah terdaftar.</p>
                     </div>
                     
                     <?php if (isset($_SESSION['login_error'])): ?>
-                        <div class="mb-6 p-4 bg-error-50 border-l-4 border-error-600 text-error-800 text-sm font-medium">
-                            <?= e($_SESSION['login_error']) ?>
+                        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 shrink-0 mt-0.5"></i>
+                            <p class="text-red-700 text-sm"><?= e($_SESSION['login_error']) ?></p>
                         </div>
                         <?php unset($_SESSION['login_error']); ?>
                     <?php endif; ?>
@@ -128,25 +158,25 @@ if (is_logged_in()) {
                         <div>
                             <label for="nip" class="block text-sm font-bold text-neutral-700 mb-1.5">Nomor Induk Pegawai (NIP)</label>
                             <input type="text" id="nip" name="nip" required autocomplete="username" 
-                                class="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-colors">
+                                class="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600 focus:outline-none transition-all duration-150">
                         </div>
                         
                         <div>
                             <label for="password" class="block text-sm font-bold text-neutral-700 mb-1.5">Kata Sandi</label>
                             <input type="password" id="password" name="password" required autocomplete="current-password" 
-                                class="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:bg-white focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none transition-colors">
+                                class="w-full px-4 py-2.5 bg-neutral-50 border border-neutral-300 rounded-md text-neutral-900 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600 focus:outline-none transition-all duration-150">
                         </div>
                         
                         <div class="pt-2">
                             <button type="submit" 
-                                class="w-full bg-primary-700 hover:bg-primary-800 text-white font-bold py-3 px-4 rounded-md transition-colors text-sm text-center">
+                                class="w-full bg-primary-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-md transition-all duration-150 text-sm text-center">
                                 Masuk Aplikasi
                             </button>
                         </div>
                     </form>
                     
                     <div class="mt-6 text-center text-xs text-neutral-500 border-t border-neutral-100 pt-6">
-                        Lupa kata sandi? Silakan hubungi Administrator Sub Bagian TU.
+                        <span class="hover:underline hover:text-emerald-700 transition-colors cursor-default">Lupa kata sandi?</span> Silakan hubungi Administrator Sub Bagian TU.
                     </div>
                 </div>
             </div>
