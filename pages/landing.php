@@ -75,7 +75,7 @@ if (is_logged_in()) {
         <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative z-10">
             
             <!-- Left: Info Sistem -->
-            <div class="flex flex-col justify-center">
+            <div class="flex flex-col justify-center pb-12 sm:pb-14 lg:pb-16">
                 <div class="mb-4">
                     <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold tracking-wider rounded-sm border border-emerald-200">PORTAL INTERNAL</span>
                 </div>
@@ -109,30 +109,6 @@ if (is_logged_in()) {
                             <p class="text-xs text-neutral-500 mt-0.5">Penarikan laporan rekapitulasi bulanan secara instan.</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Ilustrasi SVG flat bertema forestry/data -->
-                <div class="mt-10 max-w-md hidden sm:block" aria-hidden="true">
-                    <svg viewBox="0 0 420 160" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
-                        <!-- Soft ground -->
-                        <ellipse cx="210" cy="142" rx="180" ry="12" fill="#e1efe7"/>
-                        <!-- Trees -->
-                        <path d="M58 130 L58 95 L42 95 L60 55 L78 95 L62 95 L62 130 Z" fill="#346953"/>
-                        <path d="M108 130 L108 88 L90 88 L110 42 L130 88 L112 88 L112 130 Z" fill="#2c5443"/>
-                        <path d="M155 130 L155 100 L142 100 L157 65 L172 100 L159 100 L159 130 Z" fill="#46856b"/>
-                        <!-- Data card mock -->
-                        <rect x="200" y="28" width="190" height="100" rx="12" fill="#ffffff" stroke="#c3dfd1" stroke-width="1.5"/>
-                        <rect x="216" y="44" width="72" height="10" rx="5" fill="#e1efe7"/>
-                        <rect x="216" y="64" width="158" height="8" rx="4" fill="#edf1ef"/>
-                        <rect x="216" y="80" width="132" height="8" rx="4" fill="#edf1ef"/>
-                        <rect x="216" y="96" width="148" height="8" rx="4" fill="#edf1ef"/>
-                        <!-- Chart bars -->
-                        <rect x="330" y="48" width="12" height="36" rx="3" fill="#9bc4b3"/>
-                        <rect x="348" y="60" width="12" height="24" rx="3" fill="#6ba48d"/>
-                        <rect x="366" y="40" width="12" height="44" rx="3" fill="#346953"/>
-                        <!-- Accent leaf -->
-                        <path d="M188 70 C188 70 168 55 175 40 C190 42 198 58 188 70 Z" fill="#6ba48d" opacity="0.85"/>
-                    </svg>
                 </div>
             </div>
             
