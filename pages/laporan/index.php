@@ -88,7 +88,7 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 shadow-sm transition-colors">
                 <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Download PDF
             </button>
         </form>
