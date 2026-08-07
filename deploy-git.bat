@@ -10,8 +10,9 @@ set SERVER_PORT=2222
 set "REMOTE_DIR=C:\laragon\www\sigaluh2"
 set BRANCH=main
 
-:: PATH tambahan di server (Git + PHP Laragon) — tanpa spasi di path
-set "REMOTE_PATH_ADDITION=C:\laragon\bin\git\bin;C:\laragon\bin\git\cmd;C:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64;C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64;D:\laragon\bin\php\php-8.3.6-nts-Win32-vs16-x64;D:\laragon\bin\php\php-8.1.10-Win32-vs16-x64"
+:: Path penuh di server (hindari set PATH=%%PATH%% yang rusak via SSH Windows)
+set "REMOTE_GIT=C:\laragon\bin\git\cmd\git.exe"
+set "REMOTE_PHP=C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe"
 
 echo ======================================================
 echo MEMULAI DEPLOYMENT DENGAN GIT PULL DAN MIGRASI DB
@@ -22,7 +23,6 @@ echo [1/3] Mendorong perubahan lokal ke Repository...
 
 git add .
 
-:: Cek staged changes setelah git add
 set "NEED_COMMIT=0"
 for /f %%i in ('git diff --cached --name-only') do set "NEED_COMMIT=1"
 
@@ -47,13 +47,13 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: 2. Git Pull di Server via SSH
+:: 2. Git Pull di Server via SSH (cmd /c + path penuh, tanpa set PATH)
 echo.
 echo [2/3] Menjalankan 'git pull' di server...
 echo *(Jika diminta password SSH, masukkan password akun server)*
 echo.
 
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "set PATH=%%PATH%%;%REMOTE_PATH_ADDITION% && cd /d %REMOTE_DIR% && git pull origin %BRANCH%"
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cmd /c cd /d %REMOTE_DIR% && %REMOTE_GIT% pull origin %BRANCH%"
 
 if errorlevel 1 (
     echo.
@@ -66,7 +66,7 @@ if errorlevel 1 (
 echo.
 echo [3/3] Menjalankan migrasi database di server...
 
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "set PATH=%%PATH%%;%REMOTE_PATH_ADDITION% && cd /d %REMOTE_DIR% && php migrate.php"
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cmd /c cd /d %REMOTE_DIR% && %REMOTE_PHP% migrate.php"
 
 if errorlevel 1 (
     echo.
