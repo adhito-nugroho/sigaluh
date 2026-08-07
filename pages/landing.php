@@ -66,7 +66,7 @@ if (is_logged_in()) {
     </header>
 
     <!-- ─── MAIN CONTENT ───────────────────────────────────────── -->
-    <main class="flex-grow flex items-center justify-center p-6 pb-16 relative overflow-hidden">
+    <main class="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
         
         <!-- Ornamen background + pattern titik halus -->
         <div class="absolute top-0 right-0 w-1/3 h-full bg-primary-50/50 -skew-x-12 transform origin-top translate-x-20 z-0 hidden lg:block"></div>
@@ -75,7 +75,7 @@ if (is_logged_in()) {
         <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 relative z-10 lg:items-start">
             
             <!-- Left: Info Sistem -->
-            <div class="flex flex-col justify-center pb-12 sm:pb-14 lg:pb-16">
+            <div class="flex flex-col justify-center">
                 <div class="mb-4">
                     <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold tracking-wider rounded-sm border border-emerald-200">PORTAL INTERNAL</span>
                 </div>
@@ -161,7 +161,7 @@ if (is_logged_in()) {
     </main>
 
     <!-- ─── FOOTER ─────────────────────────────────────────────── -->
-    <footer class="bg-neutral-800 text-neutral-400 py-8 border-t border-gray-300/20">
+    <footer class="bg-neutral-800 text-neutral-400 py-6 border-t border-gray-300/20">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-xs">
             <p>&copy; <?= date('Y') ?> Cabang Dinas Kehutanan Wilayah Nganjuk.</p>
             <p class="mt-2 md:mt-0">Dinas Kehutanan Provinsi Jawa Timur.</p>
