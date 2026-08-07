@@ -10,7 +10,7 @@ set SERVER_PORT=2222
 set "REMOTE_DIR=C:\laragon\www\sigaluh2"
 set BRANCH=main
 
-:: Path penuh di server (hindari set PATH=%%PATH%% yang rusak via SSH Windows)
+:: Path penuh di server (SSH Windows PATH sering kosong/minimal)
 set "REMOTE_GIT=C:\laragon\bin\git\cmd\git.exe"
 set "REMOTE_PHP=C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe"
 
@@ -47,13 +47,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: 2. Git Pull di Server via SSH (cmd /c + path penuh, tanpa set PATH)
+:: 2. Git Pull di Server via SSH
+:: Shell remote sudah cmd — jangan bungkus cmd /c lagi (PATH SSH tanpa System32)
 echo.
 echo [2/3] Menjalankan 'git pull' di server...
 echo *(Jika diminta password SSH, masukkan password akun server)*
 echo.
 
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cmd /c cd /d %REMOTE_DIR% && %REMOTE_GIT% pull origin %BRANCH%"
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && %REMOTE_GIT% pull origin %BRANCH%"
 
 if errorlevel 1 (
     echo.
@@ -66,7 +67,7 @@ if errorlevel 1 (
 echo.
 echo [3/3] Menjalankan migrasi database di server...
 
-ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cmd /c cd /d %REMOTE_DIR% && %REMOTE_PHP% migrate.php"
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && %REMOTE_PHP% migrate.php"
 
 if errorlevel 1 (
     echo.
