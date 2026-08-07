@@ -12,6 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <title>SI GALUH — Sistem Informasi Kegiatan Penyuluh Kehutanan</title>
     <meta name="description" content="SI GALUH - Sistem Informasi Kegiatan Penyuluh Kehutanan CDK Wilayah Nganjuk. Kelola, pantau, dan laporkan kegiatan penyuluhan kehutanan secara digital.">
     <meta name="theme-color" content="#166534">
+    <link rel="icon" type="image/x-icon" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/favicon.ico">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,34 +22,36 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
-                        display: ['Outfit', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: { 
-                            50: '#f2f8f5', 100: '#e1efe7', 200: '#c3dfd1', 300: '#9bc4b3', 400: '#6ba48d', 
-                            500: '#46856b', 600: '#346953', 700: '#2c5443', 800: '#254437', 900: '#1f382d', 950: '#112019' 
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+                            display: ['Outfit', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
                         },
-                        neutral: { 
-                            50: '#f6f8f7', 100: '#edf1ef', 200: '#dde3e0', 300: '#c5cec9', 400: '#a7b4af', 
-                            500: '#8c9a94', 600: '#707e78', 700: '#5a6661', 800: '#4a534f', 900: '#3d4441', 950: '#232826' 
+                        colors: {
+                            primary: { 
+                                50: '#f2f8f5', 100: '#e1efe7', 200: '#c3dfd1', 300: '#9bc4b3', 400: '#6ba48d', 
+                                500: '#46856b', 600: '#346953', 700: '#2c5443', 800: '#254437', 900: '#1f382d', 950: '#112019' 
+                            },
+                            neutral: { 
+                                50: '#f6f8f7', 100: '#edf1ef', 200: '#dde3e0', 300: '#c5cec9', 400: '#a7b4af', 
+                                500: '#8c9a94', 600: '#707e78', 700: '#5a6661', 800: '#4a534f', 900: '#3d4441', 950: '#232826' 
+                            },
+                            accent: { 
+                                50: '#fffbf0', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 
+                                500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f', 950: '#451a03' 
+                            },
+                            success: { 100: '#dcfce7', 500: '#22c55e', 700: '#15803d' },
+                            warning: { 100: '#ffedd5', 500: '#f97316', 700: '#c2410c' },
+                            error:   { 100: '#fee2e2', 500: '#ef4444', 700: '#b91c1c' },
+                            info:    { 100: '#e0f2fe', 500: '#0ea5e9', 700: '#0369a1' }
                         },
-                        accent: { 
-                            50: '#fffbf0', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 
-                            500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f', 950: '#451a03' 
-                        },
-                        success: { 100: '#dcfce7', 500: '#22c55e', 700: '#15803d' },
-                        warning: { 100: '#ffedd5', 500: '#f97316', 700: '#c2410c' },
-                        error:   { 100: '#fee2e2', 500: '#ef4444', 700: '#b91c1c' },
-                        info:    { 100: '#e0f2fe', 500: '#0ea5e9', 700: '#0369a1' }
-                    },
-                    boxShadow: {
-                        'card': '0 1px 2px 0 rgba(0,0,0,0.05)',
-                        'elevated': '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+                        boxShadow: {
+                            'card': '0 1px 2px 0 rgba(0,0,0,0.05)',
+                            'elevated': '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+                        }
                     }
                 }
             }
