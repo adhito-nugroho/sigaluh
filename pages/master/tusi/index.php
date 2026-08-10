@@ -324,7 +324,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 <!-- MODAL FORMS (Rendered at top z-index layer) -->
 
 <!-- Modal 1: Form Seksi TUSI (Kelola / Tambah / Edit) -->
-<div id="modalSeksi" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div id="modalSeksi" style="display:none;" class="fixed inset-0 z-[9999] overflow-y-auto bg-neutral-900/60 backdrop-blur-sm items-center justify-center p-4">
     <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
         <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
             <h3 id="modalSeksiTitle" class="text-base font-bold text-neutral-900">Kelola Seksi TUSI</h3>
@@ -398,7 +398,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 </div>
 
 <!-- Modal 2: Form Uraian Tugas TUSI (Tambah / Edit) -->
-<div id="modalKegiatan" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div id="modalKegiatan" style="display:none;" class="fixed inset-0 z-[9999] overflow-y-auto bg-neutral-900/60 backdrop-blur-sm items-center justify-center p-4">
     <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
         <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
             <h3 id="modalKegiatanTitle" class="text-base font-bold text-neutral-900">Tambah Kegiatan TUSI</h3>
@@ -454,7 +454,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 </div>
 
 <!-- Modal 3: Konfirmasi Hapus Data -->
-<div id="modalDelete" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div id="modalDelete" style="display:none;" class="fixed inset-0 z-[9999] overflow-y-auto bg-neutral-900/60 backdrop-blur-sm items-center justify-center p-4">
     <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
         <div class="p-6 text-center">
             <div class="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
@@ -484,127 +484,104 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 
 <!-- JavaScript Component Controllers -->
 <script>
-(function() {
-    function showModal(id) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            if (modal.parentNode !== document.body) {
-                document.body.appendChild(modal);
-            }
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+// ── Modal Utility ──────────────────────────────────────
+function tusiShowModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.style.display = 'flex';
     }
-
-    function hideModal(id) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
+}
+function tusiHideModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.style.display = 'none';
     }
+}
 
-    window.handleEditSeksi = function(btn) {
-        const id = btn.getAttribute('data-id');
-        const kode = btn.getAttribute('data-kode');
-        const nama = btn.getAttribute('data-nama');
-        window.openModalSeksiEdit(id, kode, nama);
-    };
+// ── Kelola Seksi ──────────────────────────────────────
+function openModalSeksiCreate() {
+    document.getElementById('modalSeksiTitle').innerText = 'Kelola Seksi TUSI';
+    document.getElementById('formSeksiHeaderTitle').innerText = 'Tambah Seksi Baru';
+    document.getElementById('modalSeksiAction').value = 'create_seksi';
+    document.getElementById('modalSeksiId').value = '';
+    document.getElementById('modalSeksiKode').value = '';
+    document.getElementById('modalSeksiNama').value = '';
+    tusiShowModal('modalSeksi');
+}
+function openModalSeksiEdit(id, kode, nama) {
+    document.getElementById('modalSeksiTitle').innerText = 'Edit Seksi TUSI';
+    document.getElementById('formSeksiHeaderTitle').innerText = 'Edit Seksi [' + kode + ']';
+    document.getElementById('modalSeksiAction').value = 'update_seksi';
+    document.getElementById('modalSeksiId').value = id;
+    document.getElementById('modalSeksiKode').value = kode;
+    document.getElementById('modalSeksiNama').value = nama;
+    tusiShowModal('modalSeksi');
+}
+function closeModalSeksi() {
+    tusiHideModal('modalSeksi');
+}
+function handleEditSeksi(btn) {
+    openModalSeksiEdit(
+        btn.getAttribute('data-id'),
+        btn.getAttribute('data-kode'),
+        btn.getAttribute('data-nama')
+    );
+}
 
-    window.handleEditKegiatan = function(btn) {
-        const id = btn.getAttribute('data-id');
-        const tusiId = btn.getAttribute('data-tusi-id');
-        const uraian = btn.getAttribute('data-uraian');
-        const substansi = btn.getAttribute('data-substansi');
-        const aktif = btn.getAttribute('data-aktif');
-        window.openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif);
-    };
+// ── Tambah / Edit Kegiatan ─────────────────────────────
+function openModalKegiatanCreate() {
+    document.getElementById('modalKegiatanTitle').innerText = 'Tambah Kegiatan TUSI Baru';
+    document.getElementById('modalKegiatanAction').value = 'create_kegiatan';
+    document.getElementById('modalKegiatanId').value = '';
+    document.getElementById('modalKegiatanUraian').value = '';
+    document.getElementById('modalKegiatanSubstansi').value = '';
+    document.getElementById('modalKegiatanAktif').checked = true;
+    tusiShowModal('modalKegiatan');
+}
+function openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif) {
+    document.getElementById('modalKegiatanTitle').innerText = 'Edit Kegiatan TUSI';
+    document.getElementById('modalKegiatanAction').value = 'update_kegiatan';
+    document.getElementById('modalKegiatanId').value = id;
+    document.getElementById('modalKegiatanTusiId').value = tusiId;
+    document.getElementById('modalKegiatanUraian').value = uraian;
+    document.getElementById('modalKegiatanSubstansi').value = substansi;
+    document.getElementById('modalKegiatanAktif').checked = (parseInt(aktif) === 1);
+    tusiShowModal('modalKegiatan');
+}
+function closeModalKegiatan() {
+    tusiHideModal('modalKegiatan');
+}
+function handleEditKegiatan(btn) {
+    openModalKegiatanEdit(
+        btn.getAttribute('data-id'),
+        btn.getAttribute('data-tusi-id'),
+        btn.getAttribute('data-uraian'),
+        btn.getAttribute('data-substansi'),
+        btn.getAttribute('data-aktif')
+    );
+}
 
-    window.handleDeleteData = function(btn) {
-        const action = btn.getAttribute('data-action');
-        const id = btn.getAttribute('data-id');
-        const name = btn.getAttribute('data-name');
-        window.openModalDelete(action, id, name);
-    };
-
-    window.openModalSeksiCreate = function() {
-        const titleEl = document.getElementById('modalSeksiTitle');
-        const headerTitleEl = document.getElementById('formSeksiHeaderTitle');
-        if (titleEl) titleEl.innerText = 'Kelola Seksi TUSI';
-        if (headerTitleEl) headerTitleEl.innerText = 'Tambah Seksi Baru';
-        document.getElementById('modalSeksiAction').value = 'create_seksi';
-        document.getElementById('modalSeksiId').value = '';
-        document.getElementById('modalSeksiKode').value = '';
-        document.getElementById('modalSeksiNama').value = '';
-        showModal('modalSeksi');
-    };
-
-    window.openModalSeksiEdit = function(id, kode, nama) {
-        const titleEl = document.getElementById('modalSeksiTitle');
-        const headerTitleEl = document.getElementById('formSeksiHeaderTitle');
-        if (titleEl) titleEl.innerText = 'Edit Seksi TUSI';
-        if (headerTitleEl) headerTitleEl.innerText = 'Edit Data Seksi [' + kode + ']';
-        document.getElementById('modalSeksiAction').value = 'update_seksi';
-        document.getElementById('modalSeksiId').value = id;
-        document.getElementById('modalSeksiKode').value = kode;
-        document.getElementById('modalSeksiNama').value = nama;
-        showModal('modalSeksi');
-    };
-
-    window.closeModalSeksi = function() {
-        hideModal('modalSeksi');
-    };
-
-    window.openModalKegiatanCreate = function() {
-        const titleEl = document.getElementById('modalKegiatanTitle');
-        if (titleEl) titleEl.innerText = 'Tambah Kegiatan TUSI Baru';
-        document.getElementById('modalKegiatanAction').value = 'create_kegiatan';
-        document.getElementById('modalKegiatanId').value = '';
-        document.getElementById('modalKegiatanUraian').value = '';
-        document.getElementById('modalKegiatanSubstansi').value = '';
-        document.getElementById('modalKegiatanAktif').checked = true;
-        showModal('modalKegiatan');
-    };
-
-    window.openModalKegiatanEdit = function(id, tusiId, uraian, substansi, aktif) {
-        const titleEl = document.getElementById('modalKegiatanTitle');
-        if (titleEl) titleEl.innerText = 'Edit Kegiatan TUSI';
-        document.getElementById('modalKegiatanAction').value = 'update_kegiatan';
-        document.getElementById('modalKegiatanId').value = id;
-        document.getElementById('modalKegiatanTusiId').value = tusiId;
-        document.getElementById('modalKegiatanUraian').value = uraian;
-        document.getElementById('modalKegiatanSubstansi').value = substansi;
-        document.getElementById('modalKegiatanAktif').checked = (parseInt(aktif) === 1);
-        showModal('modalKegiatan');
-    };
-
-    window.closeModalKegiatan = function() {
-        hideModal('modalKegiatan');
-    };
-
-    window.openModalDelete = function(action, id, itemName) {
-        document.getElementById('modalDeleteAction').value = action;
-        document.getElementById('modalDeleteId').value = id;
-        
-        let msg = "Apakah Anda yakin ingin menghapus data <strong>\"" + itemName + "\"</strong>?";
-        if (action === 'delete_seksi') {
-            msg += "<br><span class='text-xs text-error-600 block mt-2 font-medium'>Catatan: Seksi TUSI hanya bisa dihapus jika tidak memiliki rincian Uraian Tugas.</span>";
-        } else if (action === 'delete_kegiatan') {
-            msg += "<br><span class='text-xs text-error-600 block mt-2 font-medium'>Catatan: Data tidak bisa dihapus jika sudah digunakan pada Laporan Kegiatan penyuluh.</span>";
-        }
-        
-        document.getElementById('modalDeleteMessage').innerHTML = msg;
-        showModal('modalDelete');
-    };
-
-    window.closeModalDelete = function() {
-        hideModal('modalDelete');
-    };
-})();
-
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+// ── Hapus ──────────────────────────────────────────────
+function openModalDelete(action, id, itemName) {
+    document.getElementById('modalDeleteAction').value = action;
+    document.getElementById('modalDeleteId').value = id;
+    var msg = 'Apakah Anda yakin ingin menghapus data <strong>"' + itemName + '"</strong>?';
+    if (action === 'delete_seksi') {
+        msg += '<br><span style="font-size:11px;color:#dc2626;">Seksi hanya bisa dihapus jika tidak memiliki Uraian Tugas.</span>';
+    } else if (action === 'delete_kegiatan') {
+        msg += '<br><span style="font-size:11px;color:#dc2626;">Data tidak bisa dihapus jika sudah digunakan pada Laporan Kegiatan.</span>';
     }
-});
+    document.getElementById('modalDeleteMessage').innerHTML = msg;
+    tusiShowModal('modalDelete');
+}
+function closeModalDelete() {
+    tusiHideModal('modalDelete');
+}
+function handleDeleteData(btn) {
+    openModalDelete(
+        btn.getAttribute('data-action'),
+        btn.getAttribute('data-id'),
+        btn.getAttribute('data-name')
+    );
+}
 </script>

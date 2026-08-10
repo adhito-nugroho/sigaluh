@@ -99,7 +99,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     </style>
 </head>
-<body class="bg-neutral-100 text-neutral-800 font-sans antialiased flex h-screen overflow-hidden">
+<body class="bg-neutral-100 text-neutral-800 font-sans antialiased flex h-screen">
     
     <!-- Mobile overlay -->
     <div id="mobile-overlay" class="fixed inset-0 bg-neutral-900/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
