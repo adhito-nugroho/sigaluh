@@ -10,9 +10,37 @@ verify_csrf_token($_POST['csrf_token'] ?? '');
 
 global $pdo;
 
-$role = $_SESSION['user_role'] ?? '';
+$role    = $_SESSION['user_role'] ?? '';
 $user_id = $_SESSION['user_id'] ?? 0;
+$action  = $_POST['action'] ?? 'save_draft';
 
+// ── HAPUS KEGIATAN (khusus admin) ──────────────────────────────────────────
+if ($action === 'delete') {
+    if ($role !== 'admin') {
+        die("Akses ditolak.");
+    }
+
+    $id = (int)($_POST['id'] ?? 0);
+    if (!$id) {
+        header('Location: ' . BASE_URL . '/index.php?page=kegiatan&error=invalid_id');
+        exit;
+    }
+
+    // Pastikan record ada sebelum dihapus
+    $stmt_check = $pdo->prepare("SELECT id FROM kegiatan WHERE id = ?");
+    $stmt_check->execute([$id]);
+    if (!$stmt_check->fetch()) {
+        header('Location: ' . BASE_URL . '/index.php?page=kegiatan&error=not_found');
+        exit;
+    }
+
+    $pdo->prepare("DELETE FROM kegiatan WHERE id = ?")->execute([$id]);
+
+    header('Location: ' . BASE_URL . '/index.php?page=kegiatan&success=deleted');
+    exit;
+}
+
+// ── SIMPAN / UPDATE KEGIATAN (khusus penyuluh) ────────────────────────────
 if ($role !== 'penyuluh') {
     die("Hanya penyuluh yang dapat menyimpan kegiatan.");
 }

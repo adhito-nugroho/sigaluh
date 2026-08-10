@@ -97,6 +97,20 @@ function get_status_badge($status) {
 }
 ?>
 
+<?php if (!empty($_GET['success']) && $_GET['success'] === 'deleted'): ?>
+<div class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 text-sm font-medium px-4 py-3 rounded-xl">
+    <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+    Kegiatan berhasil dihapus.
+</div>
+<?php endif; ?>
+
+<?php if (!empty($_GET['error'])): ?>
+<div class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-xl">
+    <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+    <?= $_GET['error'] === 'not_found' ? 'Kegiatan tidak ditemukan.' : 'Terjadi kesalahan.' ?>
+</div>
+<?php endif; ?>
+
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
         <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Pelaksanaan Kegiatan</h1>
@@ -266,6 +280,17 @@ function get_status_badge($status) {
                                     <i data-lucide="check-circle" class="w-4 h-4"></i>
                                 </a>
                                 <?php endif; ?>
+
+                                <?php if ($role === 'admin'): ?>
+                                <button type="button"
+                                    data-id="<?= $row['id'] ?>"
+                                    data-uraian="<?= htmlspecialchars($row['uraian_kegiatan'], ENT_QUOTES, 'UTF-8') ?>"
+                                    onclick="confirmDelete(this)"
+                                    class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 inline-flex items-center justify-center border border-red-200/60 transition-all"
+                                    title="Hapus">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -297,3 +322,51 @@ function get_status_badge($status) {
     </div>
     <?php endif; ?>
 </div>
+
+<!-- Modal Konfirmasi Hapus (hanya admin) -->
+<?php if ($role === 'admin'): ?>
+<div id="modal-hapus" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-neutral-900">Hapus Kegiatan</h3>
+                <p class="text-xs text-neutral-500 mt-0.5">Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+        </div>
+        <p class="text-sm text-neutral-600 mb-1">Yakin ingin menghapus kegiatan:</p>
+        <p id="modal-uraian" class="text-sm font-semibold text-neutral-900 bg-neutral-50 rounded-lg px-3 py-2 mb-5 border border-neutral-200 line-clamp-2"></p>
+        <div class="flex gap-2">
+            <button type="button" onclick="tutupModal()"
+                class="flex-1 py-2 px-4 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors">
+                Batal
+            </button>
+            <form method="POST" action="<?= BASE_URL ?>/index.php?page=kegiatan/process" class="flex-1">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="id" id="modal-id" value="">
+                <button type="submit"
+                    class="w-full py-2 px-4 text-sm font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors active:scale-[0.98]">
+                    Hapus
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(btn) {
+    document.getElementById('modal-id').value = btn.dataset.id;
+    document.getElementById('modal-uraian').textContent = btn.dataset.uraian || '(tanpa uraian)';
+    document.getElementById('modal-hapus').classList.remove('hidden');
+}
+function tutupModal() {
+    document.getElementById('modal-hapus').classList.add('hidden');
+}
+document.getElementById('modal-hapus').addEventListener('click', function(e) {
+    if (e.target === this) tutupModal();
+});
+</script>
+<?php endif; ?>
