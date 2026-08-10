@@ -251,10 +251,22 @@ if ($active_tusi_id > 0) {
                 <div>
                     <div class="flex items-center gap-2">
                         <h2 class="text-lg font-bold text-neutral-900">[<?= e($active_tusi['kode']) ?>] <?= e($active_tusi['nama']) ?></h2>
-                        <button onclick="openModalSeksiEdit(<?= $active_tusi['id'] ?>, '<?= e(addslashes($active_tusi['kode'])) ?>', '<?= e(addslashes($active_tusi['nama'])) ?>')" class="p-1 rounded-lg text-neutral-400 hover:text-primary-700 hover:bg-neutral-100 transition-colors" title="Edit Seksi TUSI">
+                        <button type="button" 
+                                data-id="<?= $active_tusi['id'] ?>"
+                                data-kode="<?= e($active_tusi['kode']) ?>"
+                                data-nama="<?= e($active_tusi['nama']) ?>"
+                                onclick="handleEditSeksi(this)" 
+                                class="p-1 rounded-lg text-neutral-400 hover:text-primary-700 hover:bg-neutral-100 transition-colors" 
+                                title="Edit Seksi TUSI">
                             <i data-lucide="edit-3" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="openModalDelete('delete_seksi', <?= $active_tusi['id'] ?>, '[<?= e(addslashes($active_tusi['kode'])) ?>] <?= e(addslashes($active_tusi['nama'])) ?>')" class="p-1 rounded-lg text-neutral-400 hover:text-error-600 hover:bg-neutral-100 transition-colors" title="Hapus Seksi TUSI">
+                        <button type="button" 
+                                data-action="delete_seksi"
+                                data-id="<?= $active_tusi['id'] ?>"
+                                data-name="[<?= e($active_tusi['kode']) ?>] <?= e($active_tusi['nama']) ?>"
+                                onclick="handleDeleteData(this)" 
+                                class="p-1 rounded-lg text-neutral-400 hover:text-error-600 hover:bg-neutral-100 transition-colors" 
+                                title="Hapus Seksi TUSI">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -351,12 +363,26 @@ if ($active_tusi_id > 0) {
                                         </form>
 
                                         <!-- Edit Button -->
-                                        <button onclick="openModalKegiatanEdit(<?= $keg['id'] ?>, <?= $keg['tusi_id'] ?>, '<?= e(addslashes($keg['uraian_tugas'])) ?>', '<?= e(addslashes($keg['substansi_materi'] ?? '')) ?>', <?= $keg['aktif'] ?>)" class="p-1.5 rounded-lg text-neutral-500 hover:text-primary-700 hover:bg-neutral-100 transition-colors" title="Edit Uraian Tugas">
+                                        <button type="button"
+                                                data-id="<?= $keg['id'] ?>"
+                                                data-tusi-id="<?= $keg['tusi_id'] ?>"
+                                                data-uraian="<?= e($keg['uraian_tugas']) ?>"
+                                                data-substansi="<?= e($keg['substansi_materi'] ?? '') ?>"
+                                                data-aktif="<?= $keg['aktif'] ?>"
+                                                onclick="handleEditKegiatan(this)" 
+                                                class="p-1.5 rounded-lg text-neutral-500 hover:text-primary-700 hover:bg-neutral-100 transition-colors" 
+                                                title="Edit Uraian Tugas">
                                             <i data-lucide="edit" class="w-4 h-4"></i>
                                         </button>
 
                                         <!-- Delete Button -->
-                                        <button onclick="openModalDelete('delete_kegiatan', <?= $keg['id'] ?>, '<?= e(addslashes($keg['uraian_tugas'])) ?>')" class="p-1.5 rounded-lg text-neutral-500 hover:text-error-600 hover:bg-neutral-100 transition-colors" title="Hapus Uraian Tugas">
+                                        <button type="button"
+                                                data-action="delete_kegiatan"
+                                                data-id="<?= $keg['id'] ?>"
+                                                data-name="<?= e($keg['uraian_tugas']) ?>"
+                                                onclick="handleDeleteData(this)" 
+                                                class="p-1.5 rounded-lg text-neutral-500 hover:text-error-600 hover:bg-neutral-100 transition-colors" 
+                                                title="Hapus Uraian Tugas">
                                             <i data-lucide="trash" class="w-4 h-4"></i>
                                         </button>
                                     </div>
@@ -507,6 +533,29 @@ if ($active_tusi_id > 0) {
 
 <!-- JavaScript Component Controllers -->
 <script>
+function handleEditSeksi(btn) {
+    const id = btn.getAttribute('data-id');
+    const kode = btn.getAttribute('data-kode');
+    const nama = btn.getAttribute('data-nama');
+    openModalSeksiEdit(id, kode, nama);
+}
+
+function handleEditKegiatan(btn) {
+    const id = btn.getAttribute('data-id');
+    const tusiId = btn.getAttribute('data-tusi-id');
+    const uraian = btn.getAttribute('data-uraian');
+    const substansi = btn.getAttribute('data-substansi');
+    const aktif = btn.getAttribute('data-aktif');
+    openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif);
+}
+
+function handleDeleteData(btn) {
+    const action = btn.getAttribute('data-action');
+    const id = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name');
+    openModalDelete(action, id, name);
+}
+
 function openModalSeksiCreate() {
     document.getElementById('modalSeksiTitle').innerText = 'Tambah Seksi TUSI Baru';
     document.getElementById('modalSeksiAction').value = 'create_seksi';
