@@ -33,6 +33,7 @@ $aktivitas_harian_list = $pdo->query("SELECT id, nama_aktivitas, satuan, wpt_men
 $is_edit = $kegiatan !== null;
 $selected_provinsi_id = $is_edit ? $kegiatan['provinsi_id'] : null;
 
+// Selalu default ke Jawa Timur
 if (!$selected_provinsi_id) {
     foreach ($provinsi_list as $p) {
         if (strpos(strtolower($p['nama']), 'jawa timur') !== false) {
@@ -69,9 +70,9 @@ if (!$selected_provinsi_id) {
             <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
         </div>
         <div class="p-6" x-show="open">
-            <div class="mb-6 p-3.5 bg-primary-50 border border-primary-100 rounded-xl flex items-center text-xs font-semibold text-primary-800">
+            <div id="wilayah_info_banner" class="mb-6 p-3.5 bg-primary-50 border border-primary-100 rounded-xl flex items-center text-xs font-semibold text-primary-800">
                 <i data-lucide="info" class="w-4 h-4 mr-2 text-primary-600 flex-shrink-0"></i>
-                <span>Anda dapat memilih seluruh wilayah kegiatan secara bebas. Jika Anda memilih KTH dari database, pilihan wilayah akan terisi secara otomatis.</span>
+                <span id="wilayah_info_text">Pilih KTH dari database &rarr; lokasi &amp; sasaran akan terisi otomatis dan wilayah terkunci.</span>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -120,7 +121,7 @@ if (!$selected_provinsi_id) {
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Kegiatan <span class="text-error-500">*</span></label>
                     <input type="date" name="tanggal" required value="<?= $is_edit ? $kegiatan['tanggal'] : date('Y-m-d') ?>"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none">
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
@@ -144,7 +145,6 @@ if (!$selected_provinsi_id) {
                             <option value="">-- Pilih KTH (Opsional) --</option>
                             <?php foreach($kth_list as $k): ?>
                                 <option value="<?= $k['id'] ?>"
-                                        data-provinsi="<?= $k['provinsi_id'] ?>"
                                         data-kabupaten="<?= $k['kabupaten_id'] ?>"
                                         data-kecamatan="<?= $k['kecamatan_id'] ?>"
                                         data-desa="<?= $k['desa_id'] ?>"
@@ -153,7 +153,7 @@ if (!$selected_provinsi_id) {
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="text-xs text-slate-400 mt-1">Pilih KTH → lokasi & sasaran akan terisi otomatis.</p>
+                        <p class="text-xs text-slate-400 mt-1">Pilih KTH &rarr; lokasi &amp; sasaran terisi otomatis dan wilayah terkunci.</p>
                     </div>
 
                     <!-- Mode Manual: text input -->
@@ -162,39 +162,37 @@ if (!$selected_provinsi_id) {
                             value="<?= e($is_edit ? ($kegiatan['kth_nama_manual'] ?? '') : '') ?>"
                             placeholder="Contoh: Balai Desa Nganjuk, Kantor Cabang, dll."
                             class="w-full px-4 py-2.5 border border-warning-200 bg-warning-50/40 rounded-xl focus:ring-4 focus:ring-amber-400/20 focus:border-warning-500 outline-none text-sm transition-all">
-                        <p class="text-xs text-slate-400 mt-1">Isi nama tempat/sasaran yang dikunjungi (bukan dari master KTH).</p>
+                        <p class="text-xs text-slate-400 mt-1">Isi nama tempat/sasaran. Pilih kabupaten, kecamatan, dan desa secara bebas di bawah.</p>
                     </div>
                 </div>
 
-                <!-- Cascading Wilayah -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi <span class="text-error-500">*</span></label>
-                    <select id="provinsi_id" name="provinsi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
-                        <option value="">-- Pilih Provinsi --</option>
-                        <?php foreach($provinsi_list as $p): ?>
-                            <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <!-- Provinsi: selalu Jawa Timur, hidden dari user -->
+                <input type="hidden" id="provinsi_id" name="provinsi_id" value="<?= $selected_provinsi_id ?>">
 
-                <div>
+                <!-- Kabupaten -->
+                <div id="wilayah_kab_wrap">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Kabupaten/Kota <span class="text-error-500">*</span></label>
-                    <select id="kabupaten_id" name="kabupaten_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
+                    <select id="kabupaten_id" name="kabupaten_id" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
                         <option value="">-- Pilih Kabupaten --</option>
-                        <!-- Diisi via AJAX -->
                     </select>
+                    <p id="wilayah_kab_hint" class="text-xs text-slate-400 mt-1 hidden">Kabupaten terisi otomatis dari KTH yang dipilih.</p>
                 </div>
 
-                <div>
+                <!-- Kecamatan -->
+                <div id="wilayah_kec_wrap">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Kecamatan <span class="text-error-500">*</span></label>
-                    <select id="kecamatan_id" name="kecamatan_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
+                    <select id="kecamatan_id" name="kecamatan_id" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
                         <option value="">-- Pilih Kecamatan --</option>
                     </select>
                 </div>
 
-                <div>
+                <!-- Desa -->
+                <div id="wilayah_desa_wrap">
                     <label class="block text-sm font-medium text-slate-700 mb-1">Desa/Kelurahan <span class="text-error-500">*</span></label>
-                    <select id="desa_id" name="desa_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
+                    <select id="desa_id" name="desa_id" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
                         <option value="">-- Pilih Desa --</option>
                     </select>
                 </div>
@@ -202,7 +200,8 @@ if (!$selected_provinsi_id) {
                 <!-- TUSI -->
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">TUSI <span class="text-error-500">*</span></label>
-                    <select id="tusi_id" name="tusi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
+                    <select id="tusi_id" name="tusi_id" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
                         <option value="">-- Pilih TUSI --</option>
                         <?php foreach($tusi_list as $t): ?>
                             <option value="<?= $t['id'] ?>" <?= ($is_edit && $kegiatan['tusi_id'] == $t['id']) ? 'selected' : '' ?>><?= e($t['nama']) ?></option>
@@ -212,7 +211,8 @@ if (!$selected_provinsi_id) {
 
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Kegiatan TUSI <span class="text-error-500">*</span></label>
-                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-white">
+                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
                         <option value="">-- Pilih Kegiatan --</option>
                     </select>
                 </div>
@@ -234,31 +234,31 @@ if (!$selected_provinsi_id) {
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">TUSI yang Dilaksanakan (Otomatis dari Master) <span class="text-error-500">*</span></label>
                 <textarea id="uraian_kegiatan" name="uraian_kegiatan" required rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none bg-slate-50/80"><?= $is_edit ? e($kegiatan['uraian_kegiatan']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-slate-50/80"><?= $is_edit ? e($kegiatan['uraian_kegiatan']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Substansi Materi (Template dapat diubah)</label>
                 <textarea id="substansi_materi" name="substansi_materi" rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['substansi_materi']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['substansi_materi']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Uraian Tugas / Aktivitas (Detail) <span class="text-error-500">*</span></label>
                 <textarea name="detail_kegiatan" required rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Sasaran / Peserta yang Hadir</label>
                     <textarea name="sasaran_hadir" rows="2"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['sasaran_hadir']) : '' ?></textarea>
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['sasaran_hadir']) : '' ?></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Detail Lokasi (Alamat spesifik)</label>
                     <textarea name="lokasi" rows="2"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['lokasi']) : '' ?></textarea>
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['lokasi']) : '' ?></textarea>
                 </div>
             </div>
 
@@ -278,25 +278,25 @@ if (!$selected_provinsi_id) {
             <div>
                 <label class="block text-sm font-medium text-neutral-700 mb-1">Penjelasan Hasil Pelaksanaan Kegiatan <span class="text-error-500">*</span></label>
                 <textarea name="pelaksanaan_kegiatan" required rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['pelaksanaan_kegiatan']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['pelaksanaan_kegiatan']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Kendala / Permasalahan</label>
                 <textarea name="permasalahan_kendala" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['permasalahan_kendala']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['permasalahan_kendala']) : '' ?></textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Solusi / Pemecahan Masalah</label>
                 <textarea name="solusi" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['solusi']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['solusi']) : '' ?></textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Kesimpulan & Saran</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Kesimpulan &amp; Saran</label>
                 <textarea name="kesimpulan_saran" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-primary outline-none"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
+                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
             </div>
 
         </div>
@@ -319,129 +319,154 @@ if (!$selected_provinsi_id) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const apiBase = '<?= BASE_URL ?>/api';
-    
-    // Elements
-    const provSelect = document.getElementById('provinsi_id');
-    const kabSelect = document.getElementById('kabupaten_id');
-    const kecSelect = document.getElementById('kecamatan_id');
+    const jatimId = '<?= $selected_provinsi_id ?>'; // ID Jawa Timur, selalu dari server
+
+    // Elements wilayah
+    const kabSelect  = document.getElementById('kabupaten_id');
+    const kecSelect  = document.getElementById('kecamatan_id');
     const desaSelect = document.getElementById('desa_id');
-    
-    const tusiSelect = document.getElementById('tusi_id');
-    const kegTusiSelect = document.getElementById('kegiatan_tusi_id');
-    const uraianInput = document.getElementById('uraian_kegiatan');
+
+    // Elements TUSI
+    const tusiSelect     = document.getElementById('tusi_id');
+    const kegTusiSelect  = document.getElementById('kegiatan_tusi_id');
+    const uraianInput    = document.getElementById('uraian_kegiatan');
     const substansiInput = document.getElementById('substansi_materi');
 
     // Data Edit (jika ada)
-    const initKab = <?= $is_edit ? (int)$kegiatan['kabupaten_id'] : 'null' ?>;
-    const initKec = <?= $is_edit ? (int)$kegiatan['kecamatan_id'] : 'null' ?>;
-    const initDesa = <?= $is_edit ? (int)$kegiatan['desa_id'] : 'null' ?>;
+    const initKab     = <?= $is_edit ? (int)$kegiatan['kabupaten_id'] : 'null' ?>;
+    const initKec     = <?= $is_edit ? (int)$kegiatan['kecamatan_id'] : 'null' ?>;
+    const initDesa    = <?= $is_edit ? (int)$kegiatan['desa_id'] : 'null' ?>;
     const initKegTusi = <?= $is_edit ? (int)$kegiatan['kegiatan_tusi_id'] : 'null' ?>;
+    const isEditWithKth = <?= ($is_edit && !empty($kegiatan['kth_id'])) ? 'true' : 'false' ?>;
 
     let tusiDataMap = {};
+    let currentMode = 'db'; // 'db' | 'manual'
 
-    function loadOptions(selectEl, url, placeholder, selectedValue = null, callback = null) {
-        selectEl.innerHTML = `<option value="">-- ${placeholder} --</option>`;
+    // Helper: load dropdown -----------------------------------------------
+    function loadOptions(selectEl, url, placeholder, selectedValue, callback) {
+        selectedValue = selectedValue || null;
+        callback = callback || null;
+        selectEl.innerHTML = '<option value="">-- ' + placeholder + ' --</option>';
         selectEl.disabled = true;
-        
         fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(item => {
-                    const opt = document.createElement('option');
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                data.forEach(function(item) {
+                    var opt = document.createElement('option');
                     opt.value = item.id;
                     opt.textContent = item.nama || item.uraian_tugas;
                     if (selectedValue && item.id == selectedValue) opt.selected = true;
                     selectEl.appendChild(opt);
                 });
                 selectEl.disabled = false;
-                if (typeof callback === 'function') {
-                    callback();
-                }
+                if (typeof callback === 'function') callback();
             })
-            .catch(err => console.error(err));
+            .catch(function(err) { console.error(err); });
     }
 
-    // Auto Fill Wilayah saat Pilih KTH
-    const kthSelect = document.getElementById('kth_id');
-    const sasaranInput = document.querySelector('textarea[name="sasaran_hadir"]');
+    // Helper: lock/unlock wilayah selects ----------------------------------
+    function setWilayahLocked(locked) {
+        kabSelect.disabled  = locked;
+        kecSelect.disabled  = locked;
+        desaSelect.disabled = locked;
+        var hint = document.getElementById('wilayah_kab_hint');
+        if (hint) hint.classList.toggle('hidden', !locked);
+    }
+
+    // Pre-load semua kabupaten Jawa Timur ----------------------------------
+    function preloadKabJatim(selectedKab, callback) {
+        if (!jatimId) return;
+        loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + jatimId, 'Pilih Kabupaten', selectedKab, callback);
+    }
+
+    // Info Banner helper ---------------------------------------------------
+    function updateInfoBanner(state) {
+        var infoText = document.getElementById('wilayah_info_text');
+        if (!infoText) return;
+        var messages = {
+            'db-empty' : 'Pilih KTH dari database \u2192 lokasi & sasaran akan terisi otomatis dan wilayah terkunci.',
+            'db-filled': 'Wilayah terkunci sesuai KTH yang dipilih. Ganti KTH atau pilih "Ketik Manual" untuk mengubah.',
+            'manual'   : 'Mode manual aktif: pilih kabupaten, kecamatan, dan desa secara bebas dari seluruh wilayah Jawa Timur.'
+        };
+        infoText.textContent = messages[state] || messages['db-empty'];
+    }
+
+    // Auto Fill Wilayah saat Pilih KTH (mode DB) ---------------------------
+    var kthSelect    = document.getElementById('kth_id');
+    var sasaranInput = document.querySelector('textarea[name="sasaran_hadir"]');
 
     if (kthSelect) {
         kthSelect.addEventListener('change', function() {
-            const opt = this.options[this.selectedIndex];
-            if (!opt || !this.value) return;
+            var opt = this.options[this.selectedIndex];
 
-            const targetProv = opt.getAttribute('data-provinsi');
-            const targetKab = opt.getAttribute('data-kabupaten');
-            const targetKec = opt.getAttribute('data-kecamatan');
-            const targetDesa = opt.getAttribute('data-desa');
-            const kthNama = opt.textContent.trim();
+            if (!opt || !this.value) {
+                // KTH di-reset: bebaskan wilayah & reload kabupaten
+                setWilayahLocked(false);
+                preloadKabJatim(null, null);
+                kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
+                desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+                updateInfoBanner('db-empty');
+                return;
+            }
+
+            var targetKab  = opt.getAttribute('data-kabupaten');
+            var targetKec  = opt.getAttribute('data-kecamatan');
+            var targetDesa = opt.getAttribute('data-desa');
+            var kthNama    = opt.textContent.trim();
 
             if (sasaranInput && sasaranInput.value === '') {
                 sasaranInput.value = 'Pengurus dan Anggota ' + kthNama;
             }
 
-            if (targetProv) {
-                provSelect.value = targetProv;
-            }
+            // Lock wilayah & auto-fill dari data KTH
+            setWilayahLocked(true);
+            updateInfoBanner('db-filled');
 
-            const currentProv = targetProv || provSelect.value;
-
-            if (targetKab) {
-                loadOptions(kabSelect, `${apiBase}/get_kabupaten.php?provinsi_id=${currentProv}`, 'Pilih Kabupaten', targetKab, function() {
-                    if (targetKec) {
-                        loadOptions(kecSelect, `${apiBase}/get_kecamatan.php?kabupaten_id=${targetKab}`, 'Pilih Kecamatan', targetKec, function() {
-                            if (targetDesa) {
-                                loadOptions(desaSelect, `${apiBase}/get_desa.php?kecamatan_id=${targetKec}`, 'Pilih Desa', targetDesa);
-                            }
-                        });
-                    }
-                });
-            }
+            loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + jatimId, 'Pilih Kabupaten', targetKab, function() {
+                setWilayahLocked(true); // tetap locked setelah load
+                if (targetKec) {
+                    loadOptions(kecSelect, apiBase + '/get_kecamatan.php?kabupaten_id=' + targetKab, 'Pilih Kecamatan', targetKec, function() {
+                        if (targetDesa) {
+                            loadOptions(desaSelect, apiBase + '/get_desa.php?kecamatan_id=' + targetKec, 'Pilih Desa', targetDesa, null);
+                        }
+                    });
+                }
+            });
         });
     }
 
-    // Wilayah Listeners
-    provSelect.addEventListener('change', function() {
-        kabSelect.innerHTML = '<option value="">-- Pilih Kabupaten --</option>';
-        kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
-        if (this.value) {
-            loadOptions(kabSelect, `${apiBase}/get_kabupaten.php?provinsi_id=${this.value}`, 'Pilih Kabupaten');
-        }
-    });
-
+    // Wilayah cascade listeners (hanya aktif di mode manual) ---------------
     kabSelect.addEventListener('change', function() {
-        kecSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+        if (currentMode !== 'manual') return;
+        kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
         if (this.value) {
-            loadOptions(kecSelect, `${apiBase}/get_kecamatan.php?kabupaten_id=${this.value}`, 'Pilih Kecamatan');
+            loadOptions(kecSelect, apiBase + '/get_kecamatan.php?kabupaten_id=' + this.value, 'Pilih Kecamatan', null, null);
         }
     });
 
     kecSelect.addEventListener('change', function() {
+        if (currentMode !== 'manual') return;
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
         if (this.value) {
-            loadOptions(desaSelect, `${apiBase}/get_desa.php?kecamatan_id=${this.value}`, 'Pilih Desa');
+            loadOptions(desaSelect, apiBase + '/get_desa.php?kecamatan_id=' + this.value, 'Pilih Desa', null, null);
         }
     });
 
-    // TUSI Listeners
+    // TUSI Listeners -------------------------------------------------------
     tusiSelect.addEventListener('change', function() {
         kegTusiSelect.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
         tusiDataMap = {};
         if (this.value) {
             kegTusiSelect.disabled = true;
-            fetch(`${apiBase}/get_kegiatan_tusi.php?tusi_id=${this.value}`)
-                .then(res => res.json())
-                .then(data => {
-                    data.forEach(item => {
-                        const opt = document.createElement('option');
+            fetch(apiBase + '/get_kegiatan_tusi.php?tusi_id=' + this.value)
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    data.forEach(function(item) {
+                        var opt = document.createElement('option');
                         opt.value = item.id;
-                        // Truncate untuk tampilan dropdown
                         opt.textContent = item.uraian_tugas.length > 80 ? item.uraian_tugas.substring(0, 80) + '...' : item.uraian_tugas;
                         kegTusiSelect.appendChild(opt);
-                        
-                        // Simpan data aslinya
                         tusiDataMap[item.id] = item;
                     });
                     kegTusiSelect.disabled = false;
@@ -451,8 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     kegTusiSelect.addEventListener('change', function() {
         if (this.value && tusiDataMap[this.value]) {
-            const data = tusiDataMap[this.value];
-            // Auto fill uraian kegiatan jika kosong atau pengguna setuju
+            var data = tusiDataMap[this.value];
             if (uraianInput.value === '' || confirm('Timpa Uraian Kegiatan dengan teks dari master?')) {
                 uraianInput.value = data.uraian_tugas;
             }
@@ -462,93 +486,78 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Init data for Edit mode
-    if (provSelect.value) {
-        // Load kab
-        fetch(`${apiBase}/get_kabupaten.php?provinsi_id=${provSelect.value}`)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.id;
-                    opt.textContent = item.nama;
-                    if (initKab == item.id) opt.selected = true;
-                    kabSelect.appendChild(opt);
+    // Init data for Edit mode ----------------------------------------------
+    if (jatimId && initKab) {
+        preloadKabJatim(initKab, function() {
+            if (initKec) {
+                loadOptions(kecSelect, apiBase + '/get_kecamatan.php?kabupaten_id=' + initKab, 'Pilih Kecamatan', initKec, function() {
+                    if (initDesa) {
+                        loadOptions(desaSelect, apiBase + '/get_desa.php?kecamatan_id=' + initKec, 'Pilih Desa', initDesa, null);
+                    }
                 });
-                
-                // Load kec
-                if (initKab) {
-                    fetch(`${apiBase}/get_kecamatan.php?kabupaten_id=${initKab}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            data.forEach(item => {
-                                const opt = document.createElement('option');
-                                opt.value = item.id;
-                                opt.textContent = item.nama;
-                                if (initKec == item.id) opt.selected = true;
-                                kecSelect.appendChild(opt);
-                            });
-                            
-                            // Load desa
-                            if (initKec) {
-                                fetch(`${apiBase}/get_desa.php?kecamatan_id=${initKec}`)
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        data.forEach(item => {
-                                            const opt = document.createElement('option');
-                                            opt.value = item.id;
-                                            opt.textContent = item.nama;
-                                            if (initDesa == item.id) opt.selected = true;
-                                            desaSelect.appendChild(opt);
-                                        });
-                                    });
-                            }
-                        });
-                }
-            });
+            }
+        });
     }
 
     if (tusiSelect.value) {
-        fetch(`${apiBase}/get_kegiatan_tusi.php?tusi_id=${tusiSelect.value}`)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(item => {
-                    const opt = document.createElement('option');
+        fetch(apiBase + '/get_kegiatan_tusi.php?tusi_id=' + tusiSelect.value)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                data.forEach(function(item) {
+                    var opt = document.createElement('option');
                     opt.value = item.id;
                     opt.textContent = item.uraian_tugas.length > 80 ? item.uraian_tugas.substring(0, 80) + '...' : item.uraian_tugas;
                     if (initKegTusi == item.id) opt.selected = true;
                     kegTusiSelect.appendChild(opt);
-                    
                     tusiDataMap[item.id] = item;
                 });
             });
     }
 
-    // ── KTH Combo Mode (DB vs Manual) ─────────────────────────────
+    // KTH Combo Mode (DB vs Manual) ----------------------------------------
     window.setKthMode = function(mode) {
-        const dbWrap    = document.getElementById('kth_db_wrap');
-        const manWrap   = document.getElementById('kth_manual_wrap');
-        const kthSel    = document.getElementById('kth_id');
-        const manInp    = document.getElementById('kth_nama_manual_input');
-        const btnDb     = document.getElementById('btn_kth_db');
-        const btnMan    = document.getElementById('btn_kth_manual');
+        var dbWrap  = document.getElementById('kth_db_wrap');
+        var manWrap = document.getElementById('kth_manual_wrap');
+        var kthSel  = document.getElementById('kth_id');
+        var manInp  = document.getElementById('kth_nama_manual_input');
+        var btnDb   = document.getElementById('btn_kth_db');
+        var btnMan  = document.getElementById('btn_kth_manual');
+
+        currentMode = mode;
 
         if (mode === 'manual') {
             dbWrap.classList.add('hidden');
             manWrap.classList.remove('hidden');
             kthSel.disabled = true;
-            kthSel.value = '';
+            kthSel.value    = '';
             manInp.disabled = false;
             btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-warning-500 text-white border-warning-500';
             btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
+
+            // Bebaskan wilayah & load semua kabupaten Jawa Timur
+            setWilayahLocked(false);
+            var currentKab = kabSelect.value;
+            preloadKabJatim(currentKab || null, null);
+            if (!currentKab) {
+                kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
+                desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+            }
+            updateInfoBanner('manual');
         } else {
             dbWrap.classList.remove('hidden');
             manWrap.classList.add('hidden');
             kthSel.disabled = false;
             manInp.disabled = true;
-            manInp.value = '';
+            manInp.value    = '';
             btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-primary-600 text-white border-info-600';
             btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
+
+            // Reset wilayah, tunggu user pilih KTH
+            setWilayahLocked(false);
+            kabSelect.innerHTML  = '<option value="">-- Pilih Kabupaten (dari KTH) --</option>';
+            kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
+            desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+            updateInfoBanner('db-empty');
         }
     };
 
@@ -557,40 +566,44 @@ document.addEventListener('DOMContentLoaded', function() {
     setKthMode('manual');
     <?php else: ?>
     setKthMode('db');
+    <?php if ($is_edit && !empty($kegiatan['kth_id'])): ?>
+    // Edit dengan KTH terpilih: lock wilayah setelah kabupaten selesai di-load
+    setTimeout(function() { setWilayahLocked(true); updateInfoBanner('db-filled'); }, 1000);
+    <?php endif; ?>
     <?php endif; ?>
 
-    // ── Calculate WPT & Duration ─────────────────────────────────
+    // Calculate WPT & Duration ---------------------------------------------
     window.calculateWptDuration = function() {
-        const actSelect = document.getElementById('aktivitas_harian_id');
-        const volInput = document.getElementById('volume_input');
-        const satBadge = document.getElementById('satuan_badge');
-        const singleDisp = document.getElementById('wpt_single_display');
-        const totalDisp = document.getElementById('wpt_total_display');
+        var actSelect  = document.getElementById('aktivitas_harian_id');
+        var volInput   = document.getElementById('volume_input');
+        var satBadge   = document.getElementById('satuan_badge');
+        var singleDisp = document.getElementById('wpt_single_display');
+        var totalDisp  = document.getElementById('wpt_total_display');
 
         if (!actSelect || !actSelect.value) {
-            satBadge.textContent = 'Satuan';
+            satBadge.textContent   = 'Satuan';
             singleDisp.textContent = '0 Menit';
-            totalDisp.textContent = '0 Menit (0 Jam)';
+            totalDisp.textContent  = '0 Menit (0 Jam)';
             return;
         }
 
-        const selectedOpt = actSelect.options[actSelect.selectedIndex];
-        const satuan = selectedOpt.getAttribute('data-satuan') || 'Satuan';
-        const wpt = parseInt(selectedOpt.getAttribute('data-wpt') || '0', 10);
-        const nama = selectedOpt.getAttribute('data-nama') || '';
-        const vol = parseInt(volInput.value || '1', 10);
+        var selectedOpt = actSelect.options[actSelect.selectedIndex];
+        var satuan = selectedOpt.getAttribute('data-satuan') || 'Satuan';
+        var wpt    = parseInt(selectedOpt.getAttribute('data-wpt') || '0', 10);
+        var nama   = selectedOpt.getAttribute('data-nama') || '';
+        var vol    = parseInt(volInput.value || '1', 10);
 
-        satBadge.textContent = satuan;
-        singleDisp.textContent = `${wpt} Menit / ${satuan}`;
+        satBadge.textContent   = satuan;
+        singleDisp.textContent = wpt + ' Menit / ' + satuan;
 
-        const totalMenit = wpt * Math.max(1, vol);
-        const totalJam = (totalMenit / 60).toFixed(1);
-        totalDisp.textContent = `${totalMenit} Menit (${totalJam} Jam)`;
+        var totalMenit = wpt * Math.max(1, vol);
+        var totalJam   = (totalMenit / 60).toFixed(1);
+        totalDisp.textContent = totalMenit + ' Menit (' + totalJam + ' Jam)';
 
         // Auto fill Uraian Kegiatan if empty
-        const uraianInput = document.getElementsByName('uraian_kegiatan')[0];
-        if (uraianInput && !uraianInput.value) {
-            uraianInput.value = nama;
+        var uraianEl = document.getElementsByName('uraian_kegiatan')[0];
+        if (uraianEl && !uraianEl.value) {
+            uraianEl.value = nama;
         }
     };
 
