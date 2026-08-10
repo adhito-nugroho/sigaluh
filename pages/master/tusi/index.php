@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($kode) || empty($nama)) {
                 $error = 'Kode dan Nama Seksi TUSI wajib diisi.';
             } else {
-                // Check code uniqueness
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM m_tusi WHERE kode = ?");
                 $stmt->execute([$kode]);
                 if ($stmt->fetchColumn() > 0) {
@@ -43,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id <= 0 || empty($kode) || empty($nama)) {
                 $error = 'Data Seksi TUSI tidak valid.';
             } else {
-                // Check uniqueness excluding current ID
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM m_tusi WHERE kode = ? AND id != ?");
                 $stmt->execute([$kode, $id]);
                 if ($stmt->fetchColumn() > 0) {
@@ -57,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($action === 'delete_seksi') {
             $id = (int)($_POST['id'] ?? 0);
             if ($id > 0) {
-                // Check FK usage in m_kegiatan_tusi
                 $stmt_chk = $pdo->prepare("SELECT COUNT(*) FROM m_kegiatan_tusi WHERE tusi_id = ?");
                 $stmt_chk->execute([$id]);
                 if ($stmt_chk->fetchColumn() > 0) {
@@ -98,11 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($action === 'delete_kegiatan') {
             $id = (int)($_POST['id'] ?? 0);
             if ($id > 0) {
-                // Check FK usage in kegiatan
                 $stmt_chk = $pdo->prepare("SELECT COUNT(*) FROM kegiatan WHERE kegiatan_tusi_id = ?");
                 $stmt_chk->execute([$id]);
                 if ($stmt_chk->fetchColumn() > 0) {
-                    $error = 'Uraian Tugas tidak dapat dihapus karena sudah pernah digunakan dalam Laporan Kegiatan penyuluh. Gunakan fitur Non-Aktifkan status sebagai gantinya.';
+                    $error = 'Uraian Tugas tidak dapat dihapus karena sudah pernah digunakan dalam Laporan Kegiatan. Silakan gunakan fitur Non-Aktifkan status sebagai gantinya.';
                 } else {
                     $stmt = $pdo->prepare("DELETE FROM m_kegiatan_tusi WHERE id = ?");
                     $stmt->execute([$id]);
@@ -120,63 +116,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch list of Seksi TUSI with total items count
-$stmt_tusi = $pdo->query("
-    SELECT t.*, COUNT(k.id) as total_kegiatan 
-    FROM m_tusi t 
-    LEFT JOIN m_kegiatan_tusi k ON t.id = k.tusi_id 
-    GROUP BY t.id 
-    ORDER BY t.id ASC
-");
+// Fetch list of Seksi TUSI for filters & dropdowns
+$stmt_tusi = $pdo->query("SELECT * FROM m_tusi ORDER BY id ASC");
 $tusi_list = $stmt_tusi->fetchAll();
-
-// Determine active Seksi TUSI tab
-$requested_tusi_id = (int)($_GET['tusi_id'] ?? 0);
-$active_tusi = null;
-
-if (!empty($tusi_list)) {
-    if ($requested_tusi_id > 0) {
-        foreach ($tusi_list as $t) {
-            if ((int)$t['id'] === $requested_tusi_id) {
-                $active_tusi = $t;
-                break;
-            }
-        }
-    }
-    if (!$active_tusi) {
-        $active_tusi = $tusi_list[0];
-    }
-}
-
-$active_tusi_id = $active_tusi ? (int)$active_tusi['id'] : 0;
 
 // Search & Filter parameters
 $q = trim($_GET['q'] ?? '');
+$filter_seksi = (int)($_GET['seksi_id'] ?? 0);
 $status_filter = trim($_GET['status'] ?? 'all');
 
-// Fetch Uraian Tugas for active Seksi TUSI
-$kegiatan_tusi_list = [];
-if ($active_tusi_id > 0) {
-    $where = ["tusi_id = ?"];
-    $params = [$active_tusi_id];
+// Build query for TUSI List
+$where = ["1=1"];
+$params = [];
 
-    if (!empty($q)) {
-        $where[] = "(uraian_tugas LIKE ? OR substansi_materi LIKE ?)";
-        $params[] = "%$q%";
-        $params[] = "%$q%";
-    }
-
-    if ($status_filter === 'active') {
-        $where[] = "aktif = 1";
-    } elseif ($status_filter === 'inactive') {
-        $where[] = "aktif = 0";
-    }
-
-    $sql = "SELECT * FROM m_kegiatan_tusi WHERE " . implode(' AND ', $where) . " ORDER BY id ASC";
-    $stmt_keg = $pdo->prepare($sql);
-    $stmt_keg->execute($params);
-    $kegiatan_tusi_list = $stmt_keg->fetchAll();
+if ($filter_seksi > 0) {
+    $where[] = "k.tusi_id = ?";
+    $params[] = $filter_seksi;
 }
+
+if (!empty($q)) {
+    $where[] = "(k.uraian_tugas LIKE ? OR k.substansi_materi LIKE ? OR t.nama LIKE ? OR t.kode LIKE ?)";
+    $params[] = "%$q%";
+    $params[] = "%$q%";
+    $params[] = "%$q%";
+    $params[] = "%$q%";
+}
+
+if ($status_filter === 'active') {
+    $where[] = "k.aktif = 1";
+} elseif ($status_filter === 'inactive') {
+    $where[] = "k.aktif = 0";
+}
+
+$sql = "
+    SELECT k.*, t.kode as seksi_kode, t.nama as seksi_nama 
+    FROM m_kegiatan_tusi k 
+    JOIN m_tusi t ON k.tusi_id = t.id 
+    WHERE " . implode(' AND ', $where) . " 
+    ORDER BY k.tusi_id ASC, k.id ASC
+";
+$stmt_keg = $pdo->prepare($sql);
+$stmt_keg->execute($params);
+$kegiatan_tusi_list = $stmt_keg->fetchAll();
 ?>
 
 <!-- Header Section -->
@@ -185,12 +166,15 @@ if ($active_tusi_id > 0) {
         <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
             <i data-lucide="database" class="w-3.5 h-3.5"></i> Master Data
         </div>
-        <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Master Tugas dan Fungsi (TUSI)</h1>
-        <p class="text-sm text-neutral-500 font-medium">Kelola kelompok seksi TUSI, rincian uraian tugas, serta substansi materi penyuluhan kehutanan.</p>
+        <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Tugas, Pokok dan Fungsi (TUSI)</h1>
+        <p class="text-sm text-neutral-500 font-medium">Kelola daftar seluruh kegiatan TUSI penyuluh kehutanan beserta seksi penanggung jawab.</p>
     </div>
-    <div class="flex items-center gap-2">
-        <button onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
-            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Seksi TUSI
+    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <button onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-xl text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 shadow-sm transition-colors">
+            <i data-lucide="layers" class="w-4 h-4 mr-2 text-neutral-500"></i> Kelola Seksi
+        </button>
+        <button onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
+            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah TUSI
         </button>
     </div>
 </div>
@@ -208,193 +192,134 @@ if ($active_tusi_id > 0) {
     </div>
 <?php endif; ?>
 
-<!-- Tab Navigasi Seksi TUSI -->
-<?php if (empty($tusi_list)): ?>
-    <div class="bg-white rounded-2xl border border-neutral-200/80 p-8 text-center mb-6">
-        <div class="w-12 h-12 rounded-full bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto mb-3">
-            <i data-lucide="layers" class="w-6 h-6"></i>
+<!-- Filter & Search Toolbar -->
+<div class="bg-white rounded-2xl border border-neutral-200/80 p-4 shadow-sm mb-6">
+    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col md:flex-row items-center justify-between gap-3">
+        <input type="hidden" name="page" value="master/tusi">
+
+        <div class="relative flex-1 w-full">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari Uraian Kegiatan TUSI..." class="w-full pl-10 pr-4 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
         </div>
-        <h3 class="text-base font-bold text-neutral-800">Belum Ada Seksi TUSI</h3>
-        <p class="text-sm text-neutral-500 mt-1 max-w-md mx-auto">Silakan tambahkan data Seksi TUSI pertama Anda untuk mulai menambahkan rincian uraian tugas penyuluh.</p>
-        <button onclick="openModalSeksiCreate()" class="mt-4 inline-flex items-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800">
-            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Seksi TUSI Sekarang
-        </button>
-    </div>
-<?php else: ?>
-    <div class="mb-6 bg-white rounded-2xl border border-neutral-200/80 p-2 shadow-sm">
-        <div class="flex items-center overflow-x-auto gap-2 scrollbar-none">
-            <?php foreach ($tusi_list as $t): ?>
-                <?php 
-                    $isActive = ((int)$t['id'] === $active_tusi_id);
-                    $tabClass = $isActive 
-                        ? 'bg-primary-700 text-white shadow-md font-bold' 
-                        : 'bg-neutral-50 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 font-medium';
-                ?>
-                <a href="<?= BASE_URL ?>/index.php?page=master/tusi&tusi_id=<?= $t['id'] ?>" class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm transition-all whitespace-nowrap group <?= $tabClass ?>">
-                    <i data-lucide="folder-git-2" class="w-4 h-4 <?= $isActive ? 'text-white' : 'text-neutral-400 group-hover:text-neutral-600' ?>"></i>
-                    <span>[<?= e($t['kode']) ?>] <?= e($t['nama']) ?></span>
-                    <span class="px-2 py-0.5 rounded-full text-xs <?= $isActive ? 'bg-primary-800 text-white' : 'bg-neutral-200 text-neutral-700' ?>">
-                        <?= (int)$t['total_kegiatan'] ?>
-                    </span>
+
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
+            <!-- Filter Seksi -->
+            <select name="seksi_id" onchange="this.form.submit()" class="px-3 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
+                <option value="0">Semua Seksi</option>
+                <?php foreach ($tusi_list as $t): ?>
+                    <option value="<?= $t['id'] ?>" <?= $filter_seksi == $t['id'] ? 'selected' : '' ?>>
+                        <?= e($t['kode']) ?> - <?= e($t['nama']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <!-- Filter Status -->
+            <select name="status" onchange="this.form.submit()" class="px-3 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
+                <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>Semua Status</option>
+                <option value="active" <?= $status_filter === 'active' ? 'selected' : '' ?>>Aktif</option>
+                <option value="inactive" <?= $status_filter === 'inactive' ? 'selected' : '' ?>>Non-Aktif</option>
+            </select>
+
+            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white text-sm font-bold rounded-xl transition-colors">
+                Filter
+            </button>
+            <?php if (!empty($q) || $filter_seksi > 0 || $status_filter !== 'all'): ?>
+                <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-semibold rounded-xl transition-colors">
+                    Reset
                 </a>
-            <?php endforeach; ?>
+            <?php endif; ?>
         </div>
-    </div>
+    </form>
+</div>
 
-    <!-- Active Tab Header & Toolbar -->
-    <div class="bg-white rounded-2xl border border-neutral-200/80 p-5 shadow-sm mb-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-neutral-200/70 mb-5">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center font-bold">
-                    <i data-lucide="layers" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-lg font-bold text-neutral-900">[<?= e($active_tusi['kode']) ?>] <?= e($active_tusi['nama']) ?></h2>
-                        <button type="button" 
-                                data-id="<?= $active_tusi['id'] ?>"
-                                data-kode="<?= e($active_tusi['kode']) ?>"
-                                data-nama="<?= e($active_tusi['nama']) ?>"
-                                onclick="handleEditSeksi(this)" 
-                                class="p-1 rounded-lg text-neutral-400 hover:text-primary-700 hover:bg-neutral-100 transition-colors" 
-                                title="Edit Seksi TUSI">
-                            <i data-lucide="edit-3" class="w-4 h-4"></i>
-                        </button>
-                        <button type="button" 
-                                data-action="delete_seksi"
-                                data-id="<?= $active_tusi['id'] ?>"
-                                data-name="[<?= e($active_tusi['kode']) ?>] <?= e($active_tusi['nama']) ?>"
-                                onclick="handleDeleteData(this)" 
-                                class="p-1 rounded-lg text-neutral-400 hover:text-error-600 hover:bg-neutral-100 transition-colors" 
-                                title="Hapus Seksi TUSI">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-neutral-500 font-medium">Menampilkan rincian Uraian Tugas dan Substansi Materi di bawah Seksi ini.</p>
-                </div>
-            </div>
-
-            <div>
-                <button onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors w-full md:w-auto">
-                    <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Tambah Uraian Tugas
-                </button>
-            </div>
-        </div>
-
-        <!-- Filter & Search Bar -->
-        <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <input type="hidden" name="page" value="master/tusi">
-            <input type="hidden" name="tusi_id" value="<?= $active_tusi_id ?>">
-
-            <div class="relative flex-1 w-full">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
-                <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari Uraian Tugas atau Substansi Materi..." class="w-full pl-10 pr-4 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
-            </div>
-
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-                <select name="status" onchange="this.form.submit()" class="px-3 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all w-full sm:w-auto font-medium text-neutral-700">
-                    <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>Semua Status</option>
-                    <option value="active" <?= $status_filter === 'active' ? 'selected' : '' ?>>Hanya Aktif</option>
-                    <option value="inactive" <?= $status_filter === 'inactive' ? 'selected' : '' ?>>Hanya Non-Aktif</option>
-                </select>
-
-                <button type="submit" class="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-semibold rounded-xl transition-colors">
-                    Cari
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Data Table Rincian TUSI -->
-    <div class="bg-white rounded-2xl border border-neutral-200/80 shadow-sm overflow-hidden mb-6">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-neutral-50/80 border-b border-neutral-200/70 text-[11px] uppercase tracking-wider font-bold text-neutral-500">
-                        <th class="py-3.5 px-4 w-12 text-center">No</th>
-                        <th class="py-3.5 px-4 min-w-[280px]">Uraian Tugas TUSI</th>
-                        <th class="py-3.5 px-4 min-w-[220px]">Substansi Materi</th>
-                        <th class="py-3.5 px-4 w-32 text-center">Status</th>
-                        <th class="py-3.5 px-4 w-36 text-center">Aksi</th>
+<!-- Data Table Utama TUSI -->
+<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-sm overflow-hidden mb-6">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-neutral-50/80 border-b border-neutral-200/70 text-[11px] uppercase tracking-wider font-bold text-neutral-500">
+                    <th class="py-3.5 px-4 w-14 text-center">No</th>
+                    <th class="py-3.5 px-4 min-w-[360px]">Kegiatan / Uraian Tugas TUSI</th>
+                    <th class="py-3.5 px-4 w-36 text-center">Seksi</th>
+                    <th class="py-3.5 px-4 w-28 text-center">Status</th>
+                    <th class="py-3.5 px-4 w-32 text-center">Tool</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-200/60 text-sm">
+                <?php if (empty($kegiatan_tusi_list)): ?>
+                    <tr>
+                        <td colspan="5" class="py-12 px-4 text-center text-neutral-400">
+                            <i data-lucide="file-x-2" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+                            <p class="font-medium text-neutral-600">Tidak ada data TUSI yang ditemukan.</p>
+                            <p class="text-xs text-neutral-400 mt-0.5">Coba ubah kata kunci pencarian atau tambah kegiatan TUSI baru.</p>
+                        </td>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-neutral-200/60 text-sm">
-                    <?php if (empty($kegiatan_tusi_list)): ?>
-                        <tr>
-                            <td colspan="5" class="py-12 px-4 text-center text-neutral-400">
-                                <i data-lucide="file-x-2" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
-                                <p class="font-medium text-neutral-600">Tidak ada Uraian Tugas TUSI yang ditemukan.</p>
-                                <p class="text-xs text-neutral-400 mt-0.5">Coba ubah kata kunci pencarian atau tambah uraian tugas baru.</p>
+                <?php else: ?>
+                    <?php foreach ($kegiatan_tusi_list as $index => $keg): ?>
+                        <tr class="hover:bg-neutral-50/70 transition-colors">
+                            <td class="py-3.5 px-4 text-center font-bold text-neutral-500">
+                                <?= $index + 1 ?>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="font-semibold text-neutral-900 leading-relaxed">
+                                    <?= e($keg['uraian_tugas']) ?>
+                                </div>
+                                <?php if (!empty($keg['substansi_materi'])): ?>
+                                    <div class="text-xs text-neutral-500 mt-0.5 font-normal">
+                                        <span class="font-medium text-neutral-400">Substansi:</span> <?= e($keg['substansi_materi']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-neutral-100 text-neutral-700 border border-neutral-200/80">
+                                    <?= e($keg['seksi_kode']) ?>
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <?php if ($keg['aktif'] == 1): ?>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-success-50 text-success-700 border border-success-200/60">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span> Aktif
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-neutral-100 text-neutral-500 border border-neutral-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span> Non-Aktif
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <div class="flex items-center justify-center gap-3 text-xs font-bold">
+                                    <!-- Edit Link -->
+                                    <button type="button"
+                                            data-id="<?= $keg['id'] ?>"
+                                            data-tusi-id="<?= $keg['tusi_id'] ?>"
+                                            data-uraian="<?= e($keg['uraian_tugas']) ?>"
+                                            data-substansi="<?= e($keg['substansi_materi'] ?? '') ?>"
+                                            data-aktif="<?= $keg['aktif'] ?>"
+                                            onclick="handleEditKegiatan(this)" 
+                                            class="text-primary-600 hover:text-primary-800 hover:underline transition-colors">
+                                        Edit
+                                    </button>
+
+                                    <span class="text-neutral-300">|</span>
+
+                                    <!-- Delete Link -->
+                                    <button type="button"
+                                            data-action="delete_kegiatan"
+                                            data-id="<?= $keg['id'] ?>"
+                                            data-name="<?= e($keg['uraian_tugas']) ?>"
+                                            onclick="handleDeleteData(this)" 
+                                            class="text-error-600 hover:text-error-800 hover:underline transition-colors">
+                                        Hapus
+                                    </button>
+                                </div>
                             </td>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($kegiatan_tusi_list as $index => $keg): ?>
-                            <tr class="hover:bg-neutral-50/70 transition-colors">
-                                <td class="py-3.5 px-4 text-center text-xs font-semibold text-neutral-400">
-                                    <?= $index + 1 ?>
-                                </td>
-                                <td class="py-3.5 px-4 font-semibold text-neutral-800 leading-relaxed">
-                                    <?= e($keg['uraian_tugas']) ?>
-                                </td>
-                                <td class="py-3.5 px-4 text-neutral-600 leading-relaxed">
-                                    <?= !empty($keg['substansi_materi']) ? e($keg['substansi_materi']) : '<span class="text-neutral-300 italic">-</span>' ?>
-                                </td>
-                                <td class="py-3.5 px-4 text-center">
-                                    <?php if ($keg['aktif'] == 1): ?>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-success-50 text-success-700 border border-success-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span> Aktif
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-neutral-100 text-neutral-500 border border-neutral-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span> Non-Aktif
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="py-3.5 px-4 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <!-- Form Toggle Status -->
-                                        <form method="POST" class="inline">
-                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                                            <input type="hidden" name="action" value="toggle_status">
-                                            <input type="hidden" name="id" value="<?= $keg['id'] ?>">
-                                            <button type="submit" class="p-1.5 rounded-lg text-neutral-500 hover:text-primary-700 hover:bg-neutral-100 transition-colors" title="<?= $keg['aktif'] == 1 ? 'Non-Aktifkan TUSI' : 'Aktifkan TUSI' ?>">
-                                                <i data-lucide="<?= $keg['aktif'] == 1 ? 'toggle-right' : 'toggle-left' ?>" class="w-5 h-5 <?= $keg['aktif'] == 1 ? 'text-primary-600' : 'text-neutral-400' ?>"></i>
-                                            </button>
-                                        </form>
-
-                                        <!-- Edit Button -->
-                                        <button type="button"
-                                                data-id="<?= $keg['id'] ?>"
-                                                data-tusi-id="<?= $keg['tusi_id'] ?>"
-                                                data-uraian="<?= e($keg['uraian_tugas']) ?>"
-                                                data-substansi="<?= e($keg['substansi_materi'] ?? '') ?>"
-                                                data-aktif="<?= $keg['aktif'] ?>"
-                                                onclick="handleEditKegiatan(this)" 
-                                                class="p-1.5 rounded-lg text-neutral-500 hover:text-primary-700 hover:bg-neutral-100 transition-colors" 
-                                                title="Edit Uraian Tugas">
-                                            <i data-lucide="edit" class="w-4 h-4"></i>
-                                        </button>
-
-                                        <!-- Delete Button -->
-                                        <button type="button"
-                                                data-action="delete_kegiatan"
-                                                data-id="<?= $keg['id'] ?>"
-                                                data-name="<?= e($keg['uraian_tugas']) ?>"
-                                                onclick="handleDeleteData(this)" 
-                                                class="p-1.5 rounded-lg text-neutral-500 hover:text-error-600 hover:bg-neutral-100 transition-colors" 
-                                                title="Hapus Uraian Tugas">
-                                            <i data-lucide="trash" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
-<?php endif; ?>
+</div>
 
 <!-- MODAL FORMS -->
 
@@ -404,7 +329,7 @@ if ($active_tusi_id > 0) {
     <div class="flex min-h-full items-center justify-center p-4 text-center">
         <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all border border-neutral-200">
             <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
-                <h3 id="modalSeksiTitle" class="text-base font-bold text-neutral-900">Tambah Seksi TUSI</h3>
+                <h3 id="modalSeksiTitle" class="text-base font-bold text-neutral-900">Kelola Seksi TUSI</h3>
                 <button type="button" onclick="closeModalSeksi()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -418,7 +343,6 @@ if ($active_tusi_id > 0) {
                     <div>
                         <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kode Seksi <span class="text-error-500">*</span></label>
                         <input type="text" name="kode" id="modalSeksiKode" required placeholder="Contoh: RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 uppercase font-semibold">
-                        <span class="text-[11px] text-neutral-400 mt-1 block">Kode identifikasi singkat (maksimal 20 karakter).</span>
                     </div>
 
                     <div>
@@ -446,12 +370,12 @@ if ($active_tusi_id > 0) {
     <div class="flex min-h-full items-center justify-center p-4 text-center">
         <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all border border-neutral-200">
             <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
-                <h3 id="modalKegiatanTitle" class="text-base font-bold text-neutral-900">Tambah Uraian Tugas TUSI</h3>
+                <h3 id="modalKegiatanTitle" class="text-base font-bold text-neutral-900">Tambah Kegiatan TUSI</h3>
                 <button type="button" onclick="closeModalKegiatan()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi&tusi_id=<?= $active_tusi_id ?>">
+            <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
                 <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 <input type="hidden" name="action" id="modalKegiatanAction" value="create_kegiatan">
                 <input type="hidden" name="id" id="modalKegiatanId" value="">
@@ -461,7 +385,7 @@ if ($active_tusi_id > 0) {
                         <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Seksi TUSI <span class="text-error-500">*</span></label>
                         <select name="tusi_id" id="modalKegiatanTusiId" required class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
                             <?php foreach ($tusi_list as $t): ?>
-                                <option value="<?= $t['id'] ?>" <?= (int)$t['id'] === $active_tusi_id ? 'selected' : '' ?>>
+                                <option value="<?= $t['id'] ?>">
                                     [<?= e($t['kode']) ?>] <?= e($t['nama']) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -469,19 +393,19 @@ if ($active_tusi_id > 0) {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Uraian Tugas <span class="text-error-500">*</span></label>
-                        <textarea name="uraian_tugas" id="modalKegiatanUraian" rows="3" required placeholder="Tuliskan uraian tugas penyuluhan secara detail..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
+                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kegiatan / Uraian Tugas <span class="text-error-500">*</span></label>
+                        <textarea name="uraian_tugas" id="modalKegiatanUraian" rows="3" required placeholder="Tuliskan uraian kegiatan TUSI..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Substansi Materi</label>
-                        <textarea name="substansi_materi" id="modalKegiatanSubstansi" rows="2" placeholder="Deskripsi substansi materi penyuluhan (opsional)..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
+                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Substansi Materi (Opsional)</label>
+                        <textarea name="substansi_materi" id="modalKegiatanSubstansi" rows="2" placeholder="Deskripsi substansi materi (opsional)..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
                     </div>
 
                     <div class="pt-2">
                         <label class="inline-flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" name="aktif" id="modalKegiatanAktif" value="1" checked class="w-4 h-4 text-primary-600 rounded border-neutral-300 focus:ring-primary-500">
-                            <span class="text-sm font-semibold text-neutral-700">Status Aktif (Tampil pada form Laporan Penyuluh)</span>
+                            <span class="text-sm font-semibold text-neutral-700">Status Aktif (Tampil pada pilihan laporan penyuluh)</span>
                         </label>
                     </div>
                 </div>
@@ -491,7 +415,7 @@ if ($active_tusi_id > 0) {
                         Batal
                     </button>
                     <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
-                        Simpan Uraian Tugas
+                        Simpan Data
                     </button>
                 </div>
             </form>
@@ -512,7 +436,7 @@ if ($active_tusi_id > 0) {
                 <p id="modalDeleteMessage" class="text-sm text-neutral-600 mb-6 leading-relaxed">
                     Apakah Anda yakin ingin menghapus data ini?
                 </p>
-                <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi&tusi_id=<?= $active_tusi_id ?>">
+                <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                     <input type="hidden" name="action" id="modalDeleteAction" value="">
                     <input type="hidden" name="id" id="modalDeleteId" value="">
@@ -579,7 +503,7 @@ function closeModalSeksi() {
 }
 
 function openModalKegiatanCreate() {
-    document.getElementById('modalKegiatanTitle').innerText = 'Tambah Uraian Tugas TUSI';
+    document.getElementById('modalKegiatanTitle').innerText = 'Tambah Kegiatan TUSI Baru';
     document.getElementById('modalKegiatanAction').value = 'create_kegiatan';
     document.getElementById('modalKegiatanId').value = '';
     document.getElementById('modalKegiatanUraian').value = '';
@@ -589,7 +513,7 @@ function openModalKegiatanCreate() {
 }
 
 function openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif) {
-    document.getElementById('modalKegiatanTitle').innerText = 'Edit Uraian Tugas TUSI';
+    document.getElementById('modalKegiatanTitle').innerText = 'Edit Kegiatan TUSI';
     document.getElementById('modalKegiatanAction').value = 'update_kegiatan';
     document.getElementById('modalKegiatanId').value = id;
     document.getElementById('modalKegiatanTusiId').value = tusiId;
@@ -622,7 +546,6 @@ function closeModalDelete() {
     document.getElementById('modalDelete').classList.add('hidden');
 }
 
-// Re-initialize Lucide icons dynamically if needed
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
