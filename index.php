@@ -65,6 +65,8 @@ function get_breadcrumb($page) {
         'penyuluh/form' => ['Data Penyuluh', 'Form'],
         'users' => ['Kelola User'],
         'users/form' => ['Kelola User', 'Form'],
+        'master/tusi' => ['Master Data', 'Kelola TUSI'],
+        'master/aktivitas' => ['Master Data', 'Aktivitas Harian'],
         'settings/wilayah' => ['Pengaturan', 'Wilayah'],
         'settings/app' => ['Pengaturan', 'Tanda Tangan'],
         'panduan' => ['Panduan'],

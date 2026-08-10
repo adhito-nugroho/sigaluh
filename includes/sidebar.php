@@ -82,6 +82,10 @@ function get_active_icon_class($page_name, $current_page) {
                 </a>
                 
                 <?php if (has_role('admin')): ?>
+                <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="group flex items-center px-3 py-2 text-[13px] rounded transition-colors <?= get_active_class('master/tusi', $current_page) ?>">
+                    <i data-lucide="layers" class="w-[18px] h-[18px] mr-3 <?= get_active_icon_class('master/tusi', $current_page) ?>"></i>
+                    <span>Master TUSI</span>
+                </a>
                 <a href="<?= BASE_URL ?>/index.php?page=users" class="group flex items-center px-3 py-2 text-[13px] rounded transition-colors <?= get_active_class('users', $current_page) ?>">
                     <i data-lucide="user-cog" class="w-[18px] h-[18px] mr-3 <?= get_active_icon_class('users', $current_page) ?>"></i>
                     <span>Kelola Pengguna</span>
