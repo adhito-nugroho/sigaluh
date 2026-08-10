@@ -166,8 +166,17 @@ if (!$selected_provinsi_id) {
                     </div>
                 </div>
 
-                <!-- Provinsi: selalu Jawa Timur, hidden dari user -->
-                <input type="hidden" id="provinsi_id" name="provinsi_id" value="<?= $selected_provinsi_id ?>">
+                <!-- Provinsi: default Jawa Timur, bisa diubah user -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi <span class="text-error-500">*</span></label>
+                    <select id="provinsi_id" name="provinsi_id" required
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                        <option value="">-- Pilih Provinsi --</option>
+                        <?php foreach($provinsi_list as $p): ?>
+                            <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
                 <!-- Kabupaten -->
                 <div id="wilayah_kab_wrap">
@@ -373,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hint) hint.classList.toggle('hidden', !locked);
     }
 
-    // Pre-load semua kabupaten Jawa Timur ----------------------------------
+    // Pre-load kabupaten (pakai loadKabByProv setelah provSelect tersedia)
     function preloadKabJatim(selectedKab, callback) {
         if (!jatimId) return;
         loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + jatimId, 'Pilih Kabupaten', selectedKab, callback);
@@ -386,9 +395,19 @@ document.addEventListener('DOMContentLoaded', function() {
         var messages = {
             'db-empty' : 'Pilih KTH dari database \u2192 lokasi & sasaran akan terisi otomatis dan wilayah terkunci.',
             'db-filled': 'Wilayah terkunci sesuai KTH yang dipilih. Ganti KTH atau pilih "Ketik Manual" untuk mengubah.',
-            'manual'   : 'Mode manual aktif: pilih kabupaten, kecamatan, dan desa secara bebas dari seluruh wilayah Jawa Timur.'
+            'manual'   : 'Mode manual aktif: pilih provinsi, kabupaten, kecamatan, dan desa secara bebas. Default provinsi adalah Jawa Timur.'
         };
         infoText.textContent = messages[state] || messages['db-empty'];
+    }
+
+    // Referensi provinsi select (untuk mode manual) ------------------------
+    var provSelect = document.getElementById('provinsi_id');
+
+    // Helper: load kabupaten dari provinsi yang aktif ----------------------
+    function loadKabByProv(selectedKab, callback) {
+        var provId = provSelect ? provSelect.value : jatimId;
+        if (!provId) return;
+        loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + provId, 'Pilih Kabupaten', selectedKab, callback);
     }
 
     // Auto Fill Wilayah saat Pilih KTH (mode DB) ---------------------------
@@ -435,7 +454,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Wilayah cascade listeners (hanya aktif di mode manual) ---------------
+    // Wilayah cascade listeners --------------------------------------------
+    // Provinsi berubah (hanya di mode manual)
+    if (provSelect) {
+        provSelect.addEventListener('change', function() {
+            if (currentMode !== 'manual') return;
+            kabSelect.innerHTML  = '<option value="">-- Pilih Kabupaten --</option>';
+            kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
+            desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+            if (this.value) {
+                loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + this.value, 'Pilih Kabupaten', null, null);
+            }
+        });
+    }
+
+    // Kabupaten berubah (hanya di mode manual)
     kabSelect.addEventListener('change', function() {
         if (currentMode !== 'manual') return;
         kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
