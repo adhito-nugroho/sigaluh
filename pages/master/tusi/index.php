@@ -170,10 +170,10 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
         <p class="text-sm text-neutral-500 font-medium">Kelola daftar seluruh kegiatan TUSI penyuluh kehutanan beserta seksi penanggung jawab.</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-        <button onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-xl text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 shadow-sm transition-colors">
+        <button type="button" onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-xl text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 shadow-sm transition-colors cursor-pointer">
             <i data-lucide="layers" class="w-4 h-4 mr-2 text-neutral-500"></i> Kelola Seksi
         </button>
-        <button onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
+        <button type="button" onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah TUSI
         </button>
     </div>
@@ -296,7 +296,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                                             data-substansi="<?= e($keg['substansi_materi'] ?? '') ?>"
                                             data-aktif="<?= $keg['aktif'] ?>"
                                             onclick="handleEditKegiatan(this)" 
-                                            class="text-primary-600 hover:text-primary-800 hover:underline transition-colors">
+                                            class="text-primary-600 hover:text-primary-800 hover:underline transition-colors cursor-pointer">
                                         Edit
                                     </button>
 
@@ -308,7 +308,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                                             data-id="<?= $keg['id'] ?>"
                                             data-name="<?= e($keg['uraian_tugas']) ?>"
                                             onclick="handleDeleteData(this)" 
-                                            class="text-error-600 hover:text-error-800 hover:underline transition-colors">
+                                            class="text-error-600 hover:text-error-800 hover:underline transition-colors cursor-pointer">
                                         Hapus
                                     </button>
                                 </div>
@@ -321,257 +321,286 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
     </div>
 </div>
 
-<!-- MODAL FORMS -->
+<!-- MODAL FORMS (Rendered at top z-index layer) -->
 
-<!-- Modal 1: Form Seksi TUSI (Tambah / Edit) -->
-<div id="modalSeksi" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity" onclick="closeModalSeksi()"></div>
-    <div class="flex min-h-full items-center justify-center p-4 text-center">
-        <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all border border-neutral-200">
-            <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
-                <h3 id="modalSeksiTitle" class="text-base font-bold text-neutral-900">Kelola Seksi TUSI</h3>
-                <button type="button" onclick="closeModalSeksi()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+<!-- Modal 1: Form Seksi TUSI (Kelola / Tambah / Edit) -->
+<div id="modalSeksi" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
+        <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
+            <h3 id="modalSeksiTitle" class="text-base font-bold text-neutral-900">Kelola Seksi TUSI</h3>
+            <button type="button" onclick="closeModalSeksi()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100 cursor-pointer">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Daftar Seksi TUSI yang Sudah Ada -->
+        <div class="p-5 border-b border-neutral-200/70 bg-neutral-50/30">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Daftar Seksi Terdaftar</h4>
+            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                <?php foreach ($tusi_list as $st): ?>
+                    <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-neutral-200/80 text-xs">
+                        <div class="font-bold text-neutral-800">
+                            <span class="px-2 py-0.5 bg-primary-50 text-primary-800 rounded font-bold mr-1.5">[<?= e($st['kode']) ?>]</span>
+                            <?= e($st['nama']) ?>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" 
+                                    data-id="<?= $st['id'] ?>" 
+                                    data-kode="<?= e($st['kode']) ?>" 
+                                    data-nama="<?= e($st['nama']) ?>" 
+                                    onclick="handleEditSeksi(this)" 
+                                    class="text-primary-600 hover:text-primary-800 font-bold hover:underline cursor-pointer">
+                                Edit
+                            </button>
+                            <span class="text-neutral-300">|</span>
+                            <button type="button" 
+                                    data-action="delete_seksi" 
+                                    data-id="<?= $st['id'] ?>" 
+                                    data-name="[<?= e($st['kode']) ?>] <?= e($st['nama']) ?>" 
+                                    onclick="handleDeleteData(this)" 
+                                    class="text-error-600 hover:text-error-800 font-bold hover:underline cursor-pointer">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
+            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+            <input type="hidden" name="action" id="modalSeksiAction" value="create_seksi">
+            <input type="hidden" name="id" id="modalSeksiId" value="">
+
+            <div class="p-5 space-y-4">
+                <h4 id="formSeksiHeaderTitle" class="text-xs font-bold uppercase tracking-wider text-neutral-500">Tambah Seksi Baru</h4>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kode Seksi <span class="text-error-500">*</span></label>
+                    <input type="text" name="kode" id="modalSeksiKode" required placeholder="Contoh: RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 uppercase font-semibold">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Nama Seksi <span class="text-error-500">*</span></label>
+                    <input type="text" name="nama" id="modalSeksiNama" required placeholder="Contoh: Seksi RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 p-4 border-t border-neutral-100 bg-neutral-50/50">
+                <button type="button" onclick="closeModalSeksi()" class="px-4 py-2 text-sm font-semibold rounded-xl text-neutral-600 hover:bg-neutral-200/70 transition-colors cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
+                    Simpan Seksi
                 </button>
             </div>
-            <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
-                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                <input type="hidden" name="action" id="modalSeksiAction" value="create_seksi">
-                <input type="hidden" name="id" id="modalSeksiId" value="">
-
-                <div class="p-5 space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kode Seksi <span class="text-error-500">*</span></label>
-                        <input type="text" name="kode" id="modalSeksiKode" required placeholder="Contoh: RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 uppercase font-semibold">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Nama Seksi <span class="text-error-500">*</span></label>
-                        <input type="text" name="nama" id="modalSeksiNama" required placeholder="Contoh: Seksi RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 p-4 border-t border-neutral-100 bg-neutral-50/50">
-                    <button type="button" onclick="closeModalSeksi()" class="px-4 py-2 text-sm font-semibold rounded-xl text-neutral-600 hover:bg-neutral-200/70 transition-colors">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
-                        Simpan Seksi
-                    </button>
-                </div>
-            </form>
-        </div>
+        </form>
     </div>
 </div>
 
 <!-- Modal 2: Form Uraian Tugas TUSI (Tambah / Edit) -->
-<div id="modalKegiatan" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity" onclick="closeModalKegiatan()"></div>
-    <div class="flex min-h-full items-center justify-center p-4 text-center">
-        <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all border border-neutral-200">
-            <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
-                <h3 id="modalKegiatanTitle" class="text-base font-bold text-neutral-900">Tambah Kegiatan TUSI</h3>
-                <button type="button" onclick="closeModalKegiatan()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+<div id="modalKegiatan" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
+        <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
+            <h3 id="modalKegiatanTitle" class="text-base font-bold text-neutral-900">Tambah Kegiatan TUSI</h3>
+            <button type="button" onclick="closeModalKegiatan()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100 cursor-pointer">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
+            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+            <input type="hidden" name="action" id="modalKegiatanAction" value="create_kegiatan">
+            <input type="hidden" name="id" id="modalKegiatanId" value="">
+
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Seksi TUSI <span class="text-error-500">*</span></label>
+                    <select name="tusi_id" id="modalKegiatanTusiId" required class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
+                        <?php foreach ($tusi_list as $t): ?>
+                            <option value="<?= $t['id'] ?>">
+                                [<?= e($t['kode']) ?>] <?= e($t['nama']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kegiatan / Uraian Tugas <span class="text-error-500">*</span></label>
+                    <textarea name="uraian_tugas" id="modalKegiatanUraian" rows="3" required placeholder="Tuliskan uraian kegiatan TUSI..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Substansi Materi (Opsional)</label>
+                    <textarea name="substansi_materi" id="modalKegiatanSubstansi" rows="2" placeholder="Deskripsi substansi materi (opsional)..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
+                </div>
+
+                <div class="pt-2">
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="aktif" id="modalKegiatanAktif" value="1" checked class="w-4 h-4 text-primary-600 rounded border-neutral-300 focus:ring-primary-500">
+                        <span class="text-sm font-semibold text-neutral-700">Status Aktif (Tampil pada pilihan laporan penyuluh)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 p-4 border-t border-neutral-100 bg-neutral-50/50">
+                <button type="button" onclick="closeModalKegiatan()" class="px-4 py-2 text-sm font-semibold rounded-xl text-neutral-600 hover:bg-neutral-200/70 transition-colors cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
+                    Simpan Data
                 </button>
             </div>
-            <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
-                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                <input type="hidden" name="action" id="modalKegiatanAction" value="create_kegiatan">
-                <input type="hidden" name="id" id="modalKegiatanId" value="">
-
-                <div class="p-5 space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Seksi TUSI <span class="text-error-500">*</span></label>
-                        <select name="tusi_id" id="modalKegiatanTusiId" required class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
-                            <?php foreach ($tusi_list as $t): ?>
-                                <option value="<?= $t['id'] ?>">
-                                    [<?= e($t['kode']) ?>] <?= e($t['nama']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kegiatan / Uraian Tugas <span class="text-error-500">*</span></label>
-                        <textarea name="uraian_tugas" id="modalKegiatanUraian" rows="3" required placeholder="Tuliskan uraian kegiatan TUSI..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Substansi Materi (Opsional)</label>
-                        <textarea name="substansi_materi" id="modalKegiatanSubstansi" rows="2" placeholder="Deskripsi substansi materi (opsional)..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
-                    </div>
-
-                    <div class="pt-2">
-                        <label class="inline-flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="aktif" id="modalKegiatanAktif" value="1" checked class="w-4 h-4 text-primary-600 rounded border-neutral-300 focus:ring-primary-500">
-                            <span class="text-sm font-semibold text-neutral-700">Status Aktif (Tampil pada pilihan laporan penyuluh)</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-2 p-4 border-t border-neutral-100 bg-neutral-50/50">
-                    <button type="button" onclick="closeModalKegiatan()" class="px-4 py-2 text-sm font-semibold rounded-xl text-neutral-600 hover:bg-neutral-200/70 transition-colors">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
-                        Simpan Data
-                    </button>
-                </div>
-            </form>
-        </div>
+        </form>
     </div>
 </div>
 
 <!-- Modal 3: Konfirmasi Hapus Data -->
-<div id="modalDelete" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity" onclick="closeModalDelete()"></div>
-    <div class="flex min-h-full items-center justify-center p-4 text-center">
-        <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all border border-neutral-200">
-            <div class="p-6 text-center">
-                <div class="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-                </div>
-                <h3 class="text-lg font-bold text-neutral-900 mb-1">Konfirmasi Hapus Data</h3>
-                <p id="modalDeleteMessage" class="text-sm text-neutral-600 mb-6 leading-relaxed">
-                    Apakah Anda yakin ingin menghapus data ini?
-                </p>
-                <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
-                    <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                    <input type="hidden" name="action" id="modalDeleteAction" value="">
-                    <input type="hidden" name="id" id="modalDeleteId" value="">
-
-                    <div class="flex items-center justify-center gap-3">
-                        <button type="button" onclick="closeModalDelete()" class="w-full px-4 py-2.5 text-sm font-semibold rounded-xl text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors">
-                            Batal
-                        </button>
-                        <button type="submit" class="w-full px-4 py-2.5 text-sm font-bold rounded-xl text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors">
-                            Ya, Hapus Data
-                        </button>
-                    </div>
-                </form>
+<div id="modalDelete" class="fixed inset-0 z-[9999] hidden overflow-y-auto bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
+        <div class="p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
+            <h3 class="text-lg font-bold text-neutral-900 mb-1">Konfirmasi Hapus Data</h3>
+            <p id="modalDeleteMessage" class="text-sm text-neutral-600 mb-6 leading-relaxed">
+                Apakah Anda yakin ingin menghapus data ini?
+            </p>
+            <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                <input type="hidden" name="action" id="modalDeleteAction" value="">
+                <input type="hidden" name="id" id="modalDeleteId" value="">
+
+                <div class="flex items-center justify-center gap-3">
+                    <button type="button" onclick="closeModalDelete()" class="w-full px-4 py-2.5 text-sm font-semibold rounded-xl text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-full px-4 py-2.5 text-sm font-bold rounded-xl text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors cursor-pointer">
+                        Ya, Hapus Data
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- JavaScript Component Controllers -->
 <script>
-window.handleEditSeksi = function(btn) {
-    const id = btn.getAttribute('data-id');
-    const kode = btn.getAttribute('data-kode');
-    const nama = btn.getAttribute('data-nama');
-    window.openModalSeksiEdit(id, kode, nama);
-};
-
-window.handleEditKegiatan = function(btn) {
-    const id = btn.getAttribute('data-id');
-    const tusiId = btn.getAttribute('data-tusi-id');
-    const uraian = btn.getAttribute('data-uraian');
-    const substansi = btn.getAttribute('data-substansi');
-    const aktif = btn.getAttribute('data-aktif');
-    window.openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif);
-};
-
-window.handleDeleteData = function(btn) {
-    const action = btn.getAttribute('data-action');
-    const id = btn.getAttribute('data-id');
-    const name = btn.getAttribute('data-name');
-    window.openModalDelete(action, id, name);
-};
-
-window.openModalSeksiCreate = function() {
-    const modal = document.getElementById('modalSeksi');
-    if (!modal) return;
-    document.getElementById('modalSeksiTitle').innerText = 'Tambah Seksi TUSI Baru';
-    document.getElementById('modalSeksiAction').value = 'create_seksi';
-    document.getElementById('modalSeksiId').value = '';
-    document.getElementById('modalSeksiKode').value = '';
-    document.getElementById('modalSeksiNama').value = '';
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-window.openModalSeksiEdit = function(id, kode, nama) {
-    const modal = document.getElementById('modalSeksi');
-    if (!modal) return;
-    document.getElementById('modalSeksiTitle').innerText = 'Edit Seksi TUSI';
-    document.getElementById('modalSeksiAction').value = 'update_seksi';
-    document.getElementById('modalSeksiId').value = id;
-    document.getElementById('modalSeksiKode').value = kode;
-    document.getElementById('modalSeksiNama').value = nama;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-window.closeModalSeksi = function() {
-    const modal = document.getElementById('modalSeksi');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+(function() {
+    function showModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            if (modal.parentNode !== document.body) {
+                document.body.appendChild(modal);
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
     }
-};
 
-window.openModalKegiatanCreate = function() {
-    const modal = document.getElementById('modalKegiatan');
-    if (!modal) return;
-    document.getElementById('modalKegiatanTitle').innerText = 'Tambah Kegiatan TUSI Baru';
-    document.getElementById('modalKegiatanAction').value = 'create_kegiatan';
-    document.getElementById('modalKegiatanId').value = '';
-    document.getElementById('modalKegiatanUraian').value = '';
-    document.getElementById('modalKegiatanSubstansi').value = '';
-    document.getElementById('modalKegiatanAktif').checked = true;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-window.openModalKegiatanEdit = function(id, tusiId, uraian, substansi, aktif) {
-    const modal = document.getElementById('modalKegiatan');
-    if (!modal) return;
-    document.getElementById('modalKegiatanTitle').innerText = 'Edit Kegiatan TUSI';
-    document.getElementById('modalKegiatanAction').value = 'update_kegiatan';
-    document.getElementById('modalKegiatanId').value = id;
-    document.getElementById('modalKegiatanTusiId').value = tusiId;
-    document.getElementById('modalKegiatanUraian').value = uraian;
-    document.getElementById('modalKegiatanSubstansi').value = substansi;
-    document.getElementById('modalKegiatanAktif').checked = (parseInt(aktif) === 1);
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-window.closeModalKegiatan = function() {
-    const modal = document.getElementById('modalKegiatan');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+    function hideModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
-};
 
-window.openModalDelete = function(action, id, itemName) {
-    const modal = document.getElementById('modalDelete');
-    if (!modal) return;
-    document.getElementById('modalDeleteAction').value = action;
-    document.getElementById('modalDeleteId').value = id;
-    
-    let msg = "Apakah Anda yakin ingin menghapus data <strong>\"" + itemName + "\"</strong>?";
-    if (action === 'delete_seksi') {
-        msg += "<br><span class='text-xs text-error-600 block mt-2 font-medium'>Catatan: Seksi TUSI hanya bisa dihapus jika tidak memiliki rincian Uraian Tugas.</span>";
-    } else if (action === 'delete_kegiatan') {
-        msg += "<br><span class='text-xs text-error-600 block mt-2 font-medium'>Catatan: Data tidak bisa dihapus jika sudah digunakan pada Laporan Kegiatan penyuluh.</span>";
-    }
-    
-    document.getElementById('modalDeleteMessage').innerHTML = msg;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
+    window.handleEditSeksi = function(btn) {
+        const id = btn.getAttribute('data-id');
+        const kode = btn.getAttribute('data-kode');
+        const nama = btn.getAttribute('data-nama');
+        window.openModalSeksiEdit(id, kode, nama);
+    };
 
-window.closeModalDelete = function() {
-    const modal = document.getElementById('modalDelete');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-};
+    window.handleEditKegiatan = function(btn) {
+        const id = btn.getAttribute('data-id');
+        const tusiId = btn.getAttribute('data-tusi-id');
+        const uraian = btn.getAttribute('data-uraian');
+        const substansi = btn.getAttribute('data-substansi');
+        const aktif = btn.getAttribute('data-aktif');
+        window.openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif);
+    };
+
+    window.handleDeleteData = function(btn) {
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        window.openModalDelete(action, id, name);
+    };
+
+    window.openModalSeksiCreate = function() {
+        const titleEl = document.getElementById('modalSeksiTitle');
+        const headerTitleEl = document.getElementById('formSeksiHeaderTitle');
+        if (titleEl) titleEl.innerText = 'Kelola Seksi TUSI';
+        if (headerTitleEl) headerTitleEl.innerText = 'Tambah Seksi Baru';
+        document.getElementById('modalSeksiAction').value = 'create_seksi';
+        document.getElementById('modalSeksiId').value = '';
+        document.getElementById('modalSeksiKode').value = '';
+        document.getElementById('modalSeksiNama').value = '';
+        showModal('modalSeksi');
+    };
+
+    window.openModalSeksiEdit = function(id, kode, nama) {
+        const titleEl = document.getElementById('modalSeksiTitle');
+        const headerTitleEl = document.getElementById('formSeksiHeaderTitle');
+        if (titleEl) titleEl.innerText = 'Edit Seksi TUSI';
+        if (headerTitleEl) headerTitleEl.innerText = 'Edit Data Seksi [' + kode + ']';
+        document.getElementById('modalSeksiAction').value = 'update_seksi';
+        document.getElementById('modalSeksiId').value = id;
+        document.getElementById('modalSeksiKode').value = kode;
+        document.getElementById('modalSeksiNama').value = nama;
+        showModal('modalSeksi');
+    };
+
+    window.closeModalSeksi = function() {
+        hideModal('modalSeksi');
+    };
+
+    window.openModalKegiatanCreate = function() {
+        const titleEl = document.getElementById('modalKegiatanTitle');
+        if (titleEl) titleEl.innerText = 'Tambah Kegiatan TUSI Baru';
+        document.getElementById('modalKegiatanAction').value = 'create_kegiatan';
+        document.getElementById('modalKegiatanId').value = '';
+        document.getElementById('modalKegiatanUraian').value = '';
+        document.getElementById('modalKegiatanSubstansi').value = '';
+        document.getElementById('modalKegiatanAktif').checked = true;
+        showModal('modalKegiatan');
+    };
+
+    window.openModalKegiatanEdit = function(id, tusiId, uraian, substansi, aktif) {
+        const titleEl = document.getElementById('modalKegiatanTitle');
+        if (titleEl) titleEl.innerText = 'Edit Kegiatan TUSI';
+        document.getElementById('modalKegiatanAction').value = 'update_kegiatan';
+        document.getElementById('modalKegiatanId').value = id;
+        document.getElementById('modalKegiatanTusiId').value = tusiId;
+        document.getElementById('modalKegiatanUraian').value = uraian;
+        document.getElementById('modalKegiatanSubstansi').value = substansi;
+        document.getElementById('modalKegiatanAktif').checked = (parseInt(aktif) === 1);
+        showModal('modalKegiatan');
+    };
+
+    window.closeModalKegiatan = function() {
+        hideModal('modalKegiatan');
+    };
+
+    window.openModalDelete = function(action, id, itemName) {
+        document.getElementById('modalDeleteAction').value = action;
+        document.getElementById('modalDeleteId').value = id;
+        
+        let msg = "Apakah Anda yakin ingin menghapus data <strong>\"" + itemName + "\"</strong>?";
+        if (action === 'delete_seksi') {
+            msg += "<br><span class='text-xs text-error-600 block mt-2 font-medium'>Catatan: Seksi TUSI hanya bisa dihapus jika tidak memiliki rincian Uraian Tugas.</span>";
+        } else if (action === 'delete_kegiatan') {
+            msg += "<br><span class='text-xs text-error-600 block mt-2 font-medium'>Catatan: Data tidak bisa dihapus jika sudah digunakan pada Laporan Kegiatan penyuluh.</span>";
+        }
+        
+        document.getElementById('modalDeleteMessage').innerHTML = msg;
+        showModal('modalDelete');
+    };
+
+    window.closeModalDelete = function() {
+        hideModal('modalDelete');
+    };
+})();
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') {
