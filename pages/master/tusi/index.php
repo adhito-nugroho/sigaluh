@@ -368,7 +368,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
         </div>
 
         <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
-            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <input type="hidden" name="action" id="modalSeksiAction" value="create_seksi">
             <input type="hidden" name="id" id="modalSeksiId" value="">
 
@@ -407,7 +407,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             </button>
         </div>
         <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
-            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <input type="hidden" name="action" id="modalKegiatanAction" value="create_kegiatan">
             <input type="hidden" name="id" id="modalKegiatanId" value="">
 
@@ -465,7 +465,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                 Apakah Anda yakin ingin menghapus data ini?
             </p>
             <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
-                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" id="modalDeleteAction" value="">
                 <input type="hidden" name="id" id="modalDeleteId" value="">
 
