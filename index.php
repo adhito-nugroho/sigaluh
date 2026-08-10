@@ -88,7 +88,7 @@ if ($needs_layout) {
     require_once 'includes/sidebar.php';
     
     // Wrapper utama konten
-    echo '<main class="flex-1 flex flex-col h-screen overflow-hidden bg-neutral-50 relative">';
+    echo '<main class="flex-1 flex flex-col h-screen bg-neutral-50 relative">';
     
     // ── TOPBAR ──
     echo '
