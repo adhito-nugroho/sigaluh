@@ -457,62 +457,77 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 
 <!-- JavaScript Component Controllers -->
 <script>
-function handleEditSeksi(btn) {
+window.handleEditSeksi = function(btn) {
     const id = btn.getAttribute('data-id');
     const kode = btn.getAttribute('data-kode');
     const nama = btn.getAttribute('data-nama');
-    openModalSeksiEdit(id, kode, nama);
-}
+    window.openModalSeksiEdit(id, kode, nama);
+};
 
-function handleEditKegiatan(btn) {
+window.handleEditKegiatan = function(btn) {
     const id = btn.getAttribute('data-id');
     const tusiId = btn.getAttribute('data-tusi-id');
     const uraian = btn.getAttribute('data-uraian');
     const substansi = btn.getAttribute('data-substansi');
     const aktif = btn.getAttribute('data-aktif');
-    openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif);
-}
+    window.openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif);
+};
 
-function handleDeleteData(btn) {
+window.handleDeleteData = function(btn) {
     const action = btn.getAttribute('data-action');
     const id = btn.getAttribute('data-id');
     const name = btn.getAttribute('data-name');
-    openModalDelete(action, id, name);
-}
+    window.openModalDelete(action, id, name);
+};
 
-function openModalSeksiCreate() {
+window.openModalSeksiCreate = function() {
+    const modal = document.getElementById('modalSeksi');
+    if (!modal) return;
     document.getElementById('modalSeksiTitle').innerText = 'Tambah Seksi TUSI Baru';
     document.getElementById('modalSeksiAction').value = 'create_seksi';
     document.getElementById('modalSeksiId').value = '';
     document.getElementById('modalSeksiKode').value = '';
     document.getElementById('modalSeksiNama').value = '';
-    document.getElementById('modalSeksi').classList.remove('hidden');
-}
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-function openModalSeksiEdit(id, kode, nama) {
+window.openModalSeksiEdit = function(id, kode, nama) {
+    const modal = document.getElementById('modalSeksi');
+    if (!modal) return;
     document.getElementById('modalSeksiTitle').innerText = 'Edit Seksi TUSI';
     document.getElementById('modalSeksiAction').value = 'update_seksi';
     document.getElementById('modalSeksiId').value = id;
     document.getElementById('modalSeksiKode').value = kode;
     document.getElementById('modalSeksiNama').value = nama;
-    document.getElementById('modalSeksi').classList.remove('hidden');
-}
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-function closeModalSeksi() {
-    document.getElementById('modalSeksi').classList.add('hidden');
-}
+window.closeModalSeksi = function() {
+    const modal = document.getElementById('modalSeksi');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
 
-function openModalKegiatanCreate() {
+window.openModalKegiatanCreate = function() {
+    const modal = document.getElementById('modalKegiatan');
+    if (!modal) return;
     document.getElementById('modalKegiatanTitle').innerText = 'Tambah Kegiatan TUSI Baru';
     document.getElementById('modalKegiatanAction').value = 'create_kegiatan';
     document.getElementById('modalKegiatanId').value = '';
     document.getElementById('modalKegiatanUraian').value = '';
     document.getElementById('modalKegiatanSubstansi').value = '';
     document.getElementById('modalKegiatanAktif').checked = true;
-    document.getElementById('modalKegiatan').classList.remove('hidden');
-}
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-function openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif) {
+window.openModalKegiatanEdit = function(id, tusiId, uraian, substansi, aktif) {
+    const modal = document.getElementById('modalKegiatan');
+    if (!modal) return;
     document.getElementById('modalKegiatanTitle').innerText = 'Edit Kegiatan TUSI';
     document.getElementById('modalKegiatanAction').value = 'update_kegiatan';
     document.getElementById('modalKegiatanId').value = id;
@@ -520,14 +535,21 @@ function openModalKegiatanEdit(id, tusiId, uraian, substansi, aktif) {
     document.getElementById('modalKegiatanUraian').value = uraian;
     document.getElementById('modalKegiatanSubstansi').value = substansi;
     document.getElementById('modalKegiatanAktif').checked = (parseInt(aktif) === 1);
-    document.getElementById('modalKegiatan').classList.remove('hidden');
-}
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-function closeModalKegiatan() {
-    document.getElementById('modalKegiatan').classList.add('hidden');
-}
+window.closeModalKegiatan = function() {
+    const modal = document.getElementById('modalKegiatan');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
 
-function openModalDelete(action, id, itemName) {
+window.openModalDelete = function(action, id, itemName) {
+    const modal = document.getElementById('modalDelete');
+    if (!modal) return;
     document.getElementById('modalDeleteAction').value = action;
     document.getElementById('modalDeleteId').value = id;
     
@@ -539,12 +561,17 @@ function openModalDelete(action, id, itemName) {
     }
     
     document.getElementById('modalDeleteMessage').innerHTML = msg;
-    document.getElementById('modalDelete').classList.remove('hidden');
-}
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-function closeModalDelete() {
-    document.getElementById('modalDelete').classList.add('hidden');
-}
+window.closeModalDelete = function() {
+    const modal = document.getElementById('modalDelete');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') {
