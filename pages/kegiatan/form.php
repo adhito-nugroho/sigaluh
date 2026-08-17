@@ -42,6 +42,16 @@ if (!$selected_provinsi_id) {
         }
     }
 }
+
+// Ambil lampiran foto yang sudah ada (mode edit)
+$lampiran_list = [];
+if ($is_edit) {
+    $stmt_lamp = $pdo->prepare("SELECT * FROM kegiatan_lampiran WHERE kegiatan_id = ? ORDER BY uploaded_at ASC");
+    $stmt_lamp->execute([$kegiatan['id']]);
+    $lampiran_list = $stmt_lamp->fetchAll();
+}
+$max_lampiran = 3;
+$sisa_slot = $max_lampiran - count($lampiran_list);
 ?>
 
 <div class="mb-6 flex items-center justify-between">
@@ -307,6 +317,75 @@ if (!$selected_provinsi_id) {
                 <textarea name="kesimpulan_saran" rows="2"
                     class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
             </div>
+
+        </div>
+    </div>
+
+    <!-- Section Lampiran Foto -->
+    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
+            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
+                <i data-lucide="camera" class="w-5 h-5 text-neutral-400 mr-2"></i>
+                Lampiran Foto
+                <span class="ml-2 text-xs font-normal text-neutral-400">(Opsional, maks. <?= $max_lampiran ?> foto)</span>
+            </h2>
+            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+        </div>
+        <div class="p-6" x-show="open">
+
+            <?php if (!empty($lampiran_list)): ?>
+            <!-- Foto yang sudah ada -->
+            <div class="mb-5">
+                <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Foto Terlampir (<?= count($lampiran_list) ?>/<?= $max_lampiran ?>)</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <?php foreach ($lampiran_list as $lamp): ?>
+                    <div class="relative group rounded-xl overflow-hidden border border-neutral-200 shadow-sm bg-neutral-100" style="aspect-ratio:16/9;">
+                        <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $kegiatan['id'] ?>/<?= e($lamp['nama_file']) ?>"
+                             alt="Lampiran" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <button type="button"
+                                onclick="hapusLampiran(<?= $lamp['id'] ?>, this)"
+                                class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-colors">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5 inline mr-1"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($sisa_slot > 0): ?>
+            <!-- Upload foto baru -->
+            <div id="upload_foto_area">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    <?= $is_edit ? 'Tambah Foto Baru' : 'Upload Foto' ?>
+                    <span class="text-neutral-400 font-normal">(maks. <?= $sisa_slot ?> foto lagi, JPEG/PNG/WEBP, maks. 10MB per foto)</span>
+                </label>
+                <div id="foto_dropzone"
+                     class="border-2 border-dashed border-neutral-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50/30 transition-all"
+                     onclick="document.getElementById('foto_lampiran_input').click()"
+                     ondragover="event.preventDefault(); this.classList.add('border-primary-500', 'bg-primary-50/40')"
+                     ondragleave="this.classList.remove('border-primary-500', 'bg-primary-50/40')"
+                     ondrop="handleFotoDrop(event)">
+                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-neutral-400 mb-2"></i>
+                    <p class="text-sm text-neutral-600 font-medium">Klik atau seret foto ke sini</p>
+                    <p class="text-xs text-neutral-400 mt-1">JPEG, PNG, WEBP &mdash; Maks. <?= $sisa_slot ?> foto</p>
+                </div>
+                <input type="file" id="foto_lampiran_input" name="foto_lampiran[]"
+                       multiple accept="image/jpeg,image/png,image/webp"
+                       class="hidden" onchange="previewFotoLampiran(this)">
+
+                <!-- Preview thumbnail foto baru -->
+                <div id="foto_preview_grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3" style="display:none;"></div>
+                <p id="foto_count_info" class="text-xs text-neutral-500 mt-2" style="display:none;"></p>
+            </div>
+            <?php else: ?>
+            <div class="p-4 bg-warning-50 border border-warning-200 rounded-xl text-sm text-warning-800">
+                <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                Batas maksimal <?= $max_lampiran ?> foto sudah tercapai. Hapus foto yang ada untuk menambahkan yang baru.
+            </div>
+            <?php endif; ?>
 
         </div>
     </div>
@@ -643,4 +722,84 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calculate on page load
     calculateWptDuration();
 });
+</script>
+
+<script>
+// ── Lampiran Foto ────────────────────────────────────────────────────────────
+var maxFotoSisa = <?= (int)$sisa_slot ?>;
+
+function previewFotoLampiran(input) {
+    var files = Array.from(input.files);
+    if (files.length > maxFotoSisa) {
+        alert('Maks. ' + maxFotoSisa + ' foto yang bisa ditambahkan. Hanya ' + maxFotoSisa + ' foto pertama yang akan digunakan.');
+        if (window.DataTransfer) {
+            var dt = new DataTransfer();
+            files.slice(0, maxFotoSisa).forEach(function(f) { dt.items.add(f); });
+            input.files = dt.files;
+        }
+        files = files.slice(0, maxFotoSisa);
+    }
+
+    var grid = document.getElementById('foto_preview_grid');
+    var info = document.getElementById('foto_count_info');
+    grid.innerHTML = '';
+
+    files.forEach(function(file) {
+        if (!file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var wrapper = document.createElement('div');
+            wrapper.style.cssText = 'position:relative; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb; background:#f3f4f6; aspect-ratio:16/9;';
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+            var badge = document.createElement('div');
+            badge.style.cssText = 'position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:2px 6px; border-radius:6px;';
+            badge.textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+            wrapper.appendChild(img);
+            wrapper.appendChild(badge);
+            grid.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    if (files.length > 0) {
+        grid.style.display = 'grid';
+        info.textContent = files.length + ' foto siap diupload.';
+        info.style.display = 'block';
+    } else {
+        grid.style.display = 'none';
+        info.style.display = 'none';
+    }
+}
+
+function handleFotoDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('border-primary-500', 'bg-primary-50/40');
+    var input = document.getElementById('foto_lampiran_input');
+    if (window.DataTransfer) {
+        var dt = new DataTransfer();
+        Array.from(event.dataTransfer.files).forEach(function(f) {
+            if (f.type.startsWith('image/')) dt.items.add(f);
+        });
+        input.files = dt.files;
+    }
+    previewFotoLampiran(input);
+}
+
+function hapusLampiran(lampId, btn) {
+    if (!confirm('Hapus foto ini?')) return;
+    var card = btn.closest('.relative.group');
+    // Tandai untuk dihapus saat form disubmit
+    var hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'hapus_lampiran_id[]';
+    hiddenInput.value = lampId;
+    document.querySelector('form').appendChild(hiddenInput);
+    // Visual feedback
+    card.style.opacity = '0.35';
+    card.style.pointerEvents = 'none';
+    var overlay = card.querySelector('.absolute');
+    if (overlay) overlay.innerHTML = '<div style="background:rgba(220,38,38,0.85); color:#fff; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px;">Akan dihapus</div>';
+}
 </script>

@@ -1,0 +1,15 @@
+# uploads/lampiran/.htaccess
+# Proteksi direktori upload: larang akses PHP dan tampilkan listing
+Options -Indexes
+<Files "*.php">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "*.phtml">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "*.php5">
+    Order allow,deny
+    Deny from all
+</Files>

@@ -102,4 +102,81 @@ function get_app_setting($key, $default = '') {
     }
 }
 
+/**
+ * Kompresi dan simpan gambar upload ke path tujuan.
+ * Output: JPEG quality 85, max 1920px sisi terpanjang.
+ * Mendukung input: JPEG, PNG, WEBP, GIF (dikonversi ke JPEG).
+ * Mengembalikan true jika berhasil, false jika gagal.
+ */
+function compress_and_save_image(string $source_tmp, string $dest_path, int $quality = 85, int $max_px = 1920): bool {
+    if (!function_exists('imagecreatefromjpeg')) {
+        // GD tidak tersedia — copy langsung tanpa kompresi
+        return copy($source_tmp, $dest_path);
+    }
+
+    $info = @getimagesize($source_tmp);
+    if (!$info) return false;
+
+    $mime = $info['mime'];
+
+    switch ($mime) {
+        case 'image/jpeg':
+        case 'image/jpg':
+            $src = @imagecreatefromjpeg($source_tmp);
+            break;
+        case 'image/png':
+            $src = @imagecreatefrompng($source_tmp);
+            break;
+        case 'image/webp':
+            $src = function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($source_tmp) : false;
+            break;
+        case 'image/gif':
+            $src = @imagecreatefromgif($source_tmp);
+            break;
+        default:
+            return false;
+    }
+
+    if (!$src) return false;
+
+    $orig_w = imagesx($src);
+    $orig_h = imagesy($src);
+
+    // Hitung dimensi baru (pertahankan aspek rasio)
+    if ($orig_w > $max_px || $orig_h > $max_px) {
+        if ($orig_w >= $orig_h) {
+            $new_w = $max_px;
+            $new_h = (int)round($orig_h * ($max_px / $orig_w));
+        } else {
+            $new_h = $max_px;
+            $new_w = (int)round($orig_w * ($max_px / $orig_h));
+        }
+    } else {
+        $new_w = $orig_w;
+        $new_h = $orig_h;
+    }
+
+    $dst = imagecreatetruecolor($new_w, $new_h);
+
+    // Background putih untuk PNG transparan / GIF
+    $white = imagecolorallocate($dst, 255, 255, 255);
+    imagefilledrectangle($dst, 0, 0, $new_w, $new_h, $white);
+
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $new_w, $new_h, $orig_w, $orig_h);
+
+    // Buat direktori jika belum ada
+    $dir = dirname($dest_path);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    $result = imagejpeg($dst, $dest_path, $quality);
+
+    // imagedestroy() deprecated since PHP 8.5 — GDImage objects are
+    // garbage collected automatically when they go out of scope.
+    unset($src, $dst);
+
+    return $result;
+
+}
 

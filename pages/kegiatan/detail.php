@@ -46,6 +46,11 @@ if (!$keg) {
     die("Kegiatan tidak ditemukan atau Anda tidak memiliki akses.");
 }
 
+// Ambil lampiran foto
+$stmt_lamp = $pdo->prepare("SELECT * FROM kegiatan_lampiran WHERE kegiatan_id = ? ORDER BY uploaded_at ASC");
+$stmt_lamp->execute([$id]);
+$lampiran_list = $stmt_lamp->fetchAll();
+
 // Handle Review Action (for Admin/Pimpinan)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role !== 'penyuluh') {
     verify_csrf_token($_POST['csrf_token'] ?? '');
@@ -192,6 +197,36 @@ function get_status_badge($status) {
                 </dl>
             </div>
         </div>
+
+        <?php if (!empty($lampiran_list)): ?>
+        <!-- Lampiran Foto -->
+        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
+                <h2 class="text-lg font-bold text-neutral-900 flex items-center">
+                    <i data-lucide="camera" class="w-5 h-5 text-neutral-400 mr-2"></i>
+                    Lampiran Foto <span class="ml-2 text-xs font-normal text-neutral-400">(<?= count($lampiran_list) ?> foto)</span>
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <?php foreach ($lampiran_list as $lamp): ?>
+                    <div class="rounded-xl overflow-hidden border border-neutral-200 shadow-sm bg-neutral-100 cursor-pointer group"
+                         onclick="openLightbox('<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>')">
+                        <div style="aspect-ratio:16/9;">
+                            <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>"
+                                 alt="Lampiran foto"
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        <div class="px-3 py-2 bg-neutral-50 border-t border-neutral-100 flex items-center justify-between">
+                            <span class="text-[11px] text-neutral-400"><?= $lamp['ukuran_bytes'] > 0 ? round($lamp['ukuran_bytes'] / 1024) . ' KB' : '' ?></span>
+                            <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-neutral-300"></i>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- Sidebar Detail -->
@@ -250,3 +285,30 @@ function get_status_badge($status) {
         </div>
     </div>
 </div>
+
+<?php if (!empty($lampiran_list)): ?>
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()"
+     style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:16px;">
+    <img id="lightbox_img" src="" alt="Foto lampiran"
+         style="max-height:90vh; max-width:100%; border-radius:12px; box-shadow:0 25px 60px rgba(0,0,0,0.5);"
+         onclick="event.stopPropagation()">
+    <button onclick="closeLightbox()"
+            style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.5); border:none; color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; line-height:1;">
+        &times;
+    </button>
+</div>
+<script>
+function openLightbox(src) {
+    var lb = document.getElementById('lightbox');
+    document.getElementById('lightbox_img').src = src;
+    lb.style.display = 'flex';
+}
+function closeLightbox() {
+    var lb = document.getElementById('lightbox');
+    lb.style.display = 'none';
+    document.getElementById('lightbox_img').src = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+</script>
+<?php endif; ?>

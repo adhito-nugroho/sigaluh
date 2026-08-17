@@ -52,6 +52,35 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $laporan_data = $stmt->fetchAll();
 
+// Ambil semua lampiran dan konversi ke base64 untuk embed di PDF
+$lampiran_pdf = []; // [ ['no'=>N, 'tanggal'=>'dd/mm/yyyy', 'base64'=>'data:...'], ... ]
+$lampiran_by_kegiatan_pdf = [];
+if (!empty($laporan_data)) {
+    $kegiatan_ids = array_column($laporan_data, 'id');
+    $placeholders = implode(',', array_fill(0, count($kegiatan_ids), '?'));
+    $stmt_lamp = $pdo->prepare("SELECT * FROM kegiatan_lampiran WHERE kegiatan_id IN ($placeholders) ORDER BY kegiatan_id ASC, uploaded_at ASC");
+    $stmt_lamp->execute($kegiatan_ids);
+    foreach ($stmt_lamp->fetchAll() as $lamp) {
+        $lampiran_by_kegiatan_pdf[$lamp['kegiatan_id']][] = $lamp;
+    }
+}
+$no_pdf = 1;
+foreach ($laporan_data as $row) {
+    if (!empty($lampiran_by_kegiatan_pdf[$row['id']])) {
+        foreach ($lampiran_by_kegiatan_pdf[$row['id']] as $lamp) {
+            $file_abs = __DIR__ . '/../../uploads/lampiran/' . $row['id'] . '/' . $lamp['nama_file'];
+            if (file_exists($file_abs)) {
+                $lampiran_pdf[] = [
+                    'no'      => $no_pdf,
+                    'tanggal' => date('d/m/Y', strtotime($row['tanggal'])),
+                    'base64'  => 'data:image/jpeg;base64,' . base64_encode(file_get_contents($file_abs)),
+                ];
+            }
+        }
+    }
+    $no_pdf++;
+}
+
 $bulan_teks = $f_bulan ? get_bulan_indo((int)$f_bulan) : 'Semua Bulan';
 
 // Data Pimpinan untuk Tanda Tangan (dari Pengaturan Admin)
@@ -195,6 +224,37 @@ ob_start();
             </td>
         </tr>
     </table>
+
+<?php if (!empty($lampiran_pdf)): ?>
+    <div style="page-break-before: always; font-family: Helvetica, Arial, sans-serif;">
+        <h3 style="font-size: 11pt; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #999; padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+            Lampiran Foto Kegiatan
+        </h3>
+        <table style="width: 100%; border-collapse: collapse;">
+        <?php
+        $chunks = array_chunk($lampiran_pdf, 2); // 2 kolom per baris
+        foreach ($chunks as $row_photos):
+        ?>
+        <tr>
+            <?php foreach ($row_photos as $photo): ?>
+            <td style="width: 48%; padding: 6px; vertical-align: top; border: none;">
+                <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                    <img src="<?= $photo['base64'] ?>" style="width: 100%; display: block;">
+                    <div style="padding: 4px 6px; font-size: 8pt; color: #555; background: #f9f9f9; border-top: 1px solid #eee;">
+                        No. <?= $photo['no'] ?> &mdash; <?= $photo['tanggal'] ?>
+                    </div>
+                </div>
+            </td>
+            <?php endforeach; ?>
+            <?php if (count($row_photos) < 2): ?>
+            <td style="width: 48%; padding: 6px; border: none;"></td>
+            <?php endif; ?>
+        </tr>
+        <tr><td colspan="2" style="height: 12px; border: none;"></td></tr>
+        <?php endforeach; ?>
+        </table>
+    </div>
+<?php endif; ?>
 </body>
 </html>
 <?php
@@ -203,6 +263,7 @@ $html = ob_get_clean();
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('isHtml5ParserEnabled', true);
+$options->set('chroot', realpath(__DIR__ . '/../../'));
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html);

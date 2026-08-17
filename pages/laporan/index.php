@@ -45,6 +45,18 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $laporan_data = $stmt->fetchAll();
 
+// Ambil semua lampiran untuk kegiatan dalam laporan ini
+$lampiran_by_kegiatan = [];
+if (!empty($laporan_data)) {
+    $kegiatan_ids = array_column($laporan_data, 'id');
+    $placeholders = implode(',', array_fill(0, count($kegiatan_ids), '?'));
+    $stmt_lamp = $pdo->prepare("SELECT * FROM kegiatan_lampiran WHERE kegiatan_id IN ($placeholders) ORDER BY kegiatan_id ASC, uploaded_at ASC");
+    $stmt_lamp->execute($kegiatan_ids);
+    foreach ($stmt_lamp->fetchAll() as $lamp) {
+        $lampiran_by_kegiatan[$lamp['kegiatan_id']][] = $lamp;
+    }
+}
+
 // Data Penyuluh yang dipilih
 $penyuluh_aktif = null;
 if (!empty($f_penyuluh)) {
@@ -265,5 +277,47 @@ if ($f_bulan && $f_tahun) {
                 </td>
             </tr>
         </table>
+
+        <?php
+        // Kumpulkan semua lampiran dari kegiatan yang ada
+        $all_lampiran_web = [];
+        $no_web = 1;
+        foreach ($laporan_data as $row) {
+            if (!empty($lampiran_by_kegiatan[$row['id']])) {
+                foreach ($lampiran_by_kegiatan[$row['id']] as $lamp) {
+                    $all_lampiran_web[] = [
+                        'no'         => $no_web,
+                        'tanggal'    => $row['tanggal'],
+                        'kegiatan_id'=> $row['id'],
+                        'lamp'       => $lamp,
+                    ];
+                }
+            }
+            $no_web++;
+        }
+        ?>
+        <?php if (!empty($all_lampiran_web)): ?>
+        <div style="margin-top: 48px; border-top: 1px solid #e5e7eb; padding-top: 24px;">
+            <h3 class="text-base font-bold text-neutral-900 mb-4 flex items-center">
+                <i data-lucide="camera" class="w-4 h-4 inline mr-2 text-neutral-500"></i>
+                Lampiran Foto Kegiatan
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <?php foreach ($all_lampiran_web as $item): ?>
+                <div class="border border-neutral-200 rounded-xl overflow-hidden shadow-sm bg-white">
+                    <div style="aspect-ratio:16/9; background:#f3f4f6;">
+                        <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $item['kegiatan_id'] ?>/<?= e($item['lamp']['nama_file']) ?>"
+                             alt="Foto kegiatan"
+                             style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <div class="px-3 py-2 text-xs text-neutral-500 bg-neutral-50 border-t border-neutral-100">
+                        <span class="font-medium text-neutral-700">Kegiatan No. <?= $item['no'] ?></span>
+                        &mdash; <?= date('d/m/Y', strtotime($item['tanggal'])) ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     <?php endif; ?>
 </div>

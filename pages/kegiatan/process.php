@@ -137,9 +137,71 @@ try {
         $id = $pdo->lastInsertId();
     }
 
+    // ── HAPUS LAMPIRAN YANG DITANDAI ─────────────────────────────────────────
+    $hapus_ids = $_POST['hapus_lampiran_id'] ?? [];
+    if (!empty($hapus_ids)) {
+        foreach ($hapus_ids as $lamp_id) {
+            $lamp_id = (int)$lamp_id;
+            if (!$lamp_id) continue;
+            // Pastikan lampiran milik kegiatan user ini
+            $stmt_lamp = $pdo->prepare(
+                "SELECT kl.nama_file, kl.kegiatan_id FROM kegiatan_lampiran kl
+                 JOIN kegiatan k ON kl.kegiatan_id = k.id
+                 WHERE kl.id = ? AND k.user_id = ?"
+            );
+            $stmt_lamp->execute([$lamp_id, $user_id]);
+            $lamp_row = $stmt_lamp->fetch();
+            if ($lamp_row) {
+                $file_path = __DIR__ . '/../../uploads/lampiran/' . $lamp_row['kegiatan_id'] . '/' . $lamp_row['nama_file'];
+                if (file_exists($file_path)) @unlink($file_path);
+                $pdo->prepare("DELETE FROM kegiatan_lampiran WHERE id = ?")->execute([$lamp_id]);
+            }
+        }
+    }
+
+    // ── UPLOAD FOTO BARU ─────────────────────────────────────────────────────
+    $max_lampiran = 3;
+    // Hitung berapa yang sudah ada setelah penghapusan
+    $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM kegiatan_lampiran WHERE kegiatan_id = ?");
+    $stmt_count->execute([$id]);
+    $existing_count = (int)$stmt_count->fetchColumn();
+    $sisa_slot = $max_lampiran - $existing_count;
+
+    if ($sisa_slot > 0 && isset($_FILES['foto_lampiran']) && !empty($_FILES['foto_lampiran']['name'][0])) {
+        $upload_base = __DIR__ . '/../../uploads/lampiran/' . $id . '/';
+        $allowed_mime = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        $uploaded = 0;
+
+        foreach ($_FILES['foto_lampiran']['tmp_name'] as $idx => $tmp_name) {
+            if ($uploaded >= $sisa_slot) break;
+            if ($_FILES['foto_lampiran']['error'][$idx] !== UPLOAD_ERR_OK) continue;
+            if (empty($tmp_name) || !is_uploaded_file($tmp_name)) continue;
+
+            // Validasi MIME via finfo (lebih aman dari ekstensi)
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->file($tmp_name);
+
+            if (!in_array($mime, $allowed_mime)) continue;
+            if ($_FILES['foto_lampiran']['size'][$idx] > 10 * 1024 * 1024) continue; // maks 10MB
+
+            $nama_file = time() . '_' . $idx . '_' . bin2hex(random_bytes(4)) . '.jpg';
+            $dest_path = $upload_base . $nama_file;
+
+            if (compress_and_save_image($tmp_name, $dest_path, 85, 1920)) {
+                $ukuran = filesize($dest_path);
+                $pdo->prepare(
+                    "INSERT INTO kegiatan_lampiran (kegiatan_id, nama_file, path_file, mime_type, ukuran_bytes)
+                     VALUES (?, ?, ?, 'image/jpeg', ?)"
+                )->execute([$id, $nama_file, 'uploads/lampiran/' . $id . '/' . $nama_file, $ukuran]);
+                $uploaded++;
+            }
+        }
+    }
+
     header('Location: ' . BASE_URL . '/index.php?page=kegiatan');
     exit;
 
 } catch (\PDOException $e) {
     die("Database Error: " . $e->getMessage());
 }
+
