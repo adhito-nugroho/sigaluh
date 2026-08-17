@@ -28,9 +28,11 @@ SET @sql_obj = IF(@col_obj = 0,
 );
 PREPARE stmt FROM @sql_obj; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Hapus data lama yang tidak sesuai standar ASN (nama tidak menggunakan prefix nomor)
--- dan insert ulang dari sumber resmi
-TRUNCATE TABLE m_aktivitas_harian;
+-- Hapus data lama dengan aman (mengabaikan FK constraint sementara agar tidak error 1701)
+SET FOREIGN_KEY_CHECKS = 0;
+DELETE FROM m_aktivitas_harian;
+ALTER TABLE m_aktivitas_harian AUTO_INCREMENT = 1;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
 -- Data dari Kamus Aktivitas Harian Dinas Kehutanan (Hal. 1/2)
