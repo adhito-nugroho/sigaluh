@@ -87,48 +87,76 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Aktivitas Harian (Master) -->
-                <div class="md:col-span-2 bg-primary-50/70 p-4 rounded-xl border border-primary-200">
-                    <label class="block text-sm font-bold text-primary-900 mb-1">Aktivitas Harian <span class="text-error-500">*</span></label>
-                    <p class="text-xs text-primary-700 mb-2">Pilih jenis aktivitas harian penyuluhan untuk menghitung alokasi Waktu Penyelesaian Tugas (WPT).</p>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="sm:col-span-2">
-                            <select name="aktivitas_harian_id" id="aktivitas_harian_id" required onchange="calculateWptDuration()"
-                                class="w-full px-4 py-2.5 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm transition-all bg-white font-semibold">
-                                <option value="">-- Pilih Aktivitas Harian --</option>
-                                <?php foreach($aktivitas_harian_list as $act): ?>
-                                    <option value="<?= $act['id'] ?>"
-                                            data-satuan="<?= e($act['satuan']) ?>"
-                                            data-wpt="<?= $act['wpt_menit'] ?>"
-                                            data-nama="<?= e($act['nama_aktivitas']) ?>"
-                                            data-deskripsi="<?= e($act['deskripsi'] ?? '') ?>"
-                                            data-objek="<?= e($act['objek_kerja'] ?? '') ?>"
-                                            <?= ($is_edit && ($kegiatan['aktivitas_harian_id'] ?? 0) == $act['id']) ? 'selected' : '' ?>>
-                                        <?= e($act['nama_aktivitas']) ?> (WPT: <?= $act['wpt_menit'] ?> mnt / <?= e($act['satuan']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                <div class="md:col-span-2 bg-primary-50/70 p-4.5 rounded-2xl border border-primary-200 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                         <div>
-                            <div class="flex items-center space-x-2">
-                                <input type="number" name="volume" id="volume_input" min="1" value="<?= $is_edit ? ($kegiatan['volume'] ?? 1) : 1 ?>" oninput="calculateWptDuration()" required
-                                    class="w-24 px-3 py-2.5 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm font-bold bg-white text-center">
-                                <span id="satuan_badge" class="text-xs font-bold text-primary-800 bg-primary-200/80 px-2.5 py-2 rounded-lg whitespace-nowrap">Satuan</span>
-                            </div>
+                            <label class="block text-sm font-bold text-primary-950 flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-primary-600"></i>
+                                Aktivitas Harian <span class="text-error-500">*</span>
+                            </label>
+                            <p class="text-xs text-primary-700">Pilih dari 96 data standar aktivitas harian ASN Kehutanan Jatim untuk alokasi WPT.</p>
                         </div>
+                        <button type="button" onclick="openPickerModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95">
+                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                            Cari / Pilih Aktivitas
+                        </button>
                     </div>
 
-                    <!-- Description & Objek Kerja Hint -->
-                    <div id="act_info_box" class="mt-2 text-xs text-primary-800 bg-primary-100/60 p-2.5 rounded-lg border border-primary-200 hidden">
-                        <div id="act_deskripsi_text" class="font-medium"></div>
-                        <div id="act_objek_text" class="text-[11px] text-primary-600 mt-1 font-semibold"></div>
+                    <!-- Hidden native select for standard form submit -->
+                    <select name="aktivitas_harian_id" id="aktivitas_harian_id" required onchange="calculateWptDuration()" class="hidden">
+                        <option value="">-- Pilih Aktivitas Harian --</option>
+                        <?php foreach($aktivitas_harian_list as $act): ?>
+                            <option value="<?= $act['id'] ?>"
+                                    data-satuan="<?= e($act['satuan']) ?>"
+                                    data-wpt="<?= $act['wpt_menit'] ?>"
+                                    data-nama="<?= e($act['nama_aktivitas']) ?>"
+                                    data-deskripsi="<?= e($act['deskripsi'] ?? '') ?>"
+                                    data-objek="<?= e($act['objek_kerja'] ?? '') ?>"
+                                    <?= ($is_edit && ($kegiatan['aktivitas_harian_id'] ?? 0) == $act['id']) ? 'selected' : '' ?>>
+                                <?= e($act['nama_aktivitas']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <!-- Interactive Selected Card & Quick Input -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div class="md:col-span-2">
+                            <div id="selected_act_card" onclick="openPickerModal()" class="cursor-pointer bg-white p-3.5 rounded-xl border border-primary-300 hover:border-primary-500 hover:shadow-md transition-all group relative">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-xs font-semibold text-primary-600 mb-0.5 flex items-center gap-1">
+                                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-primary-600"></i>
+                                            <span id="card_satuan_tag">Aktivitas Terpilih</span>
+                                        </div>
+                                        <h4 id="card_act_title" class="text-sm font-extrabold text-neutral-900 leading-snug group-hover:text-primary-700 transition-colors">
+                                            -- Klik untuk Pilih Aktivitas Harian --
+                                        </h4>
+                                        <p id="card_act_deskripsi" class="text-xs text-neutral-500 mt-1 line-clamp-2 hidden"></p>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-100 text-primary-800 text-xs font-bold">
+                                            <i data-lucide="search" class="w-3 h-3"></i> Cari
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-primary-900 mb-1">Volume Hasil</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" name="volume" id="volume_input" min="1" value="<?= $is_edit ? ($kegiatan['volume'] ?? 1) : 1 ?>" oninput="calculateWptDuration()" required
+                                    class="w-full px-3 py-2.5 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm font-bold bg-white text-center">
+                                <span id="satuan_badge" class="text-xs font-bold text-primary-800 bg-primary-200/80 px-2.5 py-2.5 rounded-xl whitespace-nowrap">Satuan</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Output Kalkulasi WPT -->
                     <div class="mt-3 pt-3 border-t border-primary-200/80 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-primary-900">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="clock" class="w-4 h-4 text-primary-600"></i>
-                            <span>Estimasi Waktu: <strong id="wpt_single_display">0 Menit</strong> / satuan</span>
+                            <span>Estimasi Waktu Standar: <strong id="wpt_single_display">0 Menit</strong> / satuan</span>
                         </div>
                         <div class="bg-primary-700 text-white px-3 py-1 rounded-lg font-extrabold text-xs shadow-sm">
                             Total Durasi: <span id="wpt_total_display">0 Menit (0 Jam)</span>
@@ -825,3 +853,233 @@ function hapusLampiran(lampId, btn) {
     if (overlay) overlay.innerHTML = '<div style="background:rgba(220,38,38,0.85); color:#fff; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px;">Akan dihapus</div>';
 }
 </script>
+
+<!-- Modal Picker Aktivitas Harian dengan Live Search & Chip Kategori -->
+<div id="pickerModal" class="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-5" onclick="if(event.target===this) closePickerModal()">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl border border-neutral-200 overflow-hidden">
+        
+        <!-- Header & Search Input -->
+        <div class="p-4 sm:p-5 border-b border-neutral-100 bg-neutral-50/90 shrink-0">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-primary-100 text-primary-700 rounded-xl">
+                        <i data-lucide="list-checks" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-neutral-900 leading-tight">Pilih Aktivitas Harian</h3>
+                        <p class="text-xs text-neutral-500 font-medium">96 Standar Aktivitas Kehutanan &amp; ASN Jawa Timur</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePickerModal()" class="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200/60 rounded-xl transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="picker_search_input" oninput="filterPickerItems()" placeholder="Ketik kata kunci (misal: patroli, KTH, karhutla, laporan, surat, aplikasi)..."
+                    class="w-full pl-10 pr-10 py-2.5 border border-neutral-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none bg-white shadow-sm">
+                <button type="button" id="btn_clear_picker_search" onclick="clearPickerSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Category Chips Filter -->
+            <div class="flex items-center gap-1.5 mt-3 overflow-x-auto pb-1 text-xs no-scrollbar">
+                <button type="button" onclick="setPickerCategory('all', this)" class="chip-cat active-chip px-3 py-1.5 rounded-full font-bold bg-primary-700 text-white whitespace-nowrap transition-all shadow-sm">Semua (<?= count($aktivitas_harian_list) ?>)</button>
+                <button type="button" onclick="setPickerCategory('kehutanan', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">🌲 Kehutanan &amp; Patroli</button>
+                <button type="button" onclick="setPickerCategory('kth', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">👥 KTH &amp; Binaan</button>
+                <button type="button" onclick="setPickerCategory('dokumen', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">📝 Surat &amp; Laporan</button>
+                <button type="button" onclick="setPickerCategory('rapat', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">🤝 Rapat &amp; Koordinasi</button>
+                <button type="button" onclick="setPickerCategory('it', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">💻 IT &amp; Sistem</button>
+            </div>
+        </div>
+
+        <!-- Scrollable List of Items -->
+        <div id="picker_items_container" class="p-3 sm:p-4 overflow-y-auto space-y-2 flex-1 bg-neutral-50/50">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Footer -->
+        <div class="p-3 px-5 border-t border-neutral-100 bg-white flex items-center justify-between text-xs text-neutral-500 shrink-0">
+            <span id="picker_count_info" class="font-medium text-neutral-600">Menampilkan seluruh data</span>
+            <button type="button" onclick="closePickerModal()" class="px-4 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-xl transition-colors">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Data Master Aktivitas Harian JSON untuk Picker
+var allAktivitasData = <?= json_encode($aktivitas_harian_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+var currentCategory = 'all';
+
+function openPickerModal() {
+    var modal = document.getElementById('pickerModal');
+    modal.classList.remove('hidden');
+    setTimeout(function() {
+        document.getElementById('picker_search_input').focus();
+    }, 50);
+    renderPickerItems();
+    if (window.lucide) lucide.createIcons();
+}
+
+function closePickerModal() {
+    document.getElementById('pickerModal').classList.add('hidden');
+}
+
+function clearPickerSearch() {
+    document.getElementById('picker_search_input').value = '';
+    document.getElementById('btn_clear_picker_search').classList.add('hidden');
+    renderPickerItems();
+}
+
+function setPickerCategory(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.chip-cat').forEach(function(c) {
+        c.className = 'chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all';
+    });
+    btn.className = 'chip-cat active-chip px-3 py-1.5 rounded-full font-bold bg-primary-700 text-white whitespace-nowrap transition-all shadow-sm';
+    renderPickerItems();
+}
+
+function filterPickerItems() {
+    var searchVal = document.getElementById('picker_search_input').value.trim();
+    var clearBtn = document.getElementById('btn_clear_picker_search');
+    if (searchVal.length > 0) {
+        clearBtn.classList.remove('hidden');
+    } else {
+        clearBtn.classList.add('hidden');
+    }
+    renderPickerItems();
+}
+
+function renderPickerItems() {
+    var searchVal = document.getElementById('picker_search_input').value.toLowerCase().trim();
+    var container = document.getElementById('picker_items_container');
+    var countInfo = document.getElementById('picker_count_info');
+    var selectedId = document.getElementById('aktivitas_harian_id').value;
+
+    container.innerHTML = '';
+
+    var filtered = allAktivitasData.filter(function(item) {
+        // Filter Category
+        if (currentCategory !== 'all') {
+            var textAll = (item.nama_aktivitas + ' ' + (item.deskripsi || '') + ' ' + (item.objek_kerja || '')).toLowerCase();
+            if (currentCategory === 'kehutanan' && !/hutan|patroli|sekat|bakar|hotspot|ekosistem|tkp|perlindungan|kebakaran/.test(textAll)) return false;
+            if (currentCategory === 'kth' && !/kth|kelompok|binaan|pendampingan|kelas/.test(textAll)) return false;
+            if (currentCategory === 'dokumen' && !/surat|laporan|dokumen|kak|notula|berita|naskah|sk|peraturan/.test(textAll)) return false;
+            if (currentCategory === 'rapat' && !/rapat|koordinasi|mediasi|dialog|kunjungan/.test(textAll)) return false;
+            if (currentCategory === 'it' && !/aplikasi|server|testing|deployment|troubleshooting|backup|database|data/.test(textAll)) return false;
+        }
+
+        // Filter Search Query
+        if (searchVal !== '') {
+            var matchNama = item.nama_aktivitas.toLowerCase().includes(searchVal);
+            var matchSatuan = item.satuan.toLowerCase().includes(searchVal);
+            var matchDesk = (item.deskripsi || '').toLowerCase().includes(searchVal);
+            var matchObj = (item.objek_kerja || '').toLowerCase().includes(searchVal);
+            return matchNama || matchSatuan || matchDesk || matchObj;
+        }
+
+        return true;
+    });
+
+    countInfo.textContent = 'Menampilkan ' + filtered.length + ' dari ' + allAktivitasData.length + ' aktivitas';
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-neutral-400 font-medium bg-white rounded-xl border border-neutral-200"><i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-neutral-300"></i>Tidak ada aktivitas harian yang cocok dengan pencarian.</div>';
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    filtered.forEach(function(item) {
+        var isSelected = (String(item.id) === String(selectedId));
+        var card = document.createElement('div');
+        card.className = 'p-3.5 bg-white hover:bg-primary-50/50 rounded-xl border ' + (isSelected ? 'border-primary-600 bg-primary-50/80 shadow-sm' : 'border-neutral-200/80 hover:border-primary-300') + ' cursor-pointer transition-all flex items-start justify-between gap-3 group';
+        card.onclick = function() { selectPickerItem(item.id); };
+
+        var html = '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 mb-1 flex-wrap">' +
+                '<span class="px-2 py-0.5 bg-primary-100 text-primary-800 text-[11px] font-bold rounded-md">' + escapeHtml(item.satuan) + '</span>' +
+                '<span class="px-2 py-0.5 bg-neutral-100 text-neutral-700 text-[11px] font-bold rounded-md">WPT: ' + item.wpt_menit + ' Mnt (' + (item.wpt_menit/60).toFixed(1) + ' Jam)</span>' +
+            '</div>' +
+            '<h4 class="text-sm font-bold text-neutral-900 group-hover:text-primary-700 transition-colors">' + escapeHtml(item.nama_aktivitas) + '</h4>';
+
+        if (item.deskripsi) {
+            html += '<p class="text-xs text-neutral-500 mt-1 line-clamp-2 leading-relaxed">' + escapeHtml(item.deskripsi) + '</p>';
+        }
+        if (item.objek_kerja) {
+            html += '<span class="inline-block text-[11px] text-primary-600 font-semibold mt-1 bg-primary-50 px-2 py-0.5 rounded">📦 Objek: ' + escapeHtml(item.objek_kerja) + '</span>';
+        }
+
+        html += '</div>';
+
+        if (isSelected) {
+            html += '<div class="shrink-0 text-primary-600 font-bold text-xs flex items-center gap-1 bg-primary-100 px-2.5 py-1 rounded-lg"><i data-lucide="check" class="w-4 h-4"></i> Terpilih</div>';
+        }
+
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function selectPickerItem(id) {
+    var select = document.getElementById('aktivitas_harian_id');
+    select.value = id;
+    calculateWptDuration();
+    updateSelectedCardDisplay();
+    closePickerModal();
+}
+
+function updateSelectedCardDisplay() {
+    var select = document.getElementById('aktivitas_harian_id');
+    var titleEl = document.getElementById('card_act_title');
+    var deskEl = document.getElementById('card_act_deskripsi');
+    var tagEl = document.getElementById('card_satuan_tag');
+
+    if (!select || !select.value) {
+        titleEl.textContent = '-- Klik untuk Pilih Aktivitas Harian --';
+        titleEl.className = 'text-sm font-extrabold text-neutral-400 leading-snug';
+        tagEl.textContent = 'Aktivitas Terpilih';
+        deskEl.classList.add('hidden');
+        return;
+    }
+
+    var selectedOpt = select.options[select.selectedIndex];
+    if (selectedOpt) {
+        var nama = selectedOpt.getAttribute('data-nama') || selectedOpt.text;
+        var satuan = selectedOpt.getAttribute('data-satuan') || '';
+        var wpt = selectedOpt.getAttribute('data-wpt') || '';
+        var deskripsi = selectedOpt.getAttribute('data-deskripsi') || '';
+
+        titleEl.textContent = nama;
+        titleEl.className = 'text-sm font-extrabold text-neutral-900 leading-snug group-hover:text-primary-700 transition-colors';
+        tagEl.textContent = satuan ? (satuan + ' • WPT: ' + wpt + ' Menit') : 'Aktivitas Terpilih';
+
+        if (deskripsi) {
+            deskEl.textContent = deskripsi;
+            deskEl.classList.remove('hidden');
+        } else {
+            deskEl.classList.add('hidden');
+        }
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCardDisplay();
+});
+</script>
+
