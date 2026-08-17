@@ -28,7 +28,7 @@ if ($id) {
 $provinsi_list = $pdo->query("SELECT id, nama FROM m_provinsi ORDER BY nama ASC")->fetchAll();
 $tusi_list = $pdo->query("SELECT id, kode, nama FROM m_tusi ORDER BY id ASC")->fetchAll();
 $kth_list = $pdo->query("SELECT id, nama, provinsi_id, kabupaten_id, kecamatan_id, desa_id FROM m_kth ORDER BY nama ASC")->fetchAll();
-$aktivitas_harian_list = $pdo->query("SELECT id, nama_aktivitas, satuan, wpt_menit FROM m_aktivitas_harian ORDER BY id ASC")->fetchAll();
+$aktivitas_harian_list = $pdo->query("SELECT id, nama_aktivitas, satuan, wpt_menit, deskripsi, objek_kerja FROM m_aktivitas_harian ORDER BY id ASC")->fetchAll();
 
 $is_edit = $kegiatan !== null;
 $selected_provinsi_id = $is_edit ? $kegiatan['provinsi_id'] : null;
@@ -101,6 +101,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                                             data-satuan="<?= e($act['satuan']) ?>"
                                             data-wpt="<?= $act['wpt_menit'] ?>"
                                             data-nama="<?= e($act['nama_aktivitas']) ?>"
+                                            data-deskripsi="<?= e($act['deskripsi'] ?? '') ?>"
+                                            data-objek="<?= e($act['objek_kerja'] ?? '') ?>"
                                             <?= ($is_edit && ($kegiatan['aktivitas_harian_id'] ?? 0) == $act['id']) ? 'selected' : '' ?>>
                                         <?= e($act['nama_aktivitas']) ?> (WPT: <?= $act['wpt_menit'] ?> mnt / <?= e($act['satuan']) ?>)
                                     </option>
@@ -114,6 +116,12 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                                 <span id="satuan_badge" class="text-xs font-bold text-primary-800 bg-primary-200/80 px-2.5 py-2 rounded-lg whitespace-nowrap">Satuan</span>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Description & Objek Kerja Hint -->
+                    <div id="act_info_box" class="mt-2 text-xs text-primary-800 bg-primary-100/60 p-2.5 rounded-lg border border-primary-200 hidden">
+                        <div id="act_deskripsi_text" class="font-medium"></div>
+                        <div id="act_objek_text" class="text-[11px] text-primary-600 mt-1 font-semibold"></div>
                     </div>
 
                     <!-- Output Kalkulasi WPT -->
@@ -691,11 +699,15 @@ document.addEventListener('DOMContentLoaded', function() {
         var satBadge   = document.getElementById('satuan_badge');
         var singleDisp = document.getElementById('wpt_single_display');
         var totalDisp  = document.getElementById('wpt_total_display');
+        var infoBox    = document.getElementById('act_info_box');
+        var deskText   = document.getElementById('act_deskripsi_text');
+        var objText    = document.getElementById('act_objek_text');
 
         if (!actSelect || !actSelect.value) {
             satBadge.textContent   = 'Satuan';
             singleDisp.textContent = '0 Menit';
             totalDisp.textContent  = '0 Menit (0 Jam)';
+            if (infoBox) infoBox.classList.add('hidden');
             return;
         }
 
@@ -703,6 +715,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var satuan = selectedOpt.getAttribute('data-satuan') || 'Satuan';
         var wpt    = parseInt(selectedOpt.getAttribute('data-wpt') || '0', 10);
         var nama   = selectedOpt.getAttribute('data-nama') || '';
+        var deskripsi = selectedOpt.getAttribute('data-deskripsi') || '';
+        var objek = selectedOpt.getAttribute('data-objek') || '';
         var vol    = parseInt(volInput.value || '1', 10);
 
         satBadge.textContent   = satuan;
@@ -711,6 +725,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var totalMenit = wpt * Math.max(1, vol);
         var totalJam   = (totalMenit / 60).toFixed(1);
         totalDisp.textContent = totalMenit + ' Menit (' + totalJam + ' Jam)';
+
+        if (infoBox && (deskripsi || objek)) {
+            if (deskText) deskText.textContent = deskripsi ? '📌 Deskripsi: ' + deskripsi : '';
+            if (objText) objText.textContent = objek ? '📦 Objek Kerja: ' + objek : '';
+            infoBox.classList.remove('hidden');
+        } else if (infoBox) {
+            infoBox.classList.add('hidden');
+        }
 
         // Auto fill Uraian Kegiatan if empty
         var uraianEl = document.getElementsByName('uraian_kegiatan')[0];

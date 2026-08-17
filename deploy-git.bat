@@ -23,21 +23,12 @@ echo [1/3] Mendorong perubahan lokal ke Repository...
 
 git add .
 
-set "NEED_COMMIT=0"
-for /f %%i in ('git diff --cached --name-only') do set "NEED_COMMIT=1"
-
-if "!NEED_COMMIT!"=="0" (
+git status --porcelain | findstr /R "." >nul
+if errorlevel 1 (
     echo Tidak ada perubahan lokal. Skip commit, lanjut push/pull...
 ) else (
-    set /p msg="Masukkan pesan commit (tekan Enter untuk default 'update aplikasi'): "
-    if "!msg!"=="" set "msg=update aplikasi"
-
+    set "msg=update aplikasi"
     git commit -m "!msg!"
-    if errorlevel 1 (
-        echo Gagal melakukan git commit!
-        pause
-        exit /b 1
-    )
 )
 
 git push origin %BRANCH%

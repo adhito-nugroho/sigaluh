@@ -20,12 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nama_aktivitas = trim($_POST['nama_aktivitas'] ?? '');
             $satuan = trim($_POST['satuan'] ?? '');
             $wpt_menit = (int)($_POST['wpt_menit'] ?? 0);
+            $deskripsi = trim($_POST['deskripsi'] ?? '');
+            $objek_kerja = trim($_POST['objek_kerja'] ?? '');
 
             if (empty($nama_aktivitas) || empty($satuan) || $wpt_menit <= 0) {
                 $error = 'Semua field wajib diisi dan WPT harus lebih besar dari 0.';
             } else {
-                $stmt = $pdo->prepare("INSERT INTO m_aktivitas_harian (nama_aktivitas, satuan, wpt_menit) VALUES (?, ?, ?)");
-                $stmt->execute([$nama_aktivitas, $satuan, $wpt_menit]);
+                $stmt = $pdo->prepare("INSERT INTO m_aktivitas_harian (nama_aktivitas, satuan, wpt_menit, deskripsi, objek_kerja) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$nama_aktivitas, $satuan, $wpt_menit, $deskripsi ?: null, $objek_kerja ?: null]);
                 $success = 'Aktivitas harian berhasil ditambahkan.';
             }
         } elseif ($action === 'update') {
@@ -33,12 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nama_aktivitas = trim($_POST['nama_aktivitas'] ?? '');
             $satuan = trim($_POST['satuan'] ?? '');
             $wpt_menit = (int)($_POST['wpt_menit'] ?? 0);
+            $deskripsi = trim($_POST['deskripsi'] ?? '');
+            $objek_kerja = trim($_POST['objek_kerja'] ?? '');
 
             if ($id <= 0 || empty($nama_aktivitas) || empty($satuan) || $wpt_menit <= 0) {
                 $error = 'Semua field wajib diisi dan WPT harus lebih besar dari 0.';
             } else {
-                $stmt = $pdo->prepare("UPDATE m_aktivitas_harian SET nama_aktivitas = ?, satuan = ?, wpt_menit = ? WHERE id = ?");
-                $stmt->execute([$nama_aktivitas, $satuan, $wpt_menit, $id]);
+                $stmt = $pdo->prepare("UPDATE m_aktivitas_harian SET nama_aktivitas = ?, satuan = ?, wpt_menit = ?, deskripsi = ?, objek_kerja = ? WHERE id = ?");
+                $stmt->execute([$nama_aktivitas, $satuan, $wpt_menit, $deskripsi ?: null, $objek_kerja ?: null, $id]);
                 $success = 'Aktivitas harian berhasil diperbarui.';
             }
         } elseif ($action === 'delete') {
@@ -62,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch all data
 $q = trim($_GET['q'] ?? '');
 if (!empty($q)) {
-    $stmt = $pdo->prepare("SELECT * FROM m_aktivitas_harian WHERE nama_aktivitas LIKE ? OR satuan LIKE ? ORDER BY id ASC");
-    $stmt->execute(["%$q%", "%$q%"]);
+    $stmt = $pdo->prepare("SELECT * FROM m_aktivitas_harian WHERE nama_aktivitas LIKE ? OR satuan LIKE ? OR deskripsi LIKE ? OR objek_kerja LIKE ? ORDER BY id ASC");
+    $stmt->execute(["%$q%", "%$q%", "%$q%", "%$q%"]);
 } else {
     $stmt = $pdo->query("SELECT * FROM m_aktivitas_harian ORDER BY id ASC");
 }
@@ -77,7 +81,7 @@ $aktivitas_list = $stmt->fetchAll();
             <i data-lucide="database" class="w-3.5 h-3.5"></i> Master Data
         </div>
         <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Master Aktivitas Harian</h1>
-        <p class="text-sm text-neutral-500 font-medium">Kelola standar aktivitas harian dan Waktu Penyelesaian Tugas (WPT) penyuluh.</p>
+        <p class="text-sm text-neutral-500 font-medium">Kelola standar aktivitas harian, deskripsi, dan Waktu Penyelesaian Tugas (WPT) penyuluh.</p>
     </div>
     <div>
         <button onclick="openModalCreate()" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
@@ -104,7 +108,7 @@ $aktivitas_list = $stmt->fetchAll();
         <input type="hidden" name="page" value="master/aktivitas">
         <div class="relative flex-1">
             <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
-            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari nama aktivitas atau satuan..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari nama aktivitas, deskripsi, atau objek kerja..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
         </div>
         <button type="submit" class="px-4 py-2 bg-neutral-800 text-white rounded-xl text-sm font-bold hover:bg-neutral-900 transition-colors">Cari</button>
         <?php if (!empty($q)): ?>
@@ -120,10 +124,10 @@ $aktivitas_list = $stmt->fetchAll();
             <thead class="bg-neutral-50">
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider w-12">No</th>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider">Aktivitas Harian</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-32">Satuan</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-36">WPT (Menit)</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-36">Konversi Jam</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider">Aktivitas Harian & Deskripsi</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider">Objek Kerja</th>
+                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-28">Satuan</th>
+                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-32">WPT (Menit)</th>
                     <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-28">Aksi</th>
                 </tr>
             </thead>
@@ -135,16 +139,26 @@ $aktivitas_list = $stmt->fetchAll();
                 <?php else: ?>
                     <?php foreach ($aktivitas_list as $idx => $item): ?>
                         <tr class="hover:bg-neutral-50/80 transition-colors">
-                            <td class="px-4 py-3 text-neutral-500 font-medium text-center"><?= $idx + 1 ?></td>
-                            <td class="px-4 py-3 text-neutral-900 font-bold"><?= e($item['nama_aktivitas']) ?></td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="px-2.5 py-1 bg-primary-50 text-primary-800 border border-primary-200 text-xs font-semibold rounded-md">
+                            <td class="px-4 py-3 text-neutral-500 font-medium text-center align-top"><?= $idx + 1 ?></td>
+                            <td class="px-4 py-3 text-neutral-900 align-top">
+                                <div class="font-bold"><?= e($item['nama_aktivitas']) ?></div>
+                                <?php if (!empty($item['deskripsi'])): ?>
+                                    <div class="text-xs text-neutral-500 mt-1 leading-relaxed"><?= e($item['deskripsi']) ?></div>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-4 py-3 text-neutral-600 text-xs font-medium align-top">
+                                <?= !empty($item['objek_kerja']) ? e($item['objek_kerja']) : '-' ?>
+                            </td>
+                            <td class="px-4 py-3 text-center align-top">
+                                <span class="px-2.5 py-1 bg-primary-50 text-primary-800 border border-primary-200 text-xs font-semibold rounded-md inline-block">
                                     <?= e($item['satuan']) ?>
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-center font-extrabold text-neutral-900"><?= $item['wpt_menit'] ?> Menit</td>
-                            <td class="px-4 py-3 text-center text-neutral-600 font-medium"><?= round($item['wpt_menit'] / 60, 2) ?> Jam</td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3 text-center font-extrabold text-neutral-900 align-top">
+                                <?= $item['wpt_menit'] ?> Menit
+                                <div class="text-[11px] font-normal text-neutral-500"><?= round($item['wpt_menit'] / 60, 2) ?> Jam</div>
+                            </td>
+                            <td class="px-4 py-3 text-center align-top">
                                 <div class="flex items-center justify-center gap-2">
                                     <button onclick='openModalEdit(<?= json_encode($item) ?>)' class="p-1.5 text-neutral-500 hover:text-primary-700 hover:bg-neutral-100 rounded-lg transition-colors" title="Edit">
                                         <i data-lucide="edit-3" class="w-4 h-4"></i>
@@ -164,7 +178,7 @@ $aktivitas_list = $stmt->fetchAll();
 
 <!-- Modal Form (Tambah / Edit) -->
 <div id="modalForm" class="fixed inset-0 bg-neutral-900/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-neutral-200">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-neutral-200 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
             <h3 id="modalTitle" class="text-lg font-bold text-neutral-900">Tambah Aktivitas Harian</h3>
             <button onclick="closeModalForm()" class="text-neutral-400 hover:text-neutral-600"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -176,19 +190,29 @@ $aktivitas_list = $stmt->fetchAll();
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Nama Aktivitas Harian</label>
+                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Nama Aktivitas Harian *</label>
                     <input type="text" name="nama_aktivitas" id="formNama" required placeholder="Contoh: Melakukan koordinasi..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Satuan Hasil</label>
+                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Satuan Hasil *</label>
                     <input type="text" name="satuan" id="formSatuan" required placeholder="Contoh: Laporan, Kegiatan, Data, Surat..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">WPT (Waktu Penyelesaian Tugas dalam Menit)</label>
+                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">WPT (Waktu Penyelesaian Tugas dalam Menit) *</label>
                     <input type="number" name="wpt_menit" id="formWpt" required min="1" placeholder="30" class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
                     <p class="text-[11px] text-neutral-500 mt-1">Estimasi waktu penyelesaian standar per 1 satuan.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Deskripsi Aktivitas</label>
+                    <textarea name="deskripsi" id="formDeskripsi" rows="3" placeholder="Penjelasan detail aktivitas..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Objek Kerja</label>
+                    <input type="text" name="objek_kerja" id="formObjekKerja" placeholder="Contoh: Kendaraan dinas, Notulen, Dokumen SK..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
                 </div>
             </div>
 
@@ -228,6 +252,8 @@ function openModalCreate() {
     document.getElementById('formNama').value = '';
     document.getElementById('formSatuan').value = '';
     document.getElementById('formWpt').value = '';
+    document.getElementById('formDeskripsi').value = '';
+    document.getElementById('formObjekKerja').value = '';
     document.getElementById('modalForm').classList.remove('hidden');
 }
 
@@ -238,6 +264,8 @@ function openModalEdit(item) {
     document.getElementById('formNama').value = item.nama_aktivitas;
     document.getElementById('formSatuan').value = item.satuan;
     document.getElementById('formWpt').value = item.wpt_menit;
+    document.getElementById('formDeskripsi').value = item.deskripsi || '';
+    document.getElementById('formObjekKerja').value = item.objek_kerja || '';
     document.getElementById('modalForm').classList.remove('hidden');
 }
 
@@ -255,3 +283,4 @@ function closeModalDelete() {
     document.getElementById('modalDelete').classList.add('hidden');
 }
 </script>
+
