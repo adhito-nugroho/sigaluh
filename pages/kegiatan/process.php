@@ -190,8 +190,8 @@ try {
             if (compress_and_save_image($tmp_name, $dest_path, 85, 1920)) {
                 $ukuran = filesize($dest_path);
                 $pdo->prepare(
-                    "INSERT INTO kegiatan_lampiran (kegiatan_id, nama_file, path_file, mime_type, ukuran_bytes)
-                     VALUES (?, ?, ?, 'image/jpeg', ?)"
+                    "INSERT INTO kegiatan_lampiran (kegiatan_id, nama_file, path_file, ukuran_bytes)
+                     VALUES (?, ?, ?, ?)"
                 )->execute([$id, $nama_file, 'uploads/lampiran/' . $id . '/' . $nama_file, $ukuran]);
                 $uploaded++;
             }
