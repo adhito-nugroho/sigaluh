@@ -178,17 +178,17 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 <!-- Header Section -->
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
-            <i data-lucide="database" class="w-3.5 h-3.5"></i> Master Data
+        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
+            Master Data
         </div>
         <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Tugas, Pokok dan Fungsi (TUSI)</h1>
         <p class="text-sm text-neutral-500 font-medium">Kelola daftar seluruh kegiatan TUSI penyuluh kehutanan beserta seksi penanggung jawab.</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-        <button type="button" onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-xl text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 shadow-sm transition-colors cursor-pointer">
+        <button type="button" onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-lg text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 shadow-sm transition-colors cursor-pointer">
             <i data-lucide="layers" class="w-4 h-4 mr-2 text-neutral-500"></i> Kelola Seksi
         </button>
-        <button type="button" onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
+        <button type="button" onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-lg text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah TUSI
         </button>
     </div>
@@ -208,18 +208,18 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 <?php endif; ?>
 
 <!-- Filter & Search Toolbar -->
-<div class="bg-white rounded-2xl border border-neutral-200/80 p-4 shadow-sm mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/80 p-4 shadow-card mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col md:flex-row items-center justify-between gap-3">
         <input type="hidden" name="page" value="master/tusi">
 
         <div class="relative flex-1 w-full">
             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
-            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari Uraian Kegiatan TUSI..." class="w-full pl-10 pr-4 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
+            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari Uraian Kegiatan TUSI..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
         </div>
 
         <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
             <!-- Filter Seksi -->
-            <select name="seksi_id" onchange="this.form.submit()" class="px-3 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
+            <select name="seksi_id" onchange="this.form.submit()" class="px-3 py-2 rounded-lg text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
                 <option value="0">Semua Seksi</option>
                 <?php foreach ($tusi_list as $t): ?>
                     <option value="<?= $t['id'] ?>" <?= $filter_seksi == $t['id'] ? 'selected' : '' ?>>
@@ -229,17 +229,17 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             </select>
 
             <!-- Filter Status -->
-            <select name="status" onchange="this.form.submit()" class="px-3 py-2 rounded-xl text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
+            <select name="status" onchange="this.form.submit()" class="px-3 py-2 rounded-lg text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
                 <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>Semua Status</option>
                 <option value="active" <?= $status_filter === 'active' ? 'selected' : '' ?>>Aktif</option>
                 <option value="inactive" <?= $status_filter === 'inactive' ? 'selected' : '' ?>>Non-Aktif</option>
             </select>
 
-            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white text-sm font-bold rounded-xl transition-colors">
+            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white text-sm font-bold rounded-lg transition-colors">
                 Filter
             </button>
             <?php if (!empty($q) || $filter_seksi > 0 || $status_filter !== 'all'): ?>
-                <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-semibold rounded-xl transition-colors">
+                <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-semibold rounded-lg transition-colors">
                     Reset
                 </a>
             <?php endif; ?>
@@ -248,7 +248,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 </div>
 
 <!-- Data Table Utama TUSI -->
-<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-sm overflow-hidden mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/80 shadow-card overflow-hidden mb-6">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>

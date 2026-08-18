@@ -108,14 +108,14 @@ if ($f_bulan && $f_tahun) {
 </div>
 
 <!-- Filter -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-4 items-end">
         <input type="hidden" name="page" value="laporan">
         
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto">
             <label class="block text-xs font-medium text-neutral-700 mb-1">Penyuluh</label>
-            <select name="penyuluh_id" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white min-w-[200px]">
+            <select name="penyuluh_id" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white min-w-[200px]">
                 <option value="">-- Pilih Penyuluh --</option>
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -126,7 +126,7 @@ if ($f_bulan && $f_tahun) {
 
         <div class="w-full sm:w-auto">
             <label class="block text-xs font-medium text-neutral-700 mb-1">Bulan</label>
-            <select name="bulan" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+            <select name="bulan" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
                 <option value="">Semua</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -138,7 +138,7 @@ if ($f_bulan && $f_tahun) {
 
         <div class="w-full sm:w-auto">
             <label class="block text-xs font-medium text-neutral-700 mb-1">Tahun</label>
-            <select name="tahun" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+            <select name="tahun" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
                 <option value="">Semua</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
@@ -147,7 +147,7 @@ if ($f_bulan && $f_tahun) {
         </div>
 
         <div class="w-full sm:w-auto">
-            <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-6 rounded-xl text-sm transition-colors">
+            <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-6 rounded-lg text-sm transition-colors">
                 Tampilkan Preview
             </button>
         </div>
@@ -155,7 +155,7 @@ if ($f_bulan && $f_tahun) {
 </div>
 
 <!-- Preview Laporan -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden overflow-x-auto p-8 font-sans">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden overflow-x-auto p-8 font-sans">
     <?php if (empty($f_penyuluh) && $role !== 'penyuluh'): ?>
         <div class="text-center py-10 text-neutral-500">
             <i data-lucide="filter" class="w-12 h-12 mx-auto text-neutral-300 mb-3"></i>
@@ -298,8 +298,7 @@ if ($f_bulan && $f_tahun) {
         ?>
         <?php if (!empty($all_lampiran_web)): ?>
         <div style="margin-top: 48px; border-top: 1px solid #e5e7eb; padding-top: 24px;">
-            <h3 class="text-base font-bold text-neutral-900 mb-4 flex items-center">
-                <i data-lucide="camera" class="w-4 h-4 inline mr-2 text-neutral-500"></i>
+            <h3 class="text-base font-bold text-neutral-900 mb-4">
                 Lampiran Foto Kegiatan
             </h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">

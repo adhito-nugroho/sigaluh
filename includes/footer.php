@@ -27,7 +27,7 @@
                 warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-warning-400 flex-shrink-0"></i>',
             };
             
-            toast.className = 'toast-enter flex items-center gap-3 bg-neutral-900/95 glass text-white px-5 py-3.5 rounded-2xl shadow-elevated border border-white/10 mb-2 max-w-sm';
+            toast.className = 'toast-enter flex items-center gap-3 bg-neutral-900/95 glass text-white px-5 py-3.5 rounded-xl shadow-lg border border-white/10 mb-2 max-w-sm';
             toast.innerHTML = `${icons[type] || icons.info}<span class="text-sm font-medium">${message}</span>`;
             container.appendChild(toast);
             

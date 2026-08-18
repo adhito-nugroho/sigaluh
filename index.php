@@ -129,8 +129,8 @@ if ($needs_layout) {
             </div>
             
             <!-- User Avatar (compact) -->
-            <div class="flex items-center bg-neutral-50 rounded-xl px-2.5 py-1.5 border border-neutral-200/60">
-                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+            <div class="flex items-center bg-neutral-50 rounded-lg px-2.5 py-1.5 border border-neutral-200/60">
+                <div class="w-7 h-7 rounded-lg bg-primary-700 flex items-center justify-center text-white font-bold text-xs shadow-xs">
                     ' . strtoupper(substr($_SESSION['user_nama'] ?? 'U', 0, 1)) . '
                 </div>
                 <span class="ml-2 text-xs font-semibold text-neutral-700 hidden lg:inline">' . htmlspecialchars($_SESSION['user_nama'] ?? '') . '</span>

@@ -111,17 +111,17 @@ if (!empty($user_ids)) {
     </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <input type="hidden" name="page" value="penyuluh">
         
         <div class="relative flex-1">
             <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
-            <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama penyuluh atau NIP..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-xl text-xs focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+            <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama penyuluh atau NIP..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-xs focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <select name="bulan" class="text-xs font-semibold border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:border-primary-600 outline-none">
+            <select name="bulan" class="text-xs font-semibold border border-neutral-200 rounded-lg px-3 py-2 bg-white focus:border-primary-600 outline-none">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
                     <option value="<?= sprintf('%02d', $m) ?>" <?= $f_bln == sprintf('%02d', $m) ? 'selected' : '' ?>>
                         <?= get_bulan_indo($m) ?>
@@ -129,30 +129,30 @@ if (!empty($user_ids)) {
                 <?php endfor; ?>
             </select>
 
-            <select name="tahun" class="text-xs font-semibold border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:border-primary-600 outline-none">
+            <select name="tahun" class="text-xs font-semibold border border-neutral-200 rounded-lg px-3 py-2 bg-white focus:border-primary-600 outline-none">
                 <?php for ($y = date('Y'); $y >= date('Y') - 4; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_thn == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
 
-            <select name="sort" class="text-xs font-semibold border border-neutral-200 rounded-xl px-3 py-2 bg-white focus:border-primary-600 outline-none">
+            <select name="sort" class="text-xs font-semibold border border-neutral-200 rounded-lg px-3 py-2 bg-white focus:border-primary-600 outline-none">
                 <option value="waktu_desc" <?= $f_sort === 'waktu_desc' ? 'selected' : '' ?>>Waktu Tertinggi</option>
                 <option value="waktu_asc" <?= $f_sort === 'waktu_asc' ? 'selected' : '' ?>>Waktu Terendah</option>
                 <option value="nama_asc" <?= $f_sort === 'nama_asc' ? 'selected' : '' ?>>Nama A-Z</option>
             </select>
 
-            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-xl text-xs font-bold transition-colors shadow-sm">
+            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-lg text-xs font-bold transition-colors shadow-sm">
                 Filter
             </button>
 
             <?php if (!empty($f_q) || $f_bln != date('m') || $f_thn != date('Y') || $f_sort != 'waktu_desc'): ?>
-                <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="px-3 py-2 bg-neutral-100 text-neutral-600 rounded-xl text-xs font-medium hover:bg-neutral-200 transition-colors">Reset</a>
+                <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="px-3 py-2 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-200 transition-colors">Reset</a>
             <?php endif; ?>
         </div>
     </form>
 </div>
 
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-100">
             <thead class="bg-neutral-50/50">

@@ -126,7 +126,7 @@ function get_status_badge($status) {
 </div>
 
 <!-- Filters -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-5 mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-5 mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-3 items-end">
         <input type="hidden" name="page" value="kegiatan">
         
@@ -135,13 +135,13 @@ function get_status_badge($status) {
             <div class="relative">
                 <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
                 <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari uraian..." 
-                    class="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all bg-neutral-50/50 focus:bg-white">
+                    class="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all bg-neutral-50/50 focus:bg-white">
             </div>
         </div>
 
         <div class="w-full sm:w-auto">
             <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Bulan</label>
-            <select name="bulan" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
+            <select name="bulan" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
                 <option value="">Semua</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -153,7 +153,7 @@ function get_status_badge($status) {
 
         <div class="w-full sm:w-auto">
             <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Tahun</label>
-            <select name="tahun" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
+            <select name="tahun" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
                 <option value="">Semua</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
@@ -163,7 +163,7 @@ function get_status_badge($status) {
 
         <div class="w-full sm:w-auto">
             <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">TUSI</label>
-            <select name="tusi_id" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
+            <select name="tusi_id" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
                 <option value="">Semua</option>
                 <?php foreach($tusi_list as $t): ?>
                     <option value="<?= $t['id'] ?>" <?= $f_tusi == $t['id'] ? 'selected' : '' ?>><?= e($t['kode']) ?></option>
@@ -174,7 +174,7 @@ function get_status_badge($status) {
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto">
             <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Penyuluh</label>
-            <select name="penyuluh_id" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
+            <select name="penyuluh_id" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
                 <option value="">Semua Penyuluh</option>
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -184,12 +184,12 @@ function get_status_badge($status) {
         <?php endif; ?>
 
         <div class="flex items-center gap-2">
-            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm active:scale-[0.98]">
+            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition-all shadow-sm active:scale-[0.98]">
                 <i data-lucide="filter" class="w-4 h-4 inline mr-1"></i> Filter
             </button>
             
             <?php if (!empty($_GET['q']) || !empty($_GET['bulan']) || !empty($_GET['tahun']) || !empty($_GET['tusi_id']) || !empty($_GET['status']) || !empty($_GET['penyuluh_id'])): ?>
-            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="flex items-center justify-center text-neutral-500 hover:text-rose-600 text-sm py-2.5 px-3 transition-colors rounded-xl hover:bg-rose-50 border border-neutral-200">
+            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="flex items-center justify-center text-neutral-500 hover:text-rose-600 text-sm py-2.5 px-3 transition-colors rounded-lg hover:bg-rose-50 border border-neutral-200">
                 <i data-lucide="x" class="w-4 h-4 mr-1"></i> Reset
             </a>
             <?php endif; ?>
@@ -198,7 +198,7 @@ function get_status_badge($status) {
 </div>
 
 <!-- Table -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-neutral-100">
             <thead class="bg-neutral-50/80">

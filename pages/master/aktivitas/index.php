@@ -87,14 +87,14 @@ $aktivitas_list = $stmt->fetchAll();
 <!-- Header -->
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
-            <i data-lucide="database" class="w-3.5 h-3.5"></i> Master Data
+        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
+            Master Data
         </div>
         <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Master Aktivitas Harian</h1>
         <p class="text-sm text-neutral-500 font-medium">Kelola standar aktivitas harian, deskripsi, dan Waktu Penyelesaian Tugas (WPT) penyuluh.</p>
     </div>
     <div>
-        <button onclick="openModalCreate()" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
+        <button onclick="openModalCreate()" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold rounded-lg text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
             <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Aktivitas
         </button>
     </div>
@@ -113,22 +113,22 @@ $aktivitas_list = $stmt->fetchAll();
 <?php endif; ?>
 
 <!-- Search Bar -->
-<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-sm p-4 mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/80 shadow-card p-4 mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex gap-3">
         <input type="hidden" name="page" value="master/aktivitas">
         <div class="relative flex-1">
             <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
-            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari nama aktivitas, deskripsi, atau objek kerja..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari nama aktivitas, deskripsi, atau objek kerja..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
         </div>
-        <button type="submit" class="px-4 py-2 bg-neutral-800 text-white rounded-xl text-sm font-bold hover:bg-neutral-900 transition-colors">Cari</button>
+        <button type="submit" class="px-4 py-2 bg-neutral-800 text-white rounded-lg text-sm font-bold hover:bg-neutral-900 transition-colors">Cari</button>
         <?php if (!empty($q)): ?>
-            <a href="<?= BASE_URL ?>/index.php?page=master/aktivitas" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-xl text-sm font-medium hover:bg-neutral-200 transition-colors">Reset</a>
+            <a href="<?= BASE_URL ?>/index.php?page=master/aktivitas" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-200 transition-colors">Reset</a>
         <?php endif; ?>
     </form>
 </div>
 
 <!-- Table Card -->
-<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-sm overflow-hidden mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/80 shadow-card overflow-hidden mb-6">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-neutral-200 text-sm">
             <thead class="bg-neutral-50">

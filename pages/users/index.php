@@ -70,18 +70,18 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
 </div>
 
 <!-- Filter Bar -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col sm:flex-row items-center gap-3 w-full max-w-2xl">
         <input type="hidden" name="page" value="users">
         
         <div class="w-full sm:w-64">
             <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari Nama atau NIP/Username..." 
-                class="w-full px-4 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none">
+                class="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none">
         </div>
 
         <?php if ($role === 'admin'): ?>
         <div class="w-full sm:w-48">
-            <select name="role_filter" onchange="this.form.submit()" class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
+            <select name="role_filter" onchange="this.form.submit()" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
                 <option value="">Semua Role</option>
                 <?php foreach ($roles_list as $r): ?>
                     <option value="<?= $r['kode'] ?>" <?= $f_role === $r['kode'] ? 'selected' : '' ?>><?= e($r['nama']) ?></option>
@@ -90,7 +90,7 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
         </div>
         <?php endif; ?>
 
-        <button type="submit" class="w-full sm:w-auto bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-semibold border border-neutral-200 px-4 py-2 rounded-xl text-sm transition-colors">
+        <button type="submit" class="w-full sm:w-auto bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-semibold border border-neutral-200 px-4 py-2 rounded-lg text-sm transition-colors">
             Filter
         </button>
         <?php if (!empty($f_q) || !empty($f_role)): ?>
@@ -100,7 +100,7 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
 </div>
 
 <!-- Table -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-100">
             <thead class="bg-neutral-50/50">
@@ -128,7 +128,7 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200/60">
+                                    <div class="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200/60">
                                         <?= strtoupper(substr($row['nama'], 0, 1)) ?>
                                     </div>
                                 </div>

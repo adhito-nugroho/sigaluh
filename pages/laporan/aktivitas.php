@@ -103,8 +103,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 <!-- Header Page -->
 <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
-            <i data-lucide="clock" class="w-3.5 h-3.5"></i> Bahan Input E-Kinerja BKD Jatim
+        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
+            Bahan Input E-Kinerja BKD Jatim
         </div>
         <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Laporan Aktivitas Harian</h1>
         <p class="text-sm text-neutral-500 font-medium">Rekapitulasi log aktivitas harian berstandar form HRMS e-Kinerja Provinsi Jawa Timur.</p>
@@ -116,7 +116,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-success-600 text-sm font-bold rounded-xl text-success-700 bg-white hover:bg-success-50 shadow-sm transition-all active:scale-95">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-success-600 text-sm font-bold rounded-lg text-success-700 bg-white hover:bg-success-50 shadow-sm transition-all active:scale-95">
                 <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2 text-success-600"></i> Download Excel
             </button>
         </form>
@@ -125,7 +125,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-error-600 hover:bg-error-700 shadow-sm transition-all active:scale-95">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-lg text-white bg-error-600 hover:bg-error-700 shadow-sm transition-all active:scale-95">
                 <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Download PDF
             </button>
         </form>
@@ -133,14 +133,14 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 </div>
 
 <!-- Filter Section -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-5 mb-6">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-5 mb-6">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-4 items-end">
         <input type="hidden" name="page" value="laporan/aktivitas">
         
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto flex-1 min-w-[220px]">
             <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">Pilih Penyuluh</label>
-            <select name="penyuluh_id" class="w-full px-3.5 py-2.5 border border-neutral-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
+            <select name="penyuluh_id" class="w-full px-3.5 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>>
                         <?= e($p['nama']) ?> (NIP. <?= e($p['nip']) ?>)
@@ -152,7 +152,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 
         <div class="w-full sm:w-auto min-w-[150px]">
             <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">Bulan</label>
-            <select name="bulan" class="w-full px-3.5 py-2.5 border border-neutral-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
+            <select name="bulan" class="w-full px-3.5 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
                 <option value="">Semua Bulan</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -164,7 +164,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 
         <div class="w-full sm:w-auto min-w-[120px]">
             <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1.5">Tahun</label>
-            <select name="tahun" class="w-full px-3.5 py-2.5 border border-neutral-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
+            <select name="tahun" class="w-full px-3.5 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white">
                 <option value="">Semua Tahun</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
@@ -173,7 +173,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         </div>
 
         <div class="w-full sm:w-auto">
-            <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white font-bold text-sm rounded-xl shadow-sm transition-all active:scale-95">
+            <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-primary-700 hover:bg-primary-800 text-white font-bold text-sm rounded-lg shadow-sm transition-all active:scale-95">
                 <i data-lucide="filter" class="w-4 h-4 mr-2"></i> Tampilkan Data
             </button>
         </div>
@@ -182,8 +182,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 
 <!-- Summary Metric Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white p-4 rounded-2xl border border-neutral-200/60 shadow-card flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center font-bold">
+    <div class="bg-white p-4 rounded-xl border border-neutral-200/60 shadow-card flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center font-bold">
             <i data-lucide="clipboard-list" class="w-6 h-6"></i>
         </div>
         <div>
@@ -192,8 +192,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         </div>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl border border-neutral-200/60 shadow-card flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-success-50 text-success-600 flex items-center justify-center font-bold">
+    <div class="bg-white p-4 rounded-xl border border-neutral-200/60 shadow-card flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg bg-success-50 text-success-600 flex items-center justify-center font-bold">
             <i data-lucide="timer" class="w-6 h-6"></i>
         </div>
         <div>
@@ -202,8 +202,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         </div>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl border border-neutral-200/60 shadow-card flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-warning-50 text-warning-700 flex items-center justify-center font-bold">
+    <div class="bg-white p-4 rounded-xl border border-neutral-200/60 shadow-card flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg bg-warning-50 text-warning-700 flex items-center justify-center font-bold">
             <i data-lucide="clock-3" class="w-6 h-6"></i>
         </div>
         <div>
@@ -212,8 +212,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         </div>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl border border-neutral-200/60 shadow-card flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-neutral-100 text-neutral-700 flex items-center justify-center font-bold">
+    <div class="bg-white p-4 rounded-xl border border-neutral-200/60 shadow-card flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg bg-neutral-100 text-neutral-700 flex items-center justify-center font-bold">
             <i data-lucide="calendar-check" class="w-6 h-6"></i>
         </div>
         <div>
@@ -224,11 +224,10 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 </div>
 
 <!-- Petunjuk Pemetaan Form HRMS BKD Jatim -->
-<div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-4 mb-6" x-data="{ showGuide: false }">
+<div class="bg-blue-50/70 border border-blue-200 rounded-xl p-4 mb-6" x-data="{ showGuide: false }">
     <div class="flex items-center justify-between cursor-pointer" @click="showGuide = !showGuide">
-        <div class="flex items-center gap-2.5 text-blue-900 font-bold text-sm">
-            <i data-lucide="help-circle" class="w-4 h-4 text-blue-600"></i>
-            <span>Panduan Pemetaan Isian Form E-Kinerja Master BKD Jawa Timur</span>
+        <div class="text-blue-900 font-bold text-sm">
+            Panduan Pemetaan Isian Form E-Kinerja Master BKD Jawa Timur
         </div>
         <button type="button" class="text-blue-700 text-xs font-semibold hover:underline flex items-center gap-1">
             <span x-text="showGuide ? 'Sembunyikan' : 'Lihat Panduan'"></span>
@@ -238,27 +237,27 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
     <div x-show="showGuide" x-collapse class="mt-3 pt-3 border-t border-blue-200/60 text-xs text-blue-950 space-y-2">
         <p class="font-semibold text-blue-900">Format tabel di bawah ini telah disesuaikan 100% dengan kolom isian formulir <b>"Tambah Aktivitas" (Aktivitas Harian) HRMS BKD Jatim</b>:</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
-            <div class="bg-white/80 p-2.5 rounded-xl border border-blue-100">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
                 <span class="font-bold text-blue-800">1. Tanggal Aktivitas (<code class="text-primary-700">tgl_kegiatan</code>):</span>
                 <p class="text-neutral-600 mt-0.5">Tanggal pelaksanaan kegiatan (format: DD/MM/YYYY atau YYYY-MM-DD).</p>
             </div>
-            <div class="bg-white/80 p-2.5 rounded-xl border border-blue-100">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
                 <span class="font-bold text-blue-800">2. Kegiatan Tugas Jabatan (<code class="text-primary-700">detail_kegiatan</code>):</span>
                 <p class="text-neutral-600 mt-0.5">Unsur Utama / Fungsional penyuluh (diambil dari nama TUSI / uraian tugas jabatan).</p>
             </div>
-            <div class="bg-white/80 p-2.5 rounded-xl border border-blue-100">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
                 <span class="font-bold text-blue-800">3. Detail Aktivitas (<code class="text-primary-700">rk</code> / Look Up):</span>
                 <p class="text-neutral-600 mt-0.5">Standar nama aktivitas harian yang dipilih dari popup lookup master BKD.</p>
             </div>
-            <div class="bg-white/80 p-2.5 rounded-xl border border-blue-100">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
                 <span class="font-bold text-blue-800">4. Satuan &amp; WPT (<code class="text-primary-700">satuan</code> &amp; <code class="text-primary-700">wpt</code>):</span>
                 <p class="text-neutral-600 mt-0.5">Satuan standar (Laporan, Kegiatan, Data, dll) dan alokasi waktu per satuan dalam menit.</p>
             </div>
-            <div class="bg-white/80 p-2.5 rounded-xl border border-blue-100">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
                 <span class="font-bold text-blue-800">5. Volume (<code class="text-primary-700">volume</code>):</span>
                 <p class="text-neutral-600 mt-0.5">Jumlah output/volume capaian kegiatan (angka bulat).</p>
             </div>
-            <div class="bg-white/80 p-2.5 rounded-xl border border-blue-100">
+            <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100">
                 <span class="font-bold text-blue-800">6. Objek Kerja / Topik (<code class="text-primary-700">objek_kerja</code>):</span>
                 <p class="text-neutral-600 mt-0.5">Narasi objek kerja / sasaran / substansi materi (otomatis huruf besar/kapital).</p>
             </div>
@@ -268,12 +267,12 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 </div>
 
 <!-- Main Table Card -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
     <!-- Header Informasi Pegawai -->
     <div class="p-6 border-b border-neutral-200 bg-neutral-50/50">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center text-white font-extrabold text-base shadow-sm">
+                <div class="w-12 h-12 rounded-lg bg-primary-700 flex items-center justify-center text-white font-extrabold text-base shadow-xs">
                     <?= strtoupper(substr($penyuluh_aktif['nama'] ?? 'P', 0, 1)) ?>
                 </div>
                 <div>

@@ -147,25 +147,25 @@ function get_status_badge($status)
 ?>
 
 <!-- Header dengan Signature Element (Topographic Contour Pattern) -->
-<div class="relative bg-gradient-to-r from-primary-900 via-primary-800 to-primary-900 rounded-2xl p-6 mb-6 text-white shadow-md overflow-hidden">
+<div class="relative bg-primary-900 rounded-2xl p-6 mb-6 text-white shadow-md overflow-hidden">
     <!-- Topographic Contour SVG Pattern Overlay -->
-    <svg class="absolute inset-0 w-full h-full opacity-10 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" preserveAspectRatio="none">
-        <path d="M-50 100 Q 150 20, 350 110 T 750 80 T 1150 140" fill="none" stroke="#fde68a" stroke-width="2"/>
-        <path d="M-50 140 Q 180 50, 400 130 T 800 60 T 1200 160" fill="none" stroke="#fde68a" stroke-width="1.5"/>
-        <path d="M-50 60 Q 200 140, 450 70 T 850 120 T 1250 80" fill="none" stroke="#ffffff" stroke-width="1"/>
-        <path d="M-50 180 Q 220 90, 500 160 T 900 100 T 1300 190" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+    <svg class="absolute inset-0 w-full h-full opacity-15 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" preserveAspectRatio="none">
+        <path d="M-50 100 Q 150 20, 350 110 T 750 80 T 1150 140" fill="none" stroke="#fde68a" stroke-width="2.5"/>
+        <path d="M-50 140 Q 180 50, 400 130 T 800 60 T 1200 160" fill="none" stroke="#fde68a" stroke-width="1"/>
+        <path d="M-50 60 Q 200 140, 450 70 T 850 120 T 1250 80" fill="none" stroke="#ffffff" stroke-width="2"/>
+        <path d="M-50 180 Q 220 90, 500 160 T 900 100 T 1300 190" fill="none" stroke="#ffffff" stroke-width="1"/>
     </svg>
 
     <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-accent-500/20 border border-accent-400/30 text-accent-300 text-xs font-semibold mb-2">
-                <i data-lucide="trees" class="w-3.5 h-3.5"></i> CDK Wilayah Nganjuk
+            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-accent-500/20 border border-accent-400/30 text-accent-300 text-xs font-semibold mb-2">
+                CDK Wilayah Nganjuk
             </div>
             <h1 class="text-2xl sm:text-3xl font-display font-black tracking-tight text-white">
                 Dashboard Ringkasan Data Kegiatan
             </h1>
             <p class="text-xs sm:text-sm text-primary-200/90 mt-1 font-medium">
-                <?= format_tanggal_indo(date('Y-m-d'), true) ?> — Monitoring Pelaporan Penyuluhan Kehutanan
+                <?= format_tanggal_indo(date('Y-m-d'), true) ?> &mdash; Monitoring Pelaporan Penyuluhan Kehutanan
             </p>
         </div>
     </div>
@@ -173,11 +173,10 @@ function get_status_badge($status)
 
 <?php if ($role === 'penyuluh'): ?>
 <!-- Banner Widget Target Waktu Bulanan Personal Penyuluh (112.5 Jam / 6.750 Menit) -->
-<div class="bg-white rounded-2xl border border-primary-200 p-6 mb-6 shadow-sm relative overflow-hidden">
+<div class="bg-white rounded-2xl border border-primary-200 p-6 mb-6 shadow-card relative overflow-hidden">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div class="flex-1">
-            <div class="flex items-center space-x-2 text-primary-800 mb-1">
-                <i data-lucide="clock" class="w-5 h-5 text-primary-600"></i>
+            <div class="mb-1 text-primary-900">
                 <h3 class="text-base font-extrabold tracking-tight">Target Waktu Penyuluhan Bulanan (<?= get_bulan_indo((int)date('m')) ?> <?= date('Y') ?>)</h3>
             </div>
             <p class="text-xs text-neutral-500 font-medium">Target wajib penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
@@ -188,7 +187,7 @@ function get_status_badge($status)
                     <span class="<?= $pct_target >= 100 ? 'text-success-700 font-black' : 'text-accent-600 font-black' ?>"><?= $pct_target ?>%</span>
                 </div>
                 <div class="w-full h-3 bg-neutral-100 rounded-full overflow-hidden border border-neutral-200 p-0.5">
-                    <div class="h-full <?= $pct_target >= 100 ? 'bg-success-500' : 'bg-gradient-to-r from-primary-600 to-accent-500' ?> rounded-full transition-all duration-500" style="width: <?= $pct_target ?>%"></div>
+                    <div class="h-full <?= $pct_target >= 100 ? 'bg-success-500' : 'bg-primary-600' ?> rounded-full transition-all duration-500" style="width: <?= $pct_target ?>%"></div>
                 </div>
             </div>
         </div>
@@ -220,8 +219,8 @@ $sql_summary = "
     FROM users u
     JOIN m_roles r ON u.role_id = r.id
     LEFT JOIN (
-        SELECT user_id, SUM(durasi_menit) as total_menit
-        FROM kegiatan
+        SELECT user_id, SUM(durasi_menit) as total_menit 
+        FROM kegiatan 
         WHERE MONTH(tanggal) = ? AND YEAR(tanggal) = ?
         GROUP BY user_id
     ) p_durasi ON u.id = p_durasi.user_id
@@ -239,18 +238,18 @@ $count_tuntas = (int)($exec_sum['count_tuntas'] ?? 0);
 $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 ?>
-<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-sm p-6 mb-6">
+<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-card p-6 mb-6">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b border-neutral-100">
         <div>
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-[11px] font-bold mb-1">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i> Ringkasan Eksekutif Target Waktu (<?= get_bulan_indo((int)$current_month_num) ?> <?= $current_year_num ?>)
+            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-[11px] font-bold mb-1">
+                Ringkasan Eksekutif Target Waktu (<?= get_bulan_indo((int)$current_month_num) ?> <?= $current_year_num ?>)
             </div>
             <h3 class="text-lg font-bold text-neutral-900 tracking-tight">Ketercapaian Aktivitas Harian Penyuluh</h3>
             <p class="text-xs text-neutral-500 font-medium">Target per penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
         </div>
         <div>
             <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="inline-flex items-center justify-center px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">
-                <i data-lucide="list-checks" class="w-4 h-4 mr-1.5"></i> Buka Monitoring Lengkap (<?= $total_p ?> Penyuluh) →
+                <i data-lucide="list-checks" class="w-4 h-4 mr-1.5"></i> Buka Monitoring Lengkap (<?= $total_p ?> Penyuluh) &rarr;
             </a>
         </div>
     </div>
@@ -267,10 +266,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
         <!-- Target Tuntas (>= 100%) -->
         <div class="bg-success-50/60 p-4 rounded-xl border border-success-200/80 flex flex-col justify-between">
-            <div class="flex justify-between items-center">
-                <p class="text-[11px] font-bold text-success-800 uppercase tracking-wider">Memenuhi Target</p>
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-success-600"></i>
-            </div>
+            <p class="text-[11px] font-bold text-success-800 uppercase tracking-wider">Memenuhi Target</p>
             <div class="mt-2">
                 <p class="text-2xl font-display font-black text-success-900"><?= $count_tuntas ?> <span class="text-xs font-bold text-success-700">Penyuluh</span></p>
                 <p class="text-xs font-semibold text-success-700 mt-0.5"><?= $total_p > 0 ? round(($count_tuntas/$total_p)*100, 1) : 0 ?>% dari total penyuluh</p>
@@ -279,10 +275,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
         <!-- Dalam Progres (> 0% & < 100%) -->
         <div class="bg-warning-50/60 p-4 rounded-xl border border-warning-200/80 flex flex-col justify-between">
-            <div class="flex justify-between items-center">
-                <p class="text-[11px] font-bold text-warning-800 uppercase tracking-wider">Sedang Progres</p>
-                <i data-lucide="loader" class="w-4 h-4 text-warning-600"></i>
-            </div>
+            <p class="text-[11px] font-bold text-warning-800 uppercase tracking-wider">Sedang Progres</p>
             <div class="mt-2">
                 <p class="text-2xl font-display font-black text-warning-900"><?= $count_progres ?> <span class="text-xs font-bold text-warning-700">Penyuluh</span></p>
                 <p class="text-xs font-semibold text-warning-700 mt-0.5"><?= $total_p > 0 ? round(($count_progres/$total_p)*100, 1) : 0 ?>% dari total penyuluh</p>
@@ -291,10 +284,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
         <!-- Belum Ada Input (0%) -->
         <div class="bg-neutral-100/80 p-4 rounded-xl border border-neutral-200 flex flex-col justify-between">
-            <div class="flex justify-between items-center">
-                <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wider">Belum Ada Aktivitas</p>
-                <i data-lucide="alert-circle" class="w-4 h-4 text-neutral-400"></i>
-            </div>
+            <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wider">Belum Ada Aktivitas</p>
             <div class="mt-2">
                 <p class="text-2xl font-display font-black text-neutral-800"><?= $count_nol ?> <span class="text-xs font-bold text-neutral-500">Penyuluh</span></p>
                 <p class="text-xs font-medium text-neutral-500 mt-0.5"><?= $total_p > 0 ? round(($count_nol/$total_p)*100, 1) : 0 ?>% dari total penyuluh</p>
@@ -306,21 +296,13 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
 <!-- Stats Cards (Hierarki Dominan Hero vs 3 Compact Cards) -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-    <!-- Hero Card: Total Kegiatan (Dominan) -->
-    <div class="bg-gradient-to-br from-primary-950 to-primary-900 text-white p-6 rounded-2xl shadow-lg border border-primary-800 relative overflow-hidden flex flex-col justify-between group">
-        <!-- Contour Watermark -->
-        <svg class="absolute -right-6 -bottom-6 w-40 h-40 opacity-15 text-accent-400 pointer-events-none group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 100 100">
-            <path d="M 0 50 Q 25 20, 50 50 T 100 50" stroke-width="2"/>
-            <path d="M 0 70 Q 30 40, 60 70 T 100 70" stroke-width="2"/>
-            <path d="M 0 30 Q 20 10, 40 30 T 100 30" stroke-width="2"/>
-        </svg>
-
+    <!-- Hero Card: Total Kegiatan (Dominan - Single Purposeful Gradient) -->
+    <div class="bg-gradient-to-br from-primary-950 to-primary-900 text-white p-6 rounded-2xl shadow-lg border border-primary-800 relative overflow-hidden flex flex-col justify-between">
         <div>
-            <div class="flex justify-between items-center mb-3">
+            <div class="mb-3">
                 <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-accent-500/20 text-accent-300 border border-accent-500/30">
                     Metrik Utama
                 </span>
-                <i data-lucide="folder" class="w-5 h-5 text-accent-400"></i>
             </div>
             <p class="text-xs font-semibold text-primary-200/80 uppercase tracking-wider">Total Kegiatan</p>
         </div>
@@ -336,13 +318,10 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     </div>
     
     <!-- Secondary Card 1: RLPM -->
-    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
         <div>
             <div class="flex justify-between items-center mb-2">
                 <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">RLPM</p>
-                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
-                    <i data-lucide="leaf" class="w-4 h-4 text-primary-600"></i>
-                </div>
             </div>
             <?php $val = $breakdown_tusi['RLPM'] ?? 0; ?>
             <p class="text-3xl font-display font-extrabold text-neutral-900 tracking-tight" data-count="<?= $val ?>"><?= $val ?></p>
@@ -357,13 +336,10 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     </div>
     
     <!-- Secondary Card 2: TKUK -->
-    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
         <div>
             <div class="flex justify-between items-center mb-2">
                 <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">TKUK</p>
-                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
-                    <i data-lucide="trees" class="w-4 h-4 text-primary-600"></i>
-                </div>
             </div>
             <?php $val = $breakdown_tusi['TKUK'] ?? 0; ?>
             <p class="text-3xl font-display font-extrabold text-neutral-900 tracking-tight" data-count="<?= $val ?>"><?= $val ?></p>
@@ -378,13 +354,10 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     </div>
     
     <!-- Secondary Card 3: Sub Bagian TU -->
-    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
         <div>
             <div class="flex justify-between items-center mb-2">
                 <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Sub Bagian TU</p>
-                <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
-                    <i data-lucide="briefcase" class="w-4 h-4 text-primary-600"></i>
-                </div>
             </div>
             <?php $val = $breakdown_tusi['TU'] ?? 0; ?>
             <p class="text-3xl font-display font-extrabold text-neutral-900 tracking-tight" data-count="<?= $val ?>"><?= $val ?></p>
@@ -401,7 +374,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Chart -->
-    <div class="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-sm lg:col-span-2">
+    <div class="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-card lg:col-span-2">
         <div class="mb-4 flex justify-between items-center">
             <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Intensitas Kegiatan (6 Bulan)</h3>
             <span class="text-[11px] font-semibold text-neutral-400">Grafik Bulanan</span>
@@ -412,7 +385,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     </div>
 
     <!-- Status Breakdown -->
-    <div class="bg-white p-6 rounded-2xl border border-neutral-200/80 shadow-sm">
+    <div class="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-card">
         <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-5">Status Laporan</h3>
         
         <div class="space-y-5">
@@ -444,14 +417,14 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 </div>
 
 <!-- Rekap Laporan per TUSI -->
-<div class="bg-white border border-neutral-200 shadow-card mb-6">
+<div class="bg-white rounded-xl border border-neutral-200 shadow-card mb-6 overflow-hidden">
     <div class="p-4 border-b border-neutral-200 bg-neutral-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Rekapitulasi Capaian TUSI</h3>
         
         <form method="GET" action="" class="flex items-center gap-2">
             <input type="hidden" name="page" value="dashboard">
             <select name="rek_bln" onchange="this.form.submit()"
-                class="text-xs font-semibold border border-neutral-300 rounded px-2 py-1.5 bg-white focus:border-primary-600 outline-none">
+                class="text-xs font-semibold border border-neutral-300 rounded-lg px-2 py-1.5 bg-white focus:border-primary-600 outline-none">
                 <option value="">Semua Bulan</option>
                 <?php for ($m = 1; $m <= 12; $m++): ?>
                 <option value="<?= sprintf('%02d', $m) ?>" <?= $f_rek_bln == sprintf('%02d', $m) ? 'selected' : '' ?>>
@@ -460,7 +433,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 <?php endfor; ?>
             </select>
             <select name="rek_thn" onchange="this.form.submit()"
-                class="text-xs font-semibold border border-neutral-300 rounded px-2 py-1.5 bg-white focus:border-primary-600 outline-none">
+                class="text-xs font-semibold border border-neutral-300 rounded-lg px-2 py-1.5 bg-white focus:border-primary-600 outline-none">
                 <?php for ($y = date('Y'); $y >= date('Y') - 4; $y--): ?>
                 <option value="<?= $y ?>" <?= $f_rek_thn == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>

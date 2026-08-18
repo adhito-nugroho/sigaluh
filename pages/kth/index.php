@@ -52,18 +52,18 @@ $kth_list = $stmt_data->fetchAll();
     </div>
 </div>
 
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card p-4 mb-6 flex justify-between items-center">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6 flex justify-between items-center">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex items-center w-full max-w-md">
         <input type="hidden" name="page" value="kth">
         <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama, No SK, ketua..." 
-            class="w-full px-3 py-2 border border-neutral-200 rounded-l-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none border-r-0">
-        <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-4 rounded-r-xl text-sm transition-colors">
+            class="w-full px-3 py-2 border border-neutral-200 rounded-l-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none border-r-0">
+        <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-4 rounded-r-lg text-sm transition-colors">
             Cari
         </button>
     </form>
 </div>
 
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-neutral-100">
             <thead class="bg-neutral-50/50">
