@@ -6,7 +6,3 @@ foreach ($tables as $t) {
     echo "- {$t}\n";
 }
 
-
-
-
-
