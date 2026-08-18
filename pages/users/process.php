@@ -54,6 +54,17 @@ try {
     // Decode JSON wilayah binaan
     $wilayah_items = json_decode($wilayah_kerja_json, true) ?: [];
 
+    $selected_penyuluh_id = (int)($_POST['selected_penyuluh_id'] ?? 0);
+    if ($action === 'create' && $selected_penyuluh_id > 0) {
+        // Cek apakah user record memang ada
+        $stmt_chk = $pdo->prepare("SELECT id FROM users WHERE id = ?");
+        $stmt_chk->execute([$selected_penyuluh_id]);
+        if ($stmt_chk->fetch()) {
+            $action = 'update';
+            $id = $selected_penyuluh_id;
+        }
+    }
+
     $user_id = $id;
 
     $pdo->beginTransaction();

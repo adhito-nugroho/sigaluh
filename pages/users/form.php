@@ -47,6 +47,65 @@ $is_edit = $user_data !== null;
 $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
 $kabupaten_list = $pdo->query("SELECT id, nama FROM m_kabupaten WHERE aktif = 1 ORDER BY nama ASC")->fetchAll();
 
+// Ambil semua daftar penyuluh yang terdaftar
+$all_penyuluh_stmt = $pdo->query("
+    SELECT u.id, u.nip, u.nama, u.jabatan, u.pangkat_golongan, u.no_hp, u.email, u.status_aktif
+    FROM users u
+    JOIN m_roles r ON u.role_id = r.id
+    WHERE r.kode = 'penyuluh'
+    ORDER BY u.nama ASC
+");
+$all_penyuluh_list = $all_penyuluh_stmt->fetchAll();
+
+// Map wilayah kerja untuk seluruh penyuluh
+$penyuluh_wilayah_map = [];
+if (!empty($all_penyuluh_list)) {
+    $p_ids = implode(',', array_map('intval', array_column($all_penyuluh_list, 'id')));
+    $stmt_pw = $pdo->query("
+        SELECT 
+            uwk.user_id,
+            uwk.kecamatan_id,
+            kec.nama AS kecamatan_nama,
+            kec.kabupaten_id,
+            kab.nama AS kabupaten_nama,
+            uwk.desa_id,
+            desa.nama AS desa_nama
+        FROM user_wilayah_kerja uwk
+        JOIN m_kecamatan kec ON uwk.kecamatan_id = kec.id
+        JOIN m_kabupaten kab ON kec.kabupaten_id = kab.id
+        LEFT JOIN m_desa desa ON uwk.desa_id = desa.id
+        WHERE uwk.user_id IN ($p_ids)
+        ORDER BY kab.nama ASC, kec.nama ASC, desa.nama ASC
+    ");
+    $pw_rows = $stmt_pw->fetchAll();
+    
+    foreach ($pw_rows as $w) {
+        $uid = $w['user_id'];
+        $kec_id = $w['kecamatan_id'];
+        if (!isset($penyuluh_wilayah_map[$uid][$kec_id])) {
+            $penyuluh_wilayah_map[$uid][$kec_id] = [
+                'kabupaten_id' => $w['kabupaten_id'],
+                'kabupaten_nama' => $w['kabupaten_nama'],
+                'kecamatan_id' => $w['kecamatan_id'],
+                'kecamatan_nama' => $w['kecamatan_nama'],
+                'all_desas' => true,
+                'desas' => []
+            ];
+        }
+        if ($w['desa_id']) {
+            $penyuluh_wilayah_map[$uid][$kec_id]['all_desas'] = false;
+            $penyuluh_wilayah_map[$uid][$kec_id]['desas'][] = [
+                'id' => $w['desa_id'],
+                'nama' => $w['desa_nama']
+            ];
+        }
+    }
+
+    foreach ($penyuluh_wilayah_map as $uid => $grouped) {
+        $penyuluh_wilayah_map[$uid] = array_values($grouped);
+    }
+}
+
 // Grouping existing wilayah for JS initialization
 $grouped_wilayah = [];
 foreach ($existing_wilayah as $w) {
@@ -71,6 +130,16 @@ foreach ($existing_wilayah as $w) {
 }
 $init_wilayah_json = json_encode(array_values($grouped_wilayah));
 $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
+
+$init_user_json = json_encode([
+    'id' => $is_edit ? (int)$user_data['id'] : '',
+    'nip' => $is_edit ? $user_data['nip'] : '',
+    'nama' => $is_edit ? $user_data['nama'] : '',
+    'pangkat_golongan' => $is_edit ? ($user_data['pangkat_golongan'] ?? '') : '',
+    'jabatan' => $is_edit ? ($user_data['jabatan'] ?? '') : '',
+    'no_hp' => $is_edit ? ($user_data['no_hp'] ?? '') : '',
+    'email' => $is_edit ? ($user_data['email'] ?? '') : '',
+]);
 ?>
 
 <div class="mb-6 flex items-center justify-between">
@@ -83,10 +152,11 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
     </a>
 </div>
 
-<div class="bg-white rounded-3xl border border-neutral-200/60 shadow-card overflow-hidden max-w-4xl" x-data="userManager('<?= $init_role_kode ?>')">
+<div class="bg-white rounded-3xl border border-neutral-200/60 shadow-card overflow-hidden max-w-4xl" x-data="userManager('<?= $init_role_kode ?>', <?= htmlspecialchars($init_user_json, ENT_QUOTES, 'UTF-8') ?>)">
     <form action="<?= BASE_URL ?>/index.php?page=users/process" method="POST" class="p-6 sm:p-8 space-y-6">
         <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= $is_edit ? 'update' : 'create' ?>">
+        <input type="hidden" name="selected_penyuluh_id" :value="selectedPenyuluhId">
         <input type="hidden" name="wilayah_kerja_json" :value="JSON.stringify(wilayahList)">
         <?php if ($is_edit): ?>
             <input type="hidden" name="id" value="<?= $user_data['id'] ?>">
@@ -96,8 +166,33 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
         <div>
             <h3 class="text-base font-bold text-neutral-900 tracking-tight mb-4 flex items-center">
                 <span class="w-7 h-7 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center text-xs font-bold mr-2.5 border border-primary-100">1</span>
-                Biodata & Akun Pengguna
+                Biodata &amp; Akun Pengguna
             </h3>
+
+            <!-- Option: Ambil Data dari Data Penyuluh jika Role = Penyuluh -->
+            <div x-show="roleKode === 'penyuluh'" class="p-4 bg-primary-50/80 border border-primary-200/80 rounded-2xl mb-5 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs font-bold text-primary-900 uppercase tracking-wider flex items-center">
+                        <i data-lucide="user-check" class="w-4 h-4 mr-1.5 text-primary-700"></i>
+                        Ambil Data dari Data Penyuluh
+                    </label>
+                    <span class="text-[11px] text-primary-700 bg-primary-100 px-2 py-0.5 rounded font-semibold">Otomatisasi Biodata &amp; Wilayah</span>
+                </div>
+                <select @change="pickPenyuluh($event)" class="w-full px-3.5 py-2.5 bg-white border border-primary-300 rounded-xl text-sm font-semibold text-neutral-800 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none">
+                    <option value="">-- Pilih dari Daftar Penyuluh yang Sudah Ada --</option>
+                    <?php foreach ($all_penyuluh_list as $p): ?>
+                        <option value="<?= $p['id'] ?>" 
+                            data-penyuluh='<?= htmlspecialchars(json_encode($p), ENT_QUOTES, 'UTF-8') ?>' 
+                            data-wilayah='<?= htmlspecialchars(json_encode($penyuluh_wilayah_map[$p['id']] ?? []), ENT_QUOTES, 'UTF-8') ?>'
+                            <?= ($is_edit && $user_data['id'] == $p['id']) ? 'selected' : '' ?>>
+                            <?= e($p['nama']) ?> (NIP: <?= e($p['nip']) ?>) <?= !empty($p['jabatan']) ? ' &mdash; ' . e($p['jabatan']) : '' ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="text-[11px] text-primary-700 mt-2 font-medium leading-relaxed">
+                    Memilih penyuluh di atas akan secara otomatis mengisi NIP, Nama, Jabatan, Golongan, Kontak, serta mengimpor seluruh Wilayah Kerja Binaan.
+                </p>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 
@@ -112,37 +207,37 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
 
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">NIP / Username <span class="text-rose-500">*</span></label>
-                    <input type="text" name="nip" required value="<?= $is_edit ? e($user_data['nip']) : '' ?>" placeholder="NIP atau Username login"
+                    <input type="text" name="nip" x-model="nip" required placeholder="NIP atau Username login"
                         class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Nama Lengkap <span class="text-rose-500">*</span></label>
-                    <input type="text" name="nama" required value="<?= $is_edit ? e($user_data['nama']) : '' ?>" placeholder="Nama beserta gelar"
+                    <input type="text" name="nama" x-model="nama" required placeholder="Nama beserta gelar"
                         class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Pangkat / Golongan</label>
-                    <input type="text" name="pangkat_golongan" value="<?= $is_edit ? e($user_data['pangkat_golongan']) : '' ?>" placeholder="Contoh: Penata Tk. I / IIId"
+                    <input type="text" name="pangkat_golongan" x-model="pangkat_golongan" placeholder="Contoh: Penata Tk. I / IIId"
                         class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Jabatan</label>
-                    <input type="text" name="jabatan" value="<?= $is_edit ? e($user_data['jabatan']) : '' ?>" placeholder="Contoh: Penyuluh Kehutanan Ahli Muda"
+                    <input type="text" name="jabatan" x-model="jabatan" placeholder="Contoh: Penyuluh Kehutanan Ahli Muda"
                         class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Nomor HP / WhatsApp</label>
-                    <input type="text" name="no_hp" value="<?= $is_edit ? e($user_data['no_hp']) : '' ?>" placeholder="081234567890"
+                    <input type="text" name="no_hp" x-model="no_hp" placeholder="081234567890"
                         class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">Email</label>
-                    <input type="email" name="email" value="<?= $is_edit ? e($user_data['email']) : '' ?>" placeholder="email@contoh.com"
+                    <input type="email" name="email" x-model="email" placeholder="email@contoh.com"
                         class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
                 </div>
 
@@ -164,7 +259,7 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
                         <span class="w-7 h-7 rounded-xl bg-primary-50 text-primary-700 flex items-center justify-center text-xs font-bold mr-2.5 border border-primary-100">2</span>
                         Alokasi Wilayah Kerja Binaan Penyuluh
                     </h3>
-                    <span class="text-xs font-medium text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200/60">Multi-Kecamatan & Multi-Desa</span>
+                    <span class="text-xs font-medium text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200/60">Multi-Kecamatan &amp; Multi-Desa</span>
                 </div>
 
                 <!-- Form Tambah Wilayah Temporary -->
@@ -287,12 +382,19 @@ $init_role_kode = $is_edit ? $user_data['role_kode'] : 'penyuluh';
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 <script>
-function userManager(initRoleKode) {
+function userManager(initRoleKode, initialData) {
     return {
         roleKode: initRoleKode || 'penyuluh',
         apiBase: '<?= BASE_URL ?>/api',
+        selectedPenyuluhId: (initialData && initialData.id) ? initialData.id : '',
+        nip: (initialData && initialData.nip) ? initialData.nip : '',
+        nama: (initialData && initialData.nama) ? initialData.nama : '',
+        pangkat_golongan: (initialData && initialData.pangkat_golongan) ? initialData.pangkat_golongan : '',
+        jabatan: (initialData && initialData.jabatan) ? initialData.jabatan : '',
+        no_hp: (initialData && initialData.no_hp) ? initialData.no_hp : '',
+        email: (initialData && initialData.email) ? initialData.email : '',
+        
         selectedKabId: '',
         selectedKabNama: '',
         selectedKecId: '',
@@ -306,6 +408,34 @@ function userManager(initRoleKode) {
         onRoleChange(e) {
             const opt = e.target.options[e.target.selectedIndex];
             this.roleKode = opt ? opt.getAttribute('data-kode') : '';
+        },
+
+        pickPenyuluh(e) {
+            const opt = e.target.selectedOptions[0];
+            if (!opt || !opt.value) return;
+
+            try {
+                const pData = JSON.parse(opt.getAttribute('data-penyuluh') || '{}');
+                const pWilayah = JSON.parse(opt.getAttribute('data-wilayah') || '[]');
+
+                this.selectedPenyuluhId = pData.id || '';
+                if (pData.nip) this.nip = pData.nip;
+                if (pData.nama) this.nama = pData.nama;
+                if (pData.pangkat_golongan !== undefined) this.pangkat_golongan = pData.pangkat_golongan || '';
+                if (pData.jabatan !== undefined) this.jabatan = pData.jabatan || '';
+                if (pData.no_hp !== undefined) this.no_hp = pData.no_hp || '';
+                if (pData.email !== undefined) this.email = pData.email || '';
+
+                if (Array.isArray(pWilayah)) {
+                    this.wilayahList = JSON.parse(JSON.stringify(pWilayah));
+                }
+
+                if (typeof lucide !== 'undefined') {
+                    setTimeout(() => lucide.createIcons(), 50);
+                }
+            } catch (err) {
+                console.error('Error loading data penyuluh:', err);
+            }
         },
 
         onKabupatenChange(e) {
@@ -373,6 +503,10 @@ function userManager(initRoleKode) {
             this.selectedKecId = '';
             this.scopeDesa = 'all';
             this.selectedDesas = [];
+
+            if (typeof lucide !== 'undefined') {
+                setTimeout(() => lucide.createIcons(), 50);
+            }
         },
 
         removeWilayah(idx) {
