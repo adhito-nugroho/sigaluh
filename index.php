@@ -61,6 +61,7 @@ function get_breadcrumb($page) {
         'kth/form' => ['Data KTH', 'Form'],
         'kth/detail' => ['Data KTH', 'Detail'],
         'laporan' => ['Laporan Renja'],
+        'laporan/aktivitas' => ['Laporan', 'Laporan Aktivitas Harian'],
         'penyuluh' => ['Data Penyuluh'],
         'penyuluh/form' => ['Data Penyuluh', 'Form'],
         'users' => ['Kelola User'],

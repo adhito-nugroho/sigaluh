@@ -5,3 +5,7 @@ echo "=== LIST OF TABLES ===\n";
 foreach ($tables as $t) {
     echo "- {$t}\n";
 }
+
+
+
+

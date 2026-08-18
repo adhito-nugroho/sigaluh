@@ -4,6 +4,9 @@ $current_page = $_GET['page'] ?? 'dashboard';
 
 // Helpers untuk menu aktif
 function get_active_class($page_name, $current_page) {
+    if ($page_name === 'laporan' && strpos($current_page, 'laporan/aktivitas') === 0) {
+        return 'text-primary-100 hover:bg-primary-700 hover:text-white';
+    }
     if ($current_page === $page_name || strpos($current_page, $page_name . '/') === 0) {
         return 'menu-active-indicator bg-primary-900 text-white font-bold';
     }
@@ -11,6 +14,9 @@ function get_active_class($page_name, $current_page) {
 }
 
 function get_active_icon_class($page_name, $current_page) {
+    if ($page_name === 'laporan' && strpos($current_page, 'laporan/aktivitas') === 0) {
+        return 'text-primary-200 group-hover:text-white';
+    }
     if ($current_page === $page_name || strpos($current_page, $page_name . '/') === 0) {
         return 'text-white';
     }
@@ -61,7 +67,12 @@ function get_active_icon_class($page_name, $current_page) {
 
                 <a href="<?= BASE_URL ?>/index.php?page=laporan" class="group flex items-center px-3 py-2 text-[13px] rounded transition-colors <?= get_active_class('laporan', $current_page) ?>">
                     <i data-lucide="file-bar-chart-2" class="w-[18px] h-[18px] mr-3 <?= get_active_icon_class('laporan', $current_page) ?>"></i>
-                    <span>Unduh Rekapitulasi</span>
+                    <span>Laporan Renja (Bulanan)</span>
+                </a>
+
+                <a href="<?= BASE_URL ?>/index.php?page=laporan/aktivitas" class="group flex items-center px-3 py-2 text-[13px] rounded transition-colors <?= get_active_class('laporan/aktivitas', $current_page) ?>">
+                    <i data-lucide="calendar-check" class="w-[18px] h-[18px] mr-3 <?= get_active_icon_class('laporan/aktivitas', $current_page) ?>"></i>
+                    <span>Laporan Aktivitas Harian</span>
                 </a>
             </div>
         </div>
