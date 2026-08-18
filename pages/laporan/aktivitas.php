@@ -469,8 +469,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         </table>
     </div>
 
-    <!-- Signature Section Preview -->
-    <div class="p-8 border-t border-neutral-200 bg-white">
+    <!-- Signature Section Preview (Print Only) -->
+    <div class="hidden print:block p-8 border-t border-neutral-200 bg-white">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center text-xs">
             <?php if ($tampilkan_ttd_pimpin): ?>
             <div>
@@ -495,29 +495,11 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
     </div>
 </div>
 
-<!-- Toast Notification -->
-<div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-neutral-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 pointer-events-none">
-    <i data-lucide="check-circle-2" class="w-4 h-4 text-success-400"></i>
-    <span id="toast-message">Teks berhasil disalin!</span>
-</div>
-
 <script>
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    const msgEl = document.getElementById('toast-message');
-    msgEl.textContent = msg;
-    toast.classList.remove('translate-y-20', 'opacity-0');
-    toast.classList.add('translate-y-0', 'opacity-100');
-    setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-20', 'opacity-0');
-    }, 2000);
-}
-
 function copyText(text, label) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
-        showToast((label ? label + ' ' : '') + 'berhasil disalin!');
+        showToast((label ? label + ' ' : '') + 'berhasil disalin!', 'success');
     }).catch(() => {
         const ta = document.createElement('textarea');
         ta.value = text;
@@ -525,7 +507,7 @@ function copyText(text, label) {
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        showToast((label ? label + ' ' : '') + 'berhasil disalin!');
+        showToast((label ? label + ' ' : '') + 'berhasil disalin!', 'success');
     });
 }
 
