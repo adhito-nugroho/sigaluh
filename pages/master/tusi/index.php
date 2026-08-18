@@ -124,6 +124,9 @@ $tusi_list = $stmt_tusi->fetchAll();
 $q = trim($_GET['q'] ?? '');
 $filter_seksi = (int)($_GET['seksi_id'] ?? 0);
 $status_filter = trim($_GET['status'] ?? 'all');
+$page_num = max(1, (int)($_GET['p'] ?? 1));
+$limit = 15;
+$offset = ($page_num - 1) * $limit;
 
 // Build query for TUSI List
 $where = ["1=1"];
@@ -148,12 +151,24 @@ if ($status_filter === 'active') {
     $where[] = "k.aktif = 0";
 }
 
+$sql_count = "
+    SELECT COUNT(k.id) 
+    FROM m_kegiatan_tusi k 
+    JOIN m_tusi t ON k.tusi_id = t.id 
+    WHERE " . implode(' AND ', $where) . "
+";
+$stmt_count = $pdo->prepare($sql_count);
+$stmt_count->execute($params);
+$total_rows = (int)$stmt_count->fetchColumn();
+$total_pages = max(1, ceil($total_rows / $limit));
+
 $sql = "
     SELECT k.*, t.kode as seksi_kode, t.nama as seksi_nama 
     FROM m_kegiatan_tusi k 
     JOIN m_tusi t ON k.tusi_id = t.id 
     WHERE " . implode(' AND ', $where) . " 
     ORDER BY k.tusi_id ASC, k.id ASC
+    LIMIT $limit OFFSET $offset
 ";
 $stmt_keg = $pdo->prepare($sql);
 $stmt_keg->execute($params);
@@ -258,7 +273,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                     <?php foreach ($kegiatan_tusi_list as $index => $keg): ?>
                         <tr class="hover:bg-neutral-50/70 transition-colors">
                             <td class="py-3.5 px-4 text-center font-bold text-neutral-500">
-                                <?= $index + 1 ?>
+                                <?= $offset + $index + 1 ?>
                             </td>
                             <td class="py-3.5 px-4">
                                 <div class="font-semibold text-neutral-900 leading-relaxed">
@@ -319,6 +334,69 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    <?php if ($total_pages > 1): ?>
+    <div class="px-6 py-4 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-50/50">
+        <div class="text-xs sm:text-sm text-neutral-500 font-medium">
+            Menampilkan <span class="font-bold text-neutral-800"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="font-bold text-neutral-800"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="font-bold text-neutral-800"><?= $total_rows ?></span> data
+        </div>
+        <div class="flex items-center gap-1 flex-wrap justify-center">
+            <?php 
+            $query_params = $_GET;
+            
+            if ($page_num > 1): 
+                $query_params['p'] = $page_num - 1;
+            ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Sebelumnya">
+                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Sebelumnya</span>
+                </a>
+            <?php endif; ?>
+
+            <?php
+            $start_p = max(1, $page_num - 2);
+            $end_p   = min($total_pages, $page_num + 2);
+
+            if ($start_p > 1):
+                $query_params['p'] = 1;
+            ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all">1</a>
+                <?php if ($start_p > 2): ?>
+                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php for ($i = $start_p; $i <= $end_p; $i++): 
+                $query_params['p'] = $i;
+                $link = BASE_URL . '/index.php?' . http_build_query($query_params);
+                $is_active = $page_num === $i;
+            ?>
+                <a href="<?= $link ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all <?= $is_active ? 'bg-primary-700 text-white shadow-sm shadow-primary-500/20' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+
+            <?php if ($end_p < $total_pages): ?>
+                <?php if ($end_p < $total_pages - 1): ?>
+                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                <?php endif; ?>
+                <?php $query_params['p'] = $total_pages; ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all"><?= $total_pages ?></a>
+            <?php endif; ?>
+
+            <?php 
+            if ($page_num < $total_pages): 
+                $query_params['p'] = $page_num + 1;
+            ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Selanjutnya">
+                    <span class="hidden sm:inline">Selanjutnya</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- MODAL FORMS (Rendered at top z-index layer) -->
