@@ -152,7 +152,7 @@ if ($f_bulan && $f_tahun) {
                     <td class="text-center"><?= $no++ ?></td>
                     <td class="text-center"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
                     <td><?= nl2br(e($row['uraian_kegiatan'])) ?></td>
-                    <td><?= nl2br(e($row['detail_kegiatan'])) ?></td>
+                    <td><?= nl2br(e(expand_uraian_tugas($row['detail_kegiatan'], $row['uraian_kegiatan'] ?? ''))) ?></td>
                     <td><?= nl2br(e($row['substansi_materi'] ?: '-')) ?></td>
                     <td><?= nl2br(e($row['sasaran_hadir'] ?: '-')) ?></td>
                     <td><?= nl2br(e($row['pelaksanaan_kegiatan'])) ?></td>

@@ -103,6 +103,43 @@ function get_app_setting($key, $default = '') {
 }
 
 /**
+ * Helper untuk memastikan uraian tugas / aktivitas tidak tampil sebagai singkatan mentah (misal 'kbr').
+ * Melakukan ekspansi singkatan program kehutanan atau fallback ke uraian tugas master.
+ */
+function expand_uraian_tugas($text, $tusi_uraian = '') {
+    $clean = trim($text ?? '');
+    if (empty($clean)) {
+        return $tusi_uraian ?: '-';
+    }
+    
+    $abbreviations = [
+        'kbr'  => 'Pembuatan / Pengelolaan Kebun Bibit Rakyat (KBR)',
+        'kbd'  => 'Pengelolaan Kebun Bibit Desa (KBD)',
+        'rhl'  => 'Rehabilitasi Hutan dan Lahan (RHL)',
+        'kth'  => 'Pembinaan Kelompok Tani Hutan (KTH)',
+        'lmdh' => 'Pembinaan Lembaga Masyarakat Desa Hutan (LMDH)',
+        'ps'   => 'Fasilitasi / Pembinaan Perhutanan Sosial (PS)',
+        'svlk' => 'Pendampingan Standar Verifikasi Legalitas Kayu (SVLK)',
+        'tsl'  => 'Pengawasan Tumbuhan dan Satwa Liar (TSL)',
+        'kta'  => 'Pembangunan Bangunan Konservasi Tanah dan Air (KTA)',
+        'hhbk' => 'Pengembangan Hasil Hutan Bukan Kayu (HHBK)',
+        'kca'  => 'Kader Konservasi Alam (KCA)',
+    ];
+    
+    $lower = strtolower($clean);
+    if (isset($abbreviations[$lower])) {
+        return $abbreviations[$lower];
+    }
+    
+    // Jika terlalu pendek (< 4 huruf) dan ada uraian tugas dari master
+    if (strlen($clean) < 4 && !empty($tusi_uraian)) {
+        return $tusi_uraian . ' (' . strtoupper($clean) . ')';
+    }
+    
+    return $clean;
+}
+
+/**
  * Kompresi dan simpan gambar upload ke path tujuan.
  * Output: JPEG quality 85, max 1920px sisi terpanjang.
  * Mendukung input: JPEG, PNG, WEBP, GIF (dikonversi ke JPEG).

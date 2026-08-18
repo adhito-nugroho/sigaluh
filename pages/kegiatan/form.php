@@ -300,7 +300,7 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Uraian Tugas / Aktivitas (Detail) <span class="text-error-500">*</span></label>
-                <textarea name="detail_kegiatan" required rows="3"
+                <textarea name="detail_kegiatan" required minlength="5" rows="3" placeholder="Tuliskan uraian tugas/aktivitas secara deskriptif (hindari singkatan singkat tanpa penjelasan)"
                     class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
             </div>
 

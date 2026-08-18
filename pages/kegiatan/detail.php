@@ -215,6 +215,8 @@ function get_status_badge($status) {
                         <div style="aspect-ratio:16/9;">
                             <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>"
                                  alt="Lampiran foto"
+                                 loading="lazy"
+                                 onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-neutral-400 text-xs bg-neutral-100 gap-1.5 p-4\'><i data-lucide=\'image-off\' class=\'w-6 h-6 text-neutral-400\'></i><span>Foto tidak dapat dimuat</span></div>'; if (typeof lucide !== 'undefined') lucide.createIcons();"
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         </div>
                         <div class="px-3 py-2 bg-neutral-50 border-t border-neutral-100 flex items-center justify-between">

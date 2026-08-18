@@ -100,7 +100,7 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 shadow-sm transition-colors">
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors">
                 <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Download PDF
             </button>
         </form>
@@ -231,7 +231,7 @@ if ($f_bulan && $f_tahun) {
                         <td class="border border-gray-900 px-2 py-2 text-center align-top"><?= $no++ ?></td>
                         <td class="border border-gray-900 px-2 py-2 text-center align-top"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
                         <td class="border border-gray-900 px-2 py-2 align-top"><?= nl2br(e($row['uraian_kegiatan'])) ?></td>
-                        <td class="border border-gray-900 px-2 py-2 align-top"><?= nl2br(e($row['detail_kegiatan'])) ?></td>
+                        <td class="border border-gray-900 px-2 py-2 align-top"><?= nl2br(e(expand_uraian_tugas($row['detail_kegiatan'], $row['uraian_kegiatan'] ?? ''))) ?></td>
                         <td class="border border-gray-900 px-2 py-2 align-top"><?= nl2br(e($row['substansi_materi'] ?: '-')) ?></td>
                         <td class="border border-gray-900 px-2 py-2 align-top"><?= nl2br(e($row['sasaran_hadir'] ?: '-')) ?></td>
                         <td class="border border-gray-900 px-2 py-2 align-top"><?= nl2br(e($row['pelaksanaan_kegiatan'])) ?></td>
@@ -305,9 +305,11 @@ if ($f_bulan && $f_tahun) {
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <?php foreach ($all_lampiran_web as $item): ?>
                 <div class="border border-neutral-200 rounded-xl overflow-hidden shadow-sm bg-white">
-                    <div style="aspect-ratio:16/9; background:#f3f4f6;">
+                    <div style="aspect-ratio:16/9; background:#f3f4f6;" class="flex items-center justify-center">
                         <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $item['kegiatan_id'] ?>/<?= e($item['lamp']['nama_file']) ?>"
                              alt="Foto kegiatan"
+                             loading="lazy"
+                             onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-neutral-400 text-xs bg-neutral-100 gap-1.5 p-4\'><i data-lucide=\'image-off\' class=\'w-6 h-6 text-neutral-400\'></i><span>Foto tidak dapat dimuat</span></div>'; if (typeof lucide !== 'undefined') lucide.createIcons();"
                              style="width:100%; height:100%; object-fit:cover;">
                     </div>
                     <div class="px-3 py-2 text-xs text-neutral-500 bg-neutral-50 border-t border-neutral-100">
