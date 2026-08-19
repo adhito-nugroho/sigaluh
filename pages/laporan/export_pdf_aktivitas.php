@@ -80,6 +80,15 @@ foreach ($laporan_data as $r_cek) {
 }
 $tampilkan_ttd_pimpin  = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && $all_direview;
 
+// Gambar TTD Pimpinan (PNG transparan)
+$ttd_file = get_app_setting('penandatangan_ttd_file', '');
+$ttd_path = $ttd_file ? __DIR__ . '/../../uploads/ttd/' . $ttd_file : '';
+$penandatangan_ttd_base64 = '';
+if ($ttd_file && file_exists($ttd_path)) {
+    $mime = mime_content_type($ttd_path) ?: 'image/png';
+    $penandatangan_ttd_base64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($ttd_path));
+}
+
 if ($f_bulan && $f_tahun) {
     $last_day = date('t', strtotime("$f_tahun-$f_bulan-01"));
     $tgl_tanda_tangan = "$last_day " . get_bulan_indo((int)$f_bulan) . " $f_tahun";
@@ -334,7 +343,13 @@ ob_start();
                 <p style="margin: 3px 0 0 0; font-weight: bold; text-transform: uppercase;">
                     <?= e($penandatangan_jabatan) ?>
                 </p>
-                <div style="height: 50px;"></div>
+                <?php if (!empty($penandatangan_ttd_base64)): ?>
+                    <div style="height: 52px; text-align: center; margin: 2px 0;">
+                        <img src="<?= $penandatangan_ttd_base64 ?>" style="max-height: 50px; max-width: 140px;" alt="TTD Pimpinan">
+                    </div>
+                <?php else: ?>
+                    <div style="height: 50px;"></div>
+                <?php endif; ?>
                 <p style="margin: 0; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
                     <?= e($penandatangan_nama) ?>
                 </p>

@@ -21,28 +21,35 @@ $nama             = $settings_raw['penandatangan_nama']       ?? '';
 $nip              = $settings_raw['penandatangan_nip']        ?? '';
 $jabatan          = $settings_raw['penandatangan_jabatan']    ?? '';
 $tampilkan_pimpin = ($settings_raw['tampilkan_ttd_pimpinan']  ?? '1') === '1';
+$ttd_file         = $settings_raw['penandatangan_ttd_file']   ?? '';
+
+$ttd_url = '';
+if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
+    $ttd_url = BASE_URL . '/uploads/ttd/' . $ttd_file . '?v=' . time();
+}
 ?>
 
 <div class="mb-4">
     <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Pengaturan Tanda Tangan Laporan</h2>
-    <p class="text-muted mb-0" style="font-size:12.5px;">Atur nama, NIP, jabatan, dan visibilitas blok tanda tangan pada laporan Renja.</p>
+    <p class="text-muted mb-0" style="font-size:12.5px;">Atur nama, NIP, jabatan, file gambar tanda tangan PNG, dan visibilitas blok tanda tangan pada laporan kegiatan.</p>
 </div>
 
 <?php if ($msg_success): ?>
-<div class="alert alert-success mb-4">
-    <span class="material-symbols-outlined">check_circle</span> Pengaturan berhasil disimpan.
+<div class="alert alert-success mb-4 d-flex align-items-center gap-2">
+    <span class="material-symbols-outlined">check_circle</span>
+    <span>Pengaturan tanda tangan berhasil disimpan.</span>
 </div>
 <?php endif; ?>
 
-<div class="card" style="max-width:576px;">
-    <form action="<?= BASE_URL ?>/index.php?page=settings/process_app" method="POST" class="card-body space-y-4">
+<div class="card" style="max-width:640px;">
+    <form action="<?= BASE_URL ?>/index.php?page=settings/process_app" method="POST" enctype="multipart/form-data" class="card-body space-y-4">
         <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
 
         <!-- Toggle: Tampilkan TTD Pimpinan -->
         <div class="d-flex align-items-center justify-content-between p-3" style="background:var(--md-sys-color-surface-container-lowest);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;">
             <div>
                 <p class="text-sm fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Tampilkan Tanda Tangan Pimpinan</p>
-                <p class="text-xs text-muted mb-0 mt-1">Jika dinonaktifkan, kolom "Mengetahui" tidak akan muncul di laporan.</p>
+                <p class="text-xs text-muted mb-0 mt-1">Jika dinonaktifkan atau status laporan belum disetujui, kolom "Mengetahui" tidak akan muncul di laporan.</p>
             </div>
             <label class="d-inline-flex align-items-center position-relative flex-shrink-0" style="cursor:pointer;margin-left:16px;">
                 <input type="checkbox" name="tampilkan_ttd_pimpinan" value="1" id="toggle_pimpin"
@@ -53,7 +60,7 @@ $tampilkan_pimpin = ($settings_raw['tampilkan_ttd_pimpinan']  ?? '1') === '1';
             </label>
         </div>
 
-        <!-- Field Nama, NIP, Jabatan — disable saat toggle off -->
+        <!-- Field Nama, NIP, Jabatan & Upload Gambar TTD — disable saat toggle off -->
         <div id="ttd_fields" class="space-y-3" style="<?= !$tampilkan_pimpin ? 'opacity:.4;pointer-events:none;' : '' ?>">
 
             <div>
@@ -88,29 +95,75 @@ $tampilkan_pimpin = ($settings_raw['tampilkan_ttd_pimpinan']  ?? '1') === '1';
                 <p class="text-muted mt-1 mb-0" style="font-size:11px;">Jabatan ini akan tampil di atas ruang tanda tangan kolom "Mengetahui".</p>
             </div>
 
+            <!-- Upload Gambar Tanda Tangan PNG -->
+            <div class="p-3 border rounded-xl" style="background:var(--md-sys-color-surface-container-lowest);border-color:var(--md-sys-color-outline-variant);">
+                <label class="form-label mb-1 fw-bold d-flex align-items-center gap-1.5" style="color:var(--md-sys-color-on-surface);">
+                    <span class="material-symbols-outlined text-base">draw</span>
+                    <span>File Gambar Tanda Tangan (PNG Transparan)</span>
+                </label>
+                <p class="text-xs text-muted mb-3">Upload scan/gambar tanda tangan pimpinan (format PNG transparan direkomendasikan). Gambar akan langsung ditempel di atas nama pimpinan saat mencetak laporan.</p>
+
+                <?php if ($ttd_url): ?>
+                    <div class="d-flex align-items-center gap-3 p-2.5 mb-3 bg-white border rounded-lg" style="border-color:var(--md-sys-color-outline-variant);">
+                        <div class="p-2 border rounded bg-slate-50 flex-shrink-0" style="width:100px;height:55px;display:flex;align-items:center;justify-content:center;">
+                            <img src="<?= $ttd_url ?>" alt="TTD Aktif" style="max-height:100%;max-width:100%;object-fit:contain;">
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <span class="badge badge-success text-[11px] mb-1">Tanda Tangan Aktif</span>
+                            <p class="text-xs text-muted font-mono mb-0 text-truncate"><?= e($ttd_file) ?></p>
+                        </div>
+                        <label class="d-flex align-items-center gap-1.5 text-xs text-danger fw-semibold cursor-pointer mb-0">
+                            <input type="checkbox" name="hapus_ttd_file" value="1" onchange="toggleHapusTtd(this.checked)">
+                            <span>Hapus Gambar</span>
+                        </label>
+                    </div>
+                <?php endif; ?>
+
+                <div>
+                    <input type="file" name="penandatangan_ttd_file" id="input_ttd_file" accept=".png,.jpg,.jpeg,.webp"
+                        class="form-control text-xs"
+                        onchange="previewTtdFile(this)">
+                    <p class="text-muted mt-1 mb-0" style="font-size:11px;">Maksimal 2MB. Format didukung: .png, .jpg, .jpeg, .webp.</p>
+                </div>
+            </div>
+
         </div>
 
         <!-- Preview -->
-        <div class="p-3" style="background:var(--md-sys-color-surface-container-lowest);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;">
-            <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-3">Preview Blok Tanda Tangan</p>
+        <div class="p-3.5" style="background:var(--md-sys-color-surface-container-lowest);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;">
+            <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-3">Preview Blok Tanda Tangan Laporan</p>
             <div class="d-flex justify-content-between text-center" style="font-size:12px;font-family:var(--font-mono);" id="preview_block">
-                <div id="preview_pimpinan_col" style="<?= !$tampilkan_pimpin ? 'display:none' : '' ?>;flex:0 0 41.67%;">
-                    <p class="mb-0" style="color:var(--md-sys-color-on-surface-variant);">Mengetahui,</p>
-                    <p class="fw-bold text-uppercase mb-0 mt-1" style="color:var(--md-sys-color-on-surface);" id="preview_jabatan"><?= e($jabatan ?: 'Kepala CDK Wilayah Nganjuk') ?></p>
-                    <div style="height:48px;border-bottom:1px dashed var(--md-sys-color-outline-variant);margin:16px 0 8px;"></div>
-                    <p class="fw-bold text-underline text-uppercase mb-0" style="color:var(--md-sys-color-on-surface);text-decoration:underline;" id="preview_nama"><?= e($nama ?: '...') ?></p>
-                    <p class="text-muted font-mono mb-0 mt-1">NIP. <span id="preview_nip"><?= e($nip ?: '-') ?></span></p>
+                
+                <!-- Kolom Pimpinan -->
+                <div id="preview_pimpinan_col" style="<?= !$tampilkan_pimpin ? 'display:none' : '' ?>;flex:0 0 45%;">
+                    <p class="mb-0 text-xs" style="color:var(--md-sys-color-on-surface-variant);">Mengetahui / Menyetujui,</p>
+                    <p class="fw-bold text-uppercase mb-1 text-xs" style="color:var(--md-sys-color-on-surface);" id="preview_jabatan"><?= e($jabatan ?: 'Kepala CDK Wilayah Nganjuk') ?></p>
+                    
+                    <div id="preview_ttd_wrap" style="height:55px;display:flex;align-items:center;justify-content:center;margin:4px 0;">
+                        <img id="preview_ttd_img" src="<?= $ttd_url ?>" alt="TTD" style="<?= $ttd_url ? 'max-height:50px;max-width:140px;object-fit:contain;' : 'display:none;' ?>">
+                        <div id="preview_ttd_placeholder" style="<?= $ttd_url ? 'display:none;' : '' ?>height:45px;width:100%;border-bottom:1px dashed var(--md-sys-color-outline-variant);"></div>
+                    </div>
+
+                    <p class="fw-bold text-uppercase mb-0 text-xs" style="color:var(--md-sys-color-on-surface);text-decoration:underline;" id="preview_nama"><?= e($nama ?: '...') ?></p>
+                    <p class="text-muted font-mono mb-0 mt-0.5 text-xs">NIP. <span id="preview_nip"><?= e($nip ?: '-') ?></span></p>
                 </div>
-                <div id="preview_penyuluh_col" style="<?= $tampilkan_pimpin ? 'flex:0 0 41.67%;' : 'flex:1 1 100%;text-align:right;' ?>">
-                    <p class="mb-0" style="color:var(--md-sys-color-on-surface-variant);">Nganjuk, [Tanggal Akhir Bulan]</p>
-                    <p class="fw-bold mb-0 mt-1" style="color:var(--md-sys-color-on-surface);">Penyuluh Kehutanan</p>
-                    <div style="height:48px;border-bottom:1px dashed var(--md-sys-color-outline-variant);margin:16px 0 8px;"></div>
-                    <p class="fw-bold text-uppercase mb-0" style="color:var(--md-sys-color-on-surface);text-decoration:underline;">Nama Penyuluh</p>
-                    <p class="text-muted font-mono mb-0 mt-1">NIP. xxxxxxxxxxxxxxxx</p>
+
+                <!-- Kolom Penyuluh -->
+                <div id="preview_penyuluh_col" style="<?= $tampilkan_pimpin ? 'flex:0 0 45%;' : 'flex:1 1 100%;text-align:right;' ?>">
+                    <p class="mb-0 text-xs" style="color:var(--md-sys-color-on-surface-variant);">Nganjuk, [Tgl Laporan]</p>
+                    <p class="fw-bold mb-1 text-xs" style="color:var(--md-sys-color-on-surface);">Yang Melaporkan / Penyuluh,</p>
+                    
+                    <div style="height:55px;display:flex;align-items:center;justify-content:center;margin:4px 0;">
+                        <div style="height:45px;width:100%;border-bottom:1px dashed var(--md-sys-color-outline-variant);"></div>
+                    </div>
+
+                    <p class="fw-bold text-uppercase mb-0 text-xs" style="color:var(--md-sys-color-on-surface);text-decoration:underline;">NAMA PENYULUH, S.Hut</p>
+                    <p class="text-muted font-mono mb-0 mt-0.5 text-xs">NIP. 19800101xxxxxxxxxx</p>
                 </div>
             </div>
+            
             <p class="text-muted mt-3 mb-0 italic" id="preview_note" style="<?= $tampilkan_pimpin ? 'display:none' : '' ?>;font-size:11px;">
-                * Hanya tanda tangan penyuluh yang akan ditampilkan.
+                * Hanya tanda tangan penyuluh yang akan ditampilkan jika status masih diajukan / pengaturan dinonaktifkan.
             </p>
         </div>
 
@@ -136,11 +189,40 @@ function updatePreview() {
     note.style.display   = on ? 'none' : '';
 
     if (on) {
-        colPny.style.flex = '0 0 41.67%';
+        colPny.style.flex = '0 0 45%';
         colPny.style.textAlign = '';
     } else {
         colPny.style.flex = '1 1 100%';
         colPny.style.textAlign = 'right';
+    }
+}
+
+function previewTtdFile(input) {
+    const imgEl = document.getElementById('preview_ttd_img');
+    const placeEl = document.getElementById('preview_ttd_placeholder');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imgEl.src = e.target.result;
+            imgEl.style.display = 'block';
+            imgEl.style.maxHeight = '50px';
+            imgEl.style.maxWidth = '140px';
+            imgEl.style.objectFit = 'contain';
+            if (placeEl) placeEl.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function toggleHapusTtd(isHapus) {
+    const imgEl = document.getElementById('preview_ttd_img');
+    const placeEl = document.getElementById('preview_ttd_placeholder');
+    if (isHapus) {
+        imgEl.style.display = 'none';
+        if (placeEl) placeEl.style.display = 'block';
+    } else {
+        imgEl.style.display = 'block';
+        if (placeEl) placeEl.style.display = 'none';
     }
 }
 </script>

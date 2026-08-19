@@ -76,6 +76,15 @@ $penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
 $penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
 $tampilkan_ttd_pimpin  = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && ($keg['status'] === 'direview');
 
+// Gambar TTD Pimpinan (PNG transparan)
+$ttd_file = get_app_setting('penandatangan_ttd_file', '');
+$ttd_path = $ttd_file ? __DIR__ . '/../../uploads/ttd/' . $ttd_file : '';
+$penandatangan_ttd_base64 = '';
+if ($ttd_file && file_exists($ttd_path)) {
+    $mime = mime_content_type($ttd_path) ?: 'image/png';
+    $penandatangan_ttd_base64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($ttd_path));
+}
+
 $tgl_cetak = format_tanggal_indo(date('Y-m-d'));
 $tgl_kegiatan_indo = format_tanggal_indo($keg['tanggal'], true);
 
@@ -371,7 +380,19 @@ ob_start();
         .sign-jabatan {
             font-weight: bold;
             color: #0f172a;
-            margin-bottom: 45px;
+            margin-bottom: 4px;
+        }
+        .sign-img-wrap {
+            height: 52px;
+            text-align: center;
+            margin: 2px 0;
+        }
+        .sign-img {
+            max-height: 50px;
+            max-width: 140px;
+        }
+        .sign-space {
+            height: 48px;
         }
         .sign-name {
             font-weight: bold;
@@ -596,6 +617,13 @@ ob_start();
                 <?php if ($tampilkan_ttd_pimpin): ?>
                     <div class="sign-title">Mengetahui / Menyetujui,</div>
                     <div class="sign-jabatan"><?= e($penandatangan_jabatan) ?></div>
+                    <?php if (!empty($penandatangan_ttd_base64)): ?>
+                        <div class="sign-img-wrap">
+                            <img src="<?= $penandatangan_ttd_base64 ?>" class="sign-img" alt="TTD Pimpinan">
+                        </div>
+                    <?php else: ?>
+                        <div class="sign-space"></div>
+                    <?php endif; ?>
                     <div class="sign-name"><?= e($penandatangan_nama) ?></div>
                     <div class="sign-nip">NIP. <?= e($penandatangan_nip) ?></div>
                 <?php endif; ?>
@@ -603,6 +631,7 @@ ob_start();
             <td>
                 <div class="sign-title">Nganjuk, <?= $tgl_cetak ?></div>
                 <div class="sign-jabatan">Yang Melaporkan / Penyuluh,</div>
+                <div class="sign-space"></div>
                 <div class="sign-name"><?= e($keg['penyuluh_nama']) ?></div>
                 <div class="sign-nip">NIP. <?= e($keg['penyuluh_nip'] ?: '-') ?></div>
             </td>

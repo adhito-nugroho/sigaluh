@@ -83,6 +83,13 @@ foreach ($laporan_data as $r_cek) {
 }
 $tampilkan_ttd_pimpin  = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && $all_direview;
 
+// Gambar TTD Pimpinan (PNG transparan)
+$ttd_file = get_app_setting('penandatangan_ttd_file', '');
+$ttd_url = '';
+if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
+    $ttd_url = BASE_URL . '/uploads/ttd/' . $ttd_file;
+}
+
 if ($f_bulan && $f_tahun) {
     $last_day = date('t', strtotime("$f_tahun-$f_bulan-01"));
     $tgl_tanda_tangan = "$last_day " . get_bulan_indo((int)$f_bulan) . " $f_tahun";
@@ -483,7 +490,13 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
             <div>
                 <p class="text-neutral-500 font-medium">Mengetahui,</p>
                 <p class="font-bold text-neutral-800 uppercase mt-0.5"><?= e($penandatangan_jabatan) ?></p>
-                <div class="h-20"></div>
+                <?php if (!empty($ttd_url)): ?>
+                    <div class="h-20 flex items-center justify-center my-1">
+                        <img src="<?= $ttd_url ?>" class="max-h-16 max-w-[150px] object-contain" alt="TTD Pimpinan">
+                    </div>
+                <?php else: ?>
+                    <div class="h-20"></div>
+                <?php endif; ?>
                 <p class="font-bold text-neutral-900 underline uppercase tracking-wide"><?= e($penandatangan_nama) ?></p>
                 <p class="font-mono text-neutral-500 mt-0.5">NIP. <?= e($penandatangan_nip ?: '-') ?></p>
             </div>
