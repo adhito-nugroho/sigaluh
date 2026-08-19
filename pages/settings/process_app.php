@@ -18,7 +18,7 @@ global $pdo;
 $stmt = $pdo->prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
 
 // Text fields
-$text_fields = ['penandatangan_nama', 'penandatangan_nip', 'penandatangan_jabatan'];
+$text_fields = ['penandatangan_nama', 'penandatangan_nip', 'penandatangan_jabatan', 'penandatangan_jabatan_2'];
 foreach ($text_fields as $key) {
     $val = trim($_POST[$key] ?? '');
     $stmt->execute([$key, $val]);

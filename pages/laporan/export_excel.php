@@ -136,35 +136,33 @@ if ($f_bulan && $f_tahun) {
                 <th>KENDALA / PERMASALAHAN</th>
                 <th>SOLUSI</th>
             </tr>
-            <tr>
-                <th style="font-weight: normal; background-color: #f9f9f9;">1</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">2</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">3</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">4</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">5</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">6</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">7</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">8</th>
-                <th style="font-weight: normal; background-color: #f9f9f9;">9</th>
+            <tr style="background-color: #2e7d32; color: #ffffff; text-align: center;">
+                <th style="padding: 5px; width: 40px;">NO</th>
+                <th style="padding: 5px; width: 90px;">TANGGAL</th>
+                <th style="padding: 5px; width: 180px;">KEGIATAN (TUSI)</th>
+                <th style="padding: 5px; width: 220px;">URAIAN KEGIATAN</th>
+                <th style="padding: 5px; width: 180px;">SUBSTANSI MATERI</th>
+                <th style="padding: 5px; width: 180px;">LOKASI / KTH</th>
+                <th style="padding: 5px; width: 150px;">SASARAN</th>
+                <th style="padding: 5px; width: 80px;">STATUS</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($laporan_data)): ?>
-            <tr>
-                <td colspan="9" class="text-center">Tidak ada data kegiatan.</td>
-            </tr>
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 10px;">Tidak ada data kegiatan pada periode ini.</td>
+                </tr>
             <?php else: ?>
                 <?php $no = 1; foreach ($laporan_data as $row): ?>
                 <tr>
-                    <td class="text-center"><?= $no++ ?></td>
-                    <td class="text-center"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
-                    <td><?= nl2br(e($row['uraian_kegiatan'])) ?></td>
-                    <td><?= nl2br(e(expand_uraian_tugas($row['detail_kegiatan'], $row['uraian_kegiatan'] ?? ''))) ?></td>
-                    <td><?= nl2br(e($row['substansi_materi'] ?: '-')) ?></td>
-                    <td><?= nl2br(e($row['sasaran_hadir'] ?: '-')) ?></td>
-                    <td><?= nl2br(e($row['pelaksanaan_kegiatan'])) ?></td>
-                    <td><?= nl2br(e($row['permasalahan_kendala'] ?: '-')) ?></td>
-                    <td><?= nl2br(e($row['solusi'] ?: '-')) ?></td>
+                    <td style="text-align: center; vertical-align: top;"><?= $no++ ?></td>
+                    <td style="text-align: center; vertical-align: top;"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
+                    <td style="vertical-align: top;"><?= e($row['tusi_kode']) ?> - <?= e($row['uraian_tugas'] ?? '-') ?></td>
+                    <td style="vertical-align: top;"><?= nl2br(e($row['uraian_kegiatan'])) ?></td>
+                    <td style="vertical-align: top;"><?= nl2br(e($row['substansi_materi'] ?: '-')) ?></td>
+                    <td style="vertical-align: top;"><?= e($row['lokasi'] ?: '-') ?></td>
+                    <td style="vertical-align: top;"><?= e($row['sasaran_hadir'] ?: '-') ?></td>
+                    <td style="text-align: center; vertical-align: top;"><?= strtoupper(e($row['status'])) ?></td>
                 </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -172,13 +170,18 @@ if ($f_bulan && $f_tahun) {
     </table>
 
     <br><br>
+
     <!-- Table Tanda Tangan Official Excel -->
     <table style="width: 100%; border: none;">
         <tr>
             <?php if ($tampilkan_ttd_pimpin): ?>
             <td colspan="4" style="text-align: center; vertical-align: top; border: none;">
                 Mengetahui,<br>
-                <b><?= strtoupper(e($penandatangan_jabatan)) ?></b><br><br><br><br>
+                <b><?= strtoupper(e($penandatangan_jabatan)) ?></b><br>
+                <?php if (!empty($penandatangan_jabatan_2)): ?>
+                    <b><?= strtoupper(e($penandatangan_jabatan_2)) ?></b><br>
+                <?php endif; ?>
+                <br><br><br>
                 <u><b><?= strtoupper(e($penandatangan_nama)) ?></b></u><br>
                 NIP. <?= e($penandatangan_nip ?: '-') ?>
             </td>

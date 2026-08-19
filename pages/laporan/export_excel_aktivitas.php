@@ -73,9 +73,10 @@ header("Expires: 0");
 $bulan_teks = $f_bulan ? get_bulan_indo((int)$f_bulan) : 'Semua Bulan';
 
 // Data Pimpinan untuk Tanda Tangan (Hanya tampil jika semua kegiatan sudah 'direview' dan setting aktif)
-$penandatangan_nama    = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
-$penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
-$penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_nama      = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
+$penandatangan_nip       = get_app_setting('penandatangan_nip', '-');
+$penandatangan_jabatan   = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_jabatan_2 = get_app_setting('penandatangan_jabatan_2', '');
 $all_direview = !empty($laporan_data);
 foreach ($laporan_data as $r_cek) {
     if (($r_cek['status'] ?? '') !== 'direview') {
@@ -260,7 +261,11 @@ $total_jam = round($total_wpt_menit / 60, 1);
             <?php if ($tampilkan_ttd_pimpin): ?>
             <td colspan="4" class="no-border text-center">
                 Mengetahui,<br>
-                <b><?= strtoupper(e($penandatangan_jabatan)) ?></b><br><br><br><br><br>
+                <b><?= strtoupper(e($penandatangan_jabatan)) ?></b><br>
+                <?php if (!empty($penandatangan_jabatan_2)): ?>
+                    <b><?= strtoupper(e($penandatangan_jabatan_2)) ?></b><br>
+                <?php endif; ?>
+                <br><br><br><br>
                 <u><b><?= strtoupper(e($penandatangan_nama)) ?></b></u><br>
                 <span style="mso-number-format:'\@';">NIP. <?= e($penandatangan_nip ?: '-') ?></span>
             </td>

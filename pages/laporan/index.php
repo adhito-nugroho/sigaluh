@@ -66,9 +66,10 @@ if (!empty($f_penyuluh)) {
 }
 
 // Data Pimpinan untuk Tanda Tangan (Hanya tampil jika semua kegiatan sudah 'direview' dan setting aktif)
-$penandatangan_nama    = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
-$penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
-$penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_nama      = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
+$penandatangan_nip       = get_app_setting('penandatangan_nip', '-');
+$penandatangan_jabatan   = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_jabatan_2 = get_app_setting('penandatangan_jabatan_2', '');
 $all_direview = !empty($laporan_data);
 foreach ($laporan_data as $r_cek) {
     if (($r_cek['status'] ?? '') !== 'direview') {
@@ -268,6 +269,11 @@ if ($f_bulan && $f_tahun) {
                     <p style="margin: 3px 0 0 0; font-size: 13px; font-weight: bold; text-transform: uppercase;">
                         <?= e($penandatangan_jabatan) ?>
                     </p>
+                    <?php if (!empty($penandatangan_jabatan_2)): ?>
+                    <p style="margin: 1px 0 0 0; font-size: 11.5px; font-weight: bold; text-transform: uppercase;">
+                        <?= e($penandatangan_jabatan_2) ?>
+                    </p>
+                    <?php endif; ?>
                     <?php if (!empty($ttd_url)): ?>
                         <div style="height: 65px; display: flex; align-items: center; justify-content: center; margin: 5px 0;">
                             <img src="<?= $ttd_url ?>" style="max-height: 60px; max-width: 150px; object-fit: contain;" alt="TTD Pimpinan">

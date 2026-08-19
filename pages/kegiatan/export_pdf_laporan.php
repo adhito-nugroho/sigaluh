@@ -71,10 +71,11 @@ $logo_path = __DIR__ . '/../../assets/images/logo.png';
 $logo_base64 = file_exists($logo_path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo_path)) : '';
 
 // Data Pimpinan untuk Tanda Tangan (Hanya tampil jika status sudah 'direview' / disetujui)
-$penandatangan_nama    = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
-$penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
-$penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
-$tampilkan_ttd_pimpin  = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && ($keg['status'] === 'direview');
+$penandatangan_nama      = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
+$penandatangan_nip       = get_app_setting('penandatangan_nip', '-');
+$penandatangan_jabatan   = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_jabatan_2 = get_app_setting('penandatangan_jabatan_2', '');
+$tampilkan_ttd_pimpin    = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && ($keg['status'] === 'direview');
 
 // Gambar TTD Pimpinan (PNG transparan)
 $ttd_file = get_app_setting('penandatangan_ttd_file', '');
@@ -616,7 +617,12 @@ ob_start();
             <td>
                 <?php if ($tampilkan_ttd_pimpin): ?>
                     <div class="sign-title">Mengetahui / Menyetujui,</div>
-                    <div class="sign-jabatan"><?= e($penandatangan_jabatan) ?></div>
+                    <div class="sign-jabatan">
+                        <div><?= e($penandatangan_jabatan) ?></div>
+                        <?php if (!empty($penandatangan_jabatan_2)): ?>
+                            <div style="font-size: 7.5pt; font-weight: normal; margin-top: 1px; text-transform: uppercase;"><?= e($penandatangan_jabatan_2) ?></div>
+                        <?php endif; ?>
+                    </div>
                     <?php if (!empty($penandatangan_ttd_base64)): ?>
                         <div class="sign-img-wrap">
                             <img src="<?= $penandatangan_ttd_base64 ?>" class="sign-img" alt="TTD Pimpinan">

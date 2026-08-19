@@ -17,11 +17,12 @@ $settings_raw = $pdo->query("SELECT setting_key, setting_value FROM app_settings
 $msg_success = $_GET['saved'] ?? null;
 
 // Defaults if not set
-$nama             = $settings_raw['penandatangan_nama']       ?? '';
-$nip              = $settings_raw['penandatangan_nip']        ?? '';
-$jabatan          = $settings_raw['penandatangan_jabatan']    ?? '';
-$tampilkan_pimpin = ($settings_raw['tampilkan_ttd_pimpinan']  ?? '1') === '1';
-$ttd_file         = $settings_raw['penandatangan_ttd_file']   ?? '';
+$nama             = $settings_raw['penandatangan_nama']        ?? '';
+$nip              = $settings_raw['penandatangan_nip']         ?? '';
+$jabatan          = $settings_raw['penandatangan_jabatan']     ?? '';
+$jabatan_2        = $settings_raw['penandatangan_jabatan_2']   ?? '';
+$tampilkan_pimpin = ($settings_raw['tampilkan_ttd_pimpinan']   ?? '1') === '1';
+$ttd_file         = $settings_raw['penandatangan_ttd_file']    ?? '';
 
 $ttd_url = '';
 if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
@@ -31,7 +32,7 @@ if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
 
 <div class="mb-4">
     <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Pengaturan Tanda Tangan Laporan</h2>
-    <p class="text-muted mb-0" style="font-size:12.5px;">Atur nama, NIP, jabatan, file gambar tanda tangan PNG, dan visibilitas blok tanda tangan pada laporan kegiatan.</p>
+    <p class="text-muted mb-0" style="font-size:12.5px;">Atur nama, NIP, jabatan (dua baris), file gambar tanda tangan PNG, dan visibilitas blok tanda tangan pada laporan kegiatan.</p>
 </div>
 
 <?php if ($msg_success): ?>
@@ -68,7 +69,7 @@ if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
                     Nama Penandatangan (Pimpinan) <span style="color:var(--md-sys-color-error);">*</span>
                 </label>
                 <input type="text" name="penandatangan_nama" id="input_nama" value="<?= e($nama) ?>"
-                    placeholder="Contoh: Drs. Ahmad Fauzi, M.Si"
+                    placeholder="Contoh: IR. SONNY HARTANTO K., S.HUT, M.M."
                     class="form-control"
                     oninput="document.getElementById('preview_nama').textContent = this.value || '...'">
                 <p class="text-muted mt-1 mb-0" style="font-size:11px;">Nama ini akan ditampilkan di bawah ruang tanda tangan kolom "Mengetahui".</p>
@@ -79,20 +80,33 @@ if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
                     NIP Penandatangan
                 </label>
                 <input type="text" name="penandatangan_nip" id="input_nip" value="<?= e($nip) ?>"
-                    placeholder="Contoh: 196504011990021001"
+                    placeholder="Contoh: 196504011990021001 (atau - jika belum ada)"
                     class="form-control font-mono"
                     oninput="document.getElementById('preview_nip').textContent = this.value || '-'">
             </div>
 
+            <!-- Jabatan Baris 1 -->
             <div>
                 <label class="form-label">
-                    Jabatan Penandatangan
+                    Jabatan Penandatangan (Baris 1)
                 </label>
                 <input type="text" name="penandatangan_jabatan" id="input_jabatan" value="<?= e($jabatan) ?>"
-                    placeholder="Contoh: Kepala Cabang Dinas Kehutanan Wilayah Nganjuk"
+                    placeholder="Contoh: KASI REHABILITASI LAHAN DAN PEMBERDAYAAN MASYARAKAT"
                     class="form-control"
-                    oninput="document.getElementById('preview_jabatan').textContent = this.value || '...'">
-                <p class="text-muted mt-1 mb-0" style="font-size:11px;">Jabatan ini akan tampil di atas ruang tanda tangan kolom "Mengetahui".</p>
+                    oninput="updateJabatanPreview()">
+                <p class="text-muted mt-1 mb-0" style="font-size:11px;">Baris pertama di bawah "Mengetahui / Menyetujui,".</p>
+            </div>
+
+            <!-- Jabatan Baris 2 -->
+            <div>
+                <label class="form-label">
+                    Jabatan / Unit Kerja Penandatangan (Baris 2 - Opsional)
+                </label>
+                <input type="text" name="penandatangan_jabatan_2" id="input_jabatan_2" value="<?= e($jabatan_2) ?>"
+                    placeholder="Contoh: CABANG DINAS KEHUTANAN WILAYAH NGANJUK"
+                    class="form-control"
+                    oninput="updateJabatanPreview()">
+                <p class="text-muted mt-1 mb-0" style="font-size:11px;">Baris kedua di bawah jabatan baris 1 (misal nama instansi / unit kerja).</p>
             </div>
 
             <!-- Upload Gambar Tanda Tangan PNG -->
@@ -137,7 +151,8 @@ if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
                 <!-- Kolom Pimpinan -->
                 <div id="preview_pimpinan_col" style="<?= !$tampilkan_pimpin ? 'display:none' : '' ?>;flex:0 0 45%;">
                     <p class="mb-0 text-xs" style="color:var(--md-sys-color-on-surface-variant);">Mengetahui / Menyetujui,</p>
-                    <p class="fw-bold text-uppercase mb-1 text-xs" style="color:var(--md-sys-color-on-surface);" id="preview_jabatan"><?= e($jabatan ?: 'Kepala CDK Wilayah Nganjuk') ?></p>
+                    <p class="fw-bold text-uppercase mb-0 text-xs" style="color:var(--md-sys-color-on-surface);" id="preview_jabatan"><?= e($jabatan ?: 'KASI RLPM') ?></p>
+                    <p class="fw-bold text-uppercase mb-1 text-xs" style="color:var(--md-sys-color-on-surface);<?= empty($jabatan_2) ? 'display:none;' : '' ?>" id="preview_jabatan_2"><?= e($jabatan_2) ?></p>
                     
                     <div id="preview_ttd_wrap" style="height:55px;display:flex;align-items:center;justify-content:center;margin:4px 0;">
                         <img id="preview_ttd_img" src="<?= $ttd_url ?>" alt="TTD" style="<?= $ttd_url ? 'max-height:50px;max-width:140px;object-fit:contain;' : 'display:none;' ?>">
@@ -157,7 +172,7 @@ if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
                         <div style="height:45px;width:100%;border-bottom:1px dashed var(--md-sys-color-outline-variant);"></div>
                     </div>
 
-                    <p class="fw-bold text-uppercase mb-0 text-xs" style="color:var(--md-sys-color-on-surface);text-decoration:underline;">NAMA PENYULUH, S.Hut</p>
+                    <p class="fw-bold text-uppercase mb-0 text-xs" style="color:var(--md-sys-color-on-surface);text-decoration:underline;">NAMA PENYULUH, S.HUT</p>
                     <p class="text-muted font-mono mb-0 mt-0.5 text-xs">NIP. 19800101xxxxxxxxxx</p>
                 </div>
             </div>
@@ -194,6 +209,22 @@ function updatePreview() {
     } else {
         colPny.style.flex = '1 1 100%';
         colPny.style.textAlign = 'right';
+    }
+}
+
+function updateJabatanPreview() {
+    const j1 = document.getElementById('input_jabatan').value;
+    const j2 = document.getElementById('input_jabatan_2').value;
+    const prev1 = document.getElementById('preview_jabatan');
+    const prev2 = document.getElementById('preview_jabatan_2');
+    
+    prev1.textContent = j1 || '...';
+    if (j2 && j2.trim()) {
+        prev2.textContent = j2.trim();
+        prev2.style.display = 'block';
+    } else {
+        prev2.textContent = '';
+        prev2.style.display = 'none';
     }
 }
 

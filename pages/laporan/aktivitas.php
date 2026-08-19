@@ -71,9 +71,10 @@ if (!empty($f_penyuluh)) {
 }
 
 // Data Pimpinan untuk Tanda Tangan (Hanya tampil jika semua kegiatan sudah 'direview' dan setting aktif)
-$penandatangan_nama    = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
-$penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
-$penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_nama      = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
+$penandatangan_nip       = get_app_setting('penandatangan_nip', '-');
+$penandatangan_jabatan   = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
+$penandatangan_jabatan_2 = get_app_setting('penandatangan_jabatan_2', '');
 $all_direview = !empty($laporan_data);
 foreach ($laporan_data as $r_cek) {
     if (($r_cek['status'] ?? '') !== 'direview') {
@@ -490,6 +491,9 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
             <div>
                 <p class="text-neutral-500 font-medium">Mengetahui,</p>
                 <p class="font-bold text-neutral-800 uppercase mt-0.5"><?= e($penandatangan_jabatan) ?></p>
+                <?php if (!empty($penandatangan_jabatan_2)): ?>
+                <p class="font-bold text-neutral-700 uppercase text-[11px] mt-0.5"><?= e($penandatangan_jabatan_2) ?></p>
+                <?php endif; ?>
                 <?php if (!empty($ttd_url)): ?>
                     <div class="h-20 flex items-center justify-center my-1">
                         <img src="<?= $ttd_url ?>" class="max-h-16 max-w-[150px] object-contain" alt="TTD Pimpinan">
