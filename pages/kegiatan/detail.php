@@ -79,6 +79,9 @@ function get_status_badge($status) {
         <p class="text-muted mb-0" style="font-size:12.5px;">Status saat ini: <?= get_status_badge($keg['status']) ?></p>
     </div>
     <div class="d-flex gap-2">
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan/export_pdf_laporan&id=<?= $keg['id'] ?>" class="btn btn-primary">
+            <span class="material-symbols-outlined">print</span> Cetak Laporan (PDF)
+        </a>
         <?php if ($role === 'penyuluh' && ($keg['status'] === 'draft' || $keg['status'] === 'submitted')): ?>
         <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form&id=<?= $keg['id'] ?>" class="btn btn-warning">
             <span class="material-symbols-outlined">edit</span> Edit

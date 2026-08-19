@@ -266,6 +266,10 @@ function get_status_badge($status) {
                                         <span class="material-symbols-outlined">visibility</span>
                                     </a>
 
+                                    <a href="<?= BASE_URL ?>/index.php?page=kegiatan/export_pdf_laporan&id=<?= $row['id'] ?>" class="btn-icon" title="Cetak Laporan (PDF)">
+                                        <span class="material-symbols-outlined">print</span>
+                                    </a>
+
                                     <?php if ($role === 'penyuluh' && ($row['status'] === 'draft' || $row['status'] === 'submitted')): ?>
                                     <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form&id=<?= $row['id'] ?>" class="btn-icon" title="Edit">
                                         <span class="material-symbols-outlined">edit</span>
