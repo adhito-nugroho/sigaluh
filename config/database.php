@@ -19,5 +19,7 @@ try {
         // Do not die when included in migration runner; allow migration runner to auto-create DB or catch error
         return;
     }
-    die("Koneksi database gagal: " . $e->getMessage());
+    error_log('[SI GALUH] Database Connection Error: ' . $e->getMessage());
+    http_response_code(500);
+    die("Koneksi database gagal. Silakan periksa konfigurasi server.");
 }

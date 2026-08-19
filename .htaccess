@@ -1,0 +1,17 @@
+# SI GALUH — Root .htaccess
+# Blokir akses langsung ke file sensitif dari browser
+
+# Larang akses ke file SQL dump
+<FilesMatch "\.(sql|bak|log|sh|env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Larang akses langsung ke file PHP backup
+<FilesMatch "\.php\.bak$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Larang directory listing
+Options -Indexes

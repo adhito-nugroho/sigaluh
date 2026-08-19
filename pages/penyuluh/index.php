@@ -42,11 +42,11 @@ if ($f_sort === 'waktu_asc') {
 }
 
 $sql_data = "
-    SELECT u.*,
+    SELECT u.id, u.nip, u.nama, u.pangkat_golongan, u.jabatan, u.no_hp, u.email, u.status_aktif, u.last_login,
            COALESCE((
                SELECT SUM(k.durasi_menit) 
                FROM kegiatan k 
-               WHERE k.user_id = u.id AND MONTH(k.tanggal) = $f_bln AND YEAR(k.tanggal) = $f_thn
+               WHERE k.user_id = u.id AND MONTH(k.tanggal) = ? AND YEAR(k.tanggal) = ?
            ), 0) as total_durasi_bulan_ini
     FROM users u
     JOIN m_roles r ON u.role_id = r.id
@@ -55,15 +55,16 @@ $sql_data = "
     LIMIT $limit OFFSET $offset
 ";
 $stmt_data = $pdo->prepare($sql_data);
-$stmt_data->execute($params);
+$params_data = array_merge([(int)$f_bln, (int)$f_thn], $params);
+$stmt_data->execute($params_data);
 $users_list = $stmt_data->fetchAll();
 
 // Fetch working territories for penyuluh users
-$user_ids = array_column($users_list, 'id');
+$user_ids = array_filter(array_map('intval', array_column($users_list, 'id')));
 $wilayah_map = [];
 
 if (!empty($user_ids)) {
-    $in_clause = implode(',', array_map('intval', $user_ids));
+    $uwk_placeholders = implode(',', array_fill(0, count($user_ids), '?'));
     $sql_uwk = "
         SELECT 
             uwk.user_id,
@@ -74,10 +75,12 @@ if (!empty($user_ids)) {
         FROM user_wilayah_kerja uwk
         JOIN m_kecamatan kec ON uwk.kecamatan_id = kec.id
         LEFT JOIN m_desa desa ON uwk.desa_id = desa.id
-        WHERE uwk.user_id IN ($in_clause)
+        WHERE uwk.user_id IN ($uwk_placeholders)
         ORDER BY kec.nama ASC, desa.nama ASC
     ";
-    $rows_uwk = $pdo->query($sql_uwk)->fetchAll();
+    $stmt_uwk = $pdo->prepare($sql_uwk);
+    $stmt_uwk->execute(array_values($user_ids));
+    $rows_uwk = $stmt_uwk->fetchAll();
     
     foreach ($rows_uwk as $w) {
         $uid = $w['user_id'];

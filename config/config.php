@@ -1,13 +1,26 @@
 <?php
 // config/config.php
-session_start();
 
-// Base URL aplikasi (Dinamis)
-// Deteksi HTTPS: mendukung direct HTTPS maupun reverse proxy (X-Forwarded-Proto)
+// Deteksi HTTPS
 $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
     || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
     || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
     || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+
+// Session Cookie Security Parameters (P11)
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
+
+// Base URL aplikasi (Dinamis)
 $protocol = $isHttps ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $dir = dirname($_SERVER['SCRIPT_NAME']);
@@ -25,11 +38,12 @@ function generate_csrf_token() {
 }
 
 /**
- * Fungsi untuk verifikasi CSRF Token
+ * Fungsi untuk verifikasi CSRF Token (P12 - Timing Attack Safe)
  */
 function verify_csrf_token($token) {
-    if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
-        die("CSRF Token Validation Failed.");
+    if (empty($_SESSION['csrf_token']) || empty($token) || !hash_equals($_SESSION['csrf_token'], (string)$token)) {
+        http_response_code(403);
+        die("CSRF Token Validation Failed. Silakan refresh halaman.");
     }
     return true;
 }
@@ -87,19 +101,26 @@ function format_tanggal_indo($date_str, $with_day = false) {
 }
 
 /**
- * Ambil satu nilai app_settings dari database
+ * Ambil satu nilai app_settings dari database (dengan in-memory caching)
  */
 function get_app_setting($key, $default = '') {
     global $pdo;
-    if (!$pdo) return $default;
-    try {
-        $stmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key = ? LIMIT 1");
-        $stmt->execute([$key]);
-        $val = $stmt->fetchColumn();
-        return ($val !== false) ? $val : $default;
-    } catch (\Exception $e) {
-        return $default;
+    static $settings_cache = null;
+
+    if ($settings_cache === null && $pdo) {
+        try {
+            $stmt = $pdo->query("SELECT setting_key, setting_value FROM app_settings");
+            $settings_cache = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        } catch (\Exception $e) {
+            $settings_cache = [];
+        }
     }
+
+    if ($settings_cache !== null && isset($settings_cache[$key])) {
+        return $settings_cache[$key];
+    }
+
+    return $default;
 }
 
 /**

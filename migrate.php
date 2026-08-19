@@ -1,17 +1,16 @@
 <?php
 /**
  * SI GALUH - Automated Database Migration Runner
- * Compatible with CLI (php migrate.php) and Web Browser.
+ * HANYA boleh dijalankan dari CLI: php migrate.php
  */
 
-define('MIGRATION_RUNNER', true);
-
-// Set header if run in browser
+// Proteksi: blokir akses dari browser
 if (php_sapi_name() !== 'cli') {
-    header('Content-Type: text/html; charset=utf-8');
-    echo "<body style='background: #0f172a; color: #f8fafc; font-family: sans-serif; padding: 24px;'>";
-    echo "<h2>🚀 SI GALUH Database Migration Runner</h2>";
+    http_response_code(403);
+    die('403 Forbidden: Migration runner hanya dapat dijalankan via CLI (php migrate.php).');
 }
+
+define('MIGRATION_RUNNER', true);
 
 function log_msg($msg, $type = 'info') {
     if (php_sapi_name() === 'cli') {

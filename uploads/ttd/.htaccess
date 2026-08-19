@@ -1,0 +1,23 @@
+# uploads/ttd/.htaccess
+# Proteksi direktori upload TTD: larang eksekusi PHP
+Options -Indexes
+<Files "*.php">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "*.phtml">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "*.php5">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "*.php7">
+    Order allow,deny
+    Deny from all
+</Files>
+<FilesMatch "\.ph(p[0-9]?|tml)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

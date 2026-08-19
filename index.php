@@ -1,8 +1,22 @@
 <?php
 // index.php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Error reporting: default off di production, log ke file
+$is_debug = (getenv('APP_DEBUG') === 'true');
+if ($is_debug) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', '0');
+    ini_set('display_startup_errors', '0');
+    ini_set('log_errors', '1');
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+}
+
+// HTTP Security Headers (P10)
+header('X-Frame-Options: SAMEORIGIN');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: strict-origin-when-cross-origin');
 
 require_once 'config/config.php';
 require_once 'config/database.php';
@@ -16,8 +30,15 @@ if (empty($page)) {
     $page = is_logged_in() ? 'dashboard' : 'landing';
 }
 
-// Sanitasi parameter halaman untuk mencegah direktori traversal
-$page = str_replace(['..', "\0"], '', $page);
+// Sanitasi ketat parameter halaman untuk mencegah direktori traversal
+$page = preg_replace('/[^a-zA-Z0-9_\-\/]/', '', $page);
+$page = trim($page, '/');
+
+// Cegah path traversal ganda
+if (strpos($page, '..') !== false) {
+    http_response_code(400);
+    die("Permintaan tidak valid.");
+}
 
 // Routing logika dasar
 $public_pages = ['auth/login', 'auth/process_login', 'landing'];
@@ -27,7 +48,8 @@ if (!in_array($page, $public_pages)) {
 }
 
 // Tentukan path file yang akan di-include
-$file_path = __DIR__ . '/pages/' . $page;
+$base_pages_dir = realpath(__DIR__ . '/pages');
+$file_path = $base_pages_dir . '/' . $page;
 
 // Jika path tersebut direktori, asumsikan memanggil index.php di dalamnya
 if (is_dir($file_path)) {
@@ -36,13 +58,14 @@ if (is_dir($file_path)) {
     $file_path .= '.php';
 }
 
-// Cek apakah file ada
-if (!file_exists($file_path)) {
-    // 404
+// Verifikasi file ada dan berada di dalam direktori pages/ (mencegah LFI)
+$real_target = realpath($file_path);
+if (!$real_target || strpos($real_target, $base_pages_dir) !== 0 || !file_exists($real_target)) {
     http_response_code(404);
     echo "Halaman tidak ditemukan.";
     exit;
 }
+$file_path = $real_target;
 
 // Mulai buffer output
 ob_start();

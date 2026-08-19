@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // pages/dashboard/index.php
 global $pdo;
 
@@ -39,10 +39,11 @@ $sisa_jam = round($sisa_menit / 60, 1);
 $sql_tusi = "
     SELECT t.kode as tusi_kode, COUNT(k.id) as jumlah 
     FROM m_tusi t 
-    LEFT JOIN kegiatan k ON t.id = k.tusi_id " . ($role === 'penyuluh' ? "AND k.user_id = $user_id" : "") . "
+    LEFT JOIN kegiatan k ON t.id = k.tusi_id " . ($role === 'penyuluh' ? "AND k.user_id = ?" : "") . "
     GROUP BY t.kode
 ";
-$stmt_tusi = $pdo->query($sql_tusi);
+$stmt_tusi = $pdo->prepare($sql_tusi);
+$stmt_tusi->execute($role === 'penyuluh' ? [$user_id] : []);
 $breakdown_tusi = $stmt_tusi->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // 3. Breakdown Status
@@ -92,9 +93,23 @@ foreach ($months_skeleton as $key => $val) {
 $f_rek_bln = $_GET['rek_bln'] ?? date('m');
 $f_rek_thn = $_GET['rek_thn'] ?? date('Y');
 
-$rek_where    = $role === 'penyuluh' ? "AND k.user_id = $user_id" : '';
-$rek_bln_sql  = $f_rek_bln  ? "AND MONTH(k.tanggal) = " . (int)$f_rek_bln  : '';
-$rek_thn_sql  = $f_rek_thn  ? "AND YEAR(k.tanggal)  = " . (int)$f_rek_thn  : '';
+$rek_clauses = [];
+$rek_params  = [];
+
+if ($role === 'penyuluh') {
+    $rek_clauses[] = "k.user_id = ?";
+    $rek_params[]  = $user_id;
+}
+if (!empty($f_rek_bln)) {
+    $rek_clauses[] = "MONTH(k.tanggal) = ?";
+    $rek_params[]  = (int)$f_rek_bln;
+}
+if (!empty($f_rek_thn)) {
+    $rek_clauses[] = "YEAR(k.tanggal) = ?";
+    $rek_params[]  = (int)$f_rek_thn;
+}
+
+$rek_join_cond = !empty($rek_clauses) ? "AND " . implode(" AND ", $rek_clauses) : "";
 
 $sql_rekap_tusi = "
     SELECT t.kode, t.nama,
@@ -103,11 +118,13 @@ $sql_rekap_tusi = "
            SUM(k.status = 'direview')                       AS direview,
            SUM(k.status = 'draft')                          AS draft
     FROM m_tusi t
-    LEFT JOIN kegiatan k ON k.tusi_id = t.id $rek_where $rek_bln_sql $rek_thn_sql
+    LEFT JOIN kegiatan k ON k.tusi_id = t.id $rek_join_cond
     GROUP BY t.id, t.kode, t.nama
     ORDER BY t.id ASC
 ";
-$rekap_tusi = $pdo->query($sql_rekap_tusi)->fetchAll();
+$stmt_rekap = $pdo->prepare($sql_rekap_tusi);
+$stmt_rekap->execute($rek_params);
+$rekap_tusi = $stmt_rekap->fetchAll();
 $rekap_grand_total = array_sum(array_column($rekap_tusi, 'total'));
 
 // 6. Executive Summary Target Waktu (Admin / Pimpinan)

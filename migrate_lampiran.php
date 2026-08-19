@@ -1,9 +1,15 @@
 <?php
 /**
  * migrate_lampiran.php
- * Jalankan sekali via browser: http://localhost/sigaluh2/migrate_lampiran.php
- * untuk membuat atau mengupdate tabel kegiatan_lampiran.
+ * Jalankan via CLI: php migrate_lampiran.php
+ * JANGAN dijalankan langsung dari browser.
  */
+// Proteksi: hanya boleh dijalankan dari CLI
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    die('403 Forbidden: Script ini hanya dapat dijalankan via CLI.');
+}
+
 require_once 'config/config.php';
 require_once 'config/database.php';
 

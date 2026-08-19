@@ -1,5 +1,10 @@
 <?php
 // migrate_aktivitas.php
+// Proteksi: hanya boleh dijalankan dari CLI
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    die('403 Forbidden: Script ini hanya dapat dijalankan via CLI.');
+}
 require_once 'config/config.php';
 require_once 'config/database.php';
 

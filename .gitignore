@@ -1,0 +1,32 @@
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+
+# Composer
+/vendor/
+
+# SQL Dumps & Database Backups
+*.sql
+!database/migrations/*.sql
+
+# File Uploads (preserve .htaccess and .gitkeep)
+/uploads/lampiran/*
+!/uploads/lampiran/.htaccess
+!/uploads/lampiran/.gitkeep
+
+/uploads/ttd/*
+!/uploads/ttd/.htaccess
+!/uploads/ttd/.gitkeep
+
+# Temporary and backup files
+*.bak
+*.tmp
+*.log
+
+# IDE & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.FullName
