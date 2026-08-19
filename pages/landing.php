@@ -210,16 +210,16 @@ if (function_exists('generate_csrf_token')) {
 
     <!-- TOP APP BAR / HEADER -->
     <header class="w-full border-b flex-none" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="p-1 rounded-xl bg-white shadow-sm flex items-center justify-center border" style="border-color:var(--md-sys-color-outline-variant);">
-                    <img src="<?php echo $logo_path; ?>" alt="Logo SI GALUH" class="h-9 w-auto object-contain" onerror="this.style.display='none'">
+                <div class="p-1.5 rounded-xl bg-white shadow-sm flex items-center justify-center border" style="border-color:var(--md-sys-color-outline-variant);">
+                    <img src="<?php echo $logo_path; ?>" alt="Logo SI GALUH" class="h-11 lg:h-12 w-auto object-contain" onerror="this.style.display='none'">
                 </div>
                 <div class="border-l pl-3" style="border-color:var(--md-sys-color-outline-variant);">
-                    <h1 class="text-sm font-bold tracking-tight" style="color:var(--md-sys-color-on-surface); line-height:1.2;">
+                    <h1 class="text-base lg:text-lg font-bold tracking-tight" style="color:var(--md-sys-color-on-surface); line-height:1.2;">
                         CABANG DINAS KEHUTANAN WILAYAH NGANJUK
                     </h1>
-                    <p class="text-xs" style="color:var(--md-sys-color-on-surface-variant);">
+                    <p class="text-xs lg:text-sm" style="color:var(--md-sys-color-on-surface-variant);">
                         Dinas Kehutanan Provinsi Jawa Timur
                     </p>
                 </div>
@@ -398,8 +398,8 @@ if (function_exists('generate_csrf_token')) {
     </main>
 
     <!-- FOOTER -->
-    <footer class="w-full py-3.5 border-t flex-none" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs" style="color:var(--md-sys-color-on-surface-variant);">
+    <footer class="w-full py-5 lg:py-6 border-t flex-none" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs lg:text-sm" style="color:var(--md-sys-color-on-surface-variant);">
             <p>&copy; <?php echo $current_year; ?> Cabang Dinas Kehutanan Wilayah Nganjuk.</p>
             <p>Dinas Kehutanan Provinsi Jawa Timur.</p>
         </div>
