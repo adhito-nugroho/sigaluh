@@ -64,6 +64,60 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
     </a>
 </div>
 
+<!-- Banner Pulihkan Draft Autosave -->
+<div id="draft_alert_banner" class="hidden mb-6 p-4 bg-accent-50 border border-accent-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm transition-all shadow-sm">
+    <div class="flex items-center gap-3 text-accent-950">
+        <div class="p-2.5 bg-accent-100 text-accent-700 rounded-xl shrink-0">
+            <i data-lucide="file-clock" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="font-bold text-neutral-900 text-sm">Draft otomatis ditemukan</p>
+            <p class="text-xs text-neutral-600" id="draft_time_text">Tersimpan dari sesi pengisian sebelumnya.</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+        <button type="button" onclick="restoreDraft()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-95">
+            Pulihkan
+        </button>
+        <button type="button" onclick="dismissDraft()" class="px-4 py-2 bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-200 font-bold text-xs rounded-xl transition-all">
+            Abaikan
+        </button>
+    </div>
+</div>
+
+<!-- Progress Indicator (4 Section) -->
+<div class="bg-white rounded-2xl border border-neutral-200/60 p-4 mb-6 shadow-card">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+            <span class="p-1.5 bg-primary-100 text-primary-700 rounded-lg">
+                <i data-lucide="list-checks" class="w-4 h-4"></i>
+            </span>
+            <span class="text-xs font-bold text-neutral-900">Kemajuan Pengisian Formulir</span>
+        </div>
+        <span id="progress_badge" class="text-xs font-extrabold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg w-fit">
+            Langkah 1 dari 4 Aktif
+        </span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div id="step_indicator_1" class="p-2.5 rounded-xl border border-primary-300 bg-primary-50/60 font-semibold text-primary-900 flex items-center justify-between">
+            <span class="truncate">1. Info Dasar</span>
+            <span id="step_badge_1" class="text-[10px] px-1.5 py-0.5 rounded bg-primary-200 text-primary-900 font-bold">Wajib</span>
+        </div>
+        <div id="step_indicator_2" class="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between">
+            <span class="truncate">2. Uraian</span>
+            <span id="step_badge_2" class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold">Belum</span>
+        </div>
+        <div id="step_indicator_3" class="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between">
+            <span class="truncate">3. Hasil &amp; Evaluasi</span>
+            <span id="step_badge_3" class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold">Belum</span>
+        </div>
+        <div id="step_indicator_4" class="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between">
+            <span class="truncate">4. Lampiran</span>
+            <span id="step_badge_4" class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold">Opsional</span>
+        </div>
+    </div>
+</div>
+
 <form action="<?= BASE_URL ?>/index.php?page=kegiatan/process" method="POST" enctype="multipart/form-data" class="space-y-6">
     <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
     <input type="hidden" name="action" value="<?= $is_edit ? 'update' : 'create' ?>">
@@ -71,8 +125,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
         <input type="hidden" name="id" value="<?= $kegiatan['id'] ?>">
     <?php endif; ?>
 
-    <!-- Section 1: Informasi Dasar -->
-    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+    <!-- Section 1: Informasi Dasar (Default Terbuka) -->
+    <div id="section_1" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
         <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
             <h2 class="text-lg font-bold text-neutral-900 flex items-center">
                 Informasi Dasar
@@ -276,8 +330,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
         </div>
     </div>
 
-    <!-- Section 2: Uraian Kegiatan -->
-    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+    <!-- Section 2: Uraian Kegiatan (Default Tertutup) -->
+    <div id="section_2" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: false }">
         <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
             <h2 class="text-lg font-bold text-neutral-900 flex items-center">
                 Uraian Kegiatan
@@ -320,8 +374,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
         </div>
     </div>
 
-    <!-- Section 3: Hasil & Evaluasi -->
-    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+    <!-- Section 3: Hasil & Evaluasi (Default Tertutup) -->
+    <div id="section_3" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: false }">
         <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
             <h2 class="text-lg font-bold text-neutral-900 flex items-center">
                 Hasil &amp; Evaluasi
@@ -357,8 +411,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
         </div>
     </div>
 
-    <!-- Section Lampiran Foto -->
-    <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
+    <!-- Section Lampiran Foto (Default Tertutup) -->
+    <div id="section_4" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: false }">
         <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
             <h2 class="text-lg font-bold text-neutral-900 flex items-center">
                 <i data-lucide="camera" class="w-5 h-5 text-neutral-400 mr-2"></i>
@@ -406,7 +460,7 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                      ondrop="handleFotoDrop(event)">
                     <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-neutral-400 mb-2"></i>
                     <p class="text-sm text-neutral-600 font-medium">Klik atau seret foto ke sini</p>
-                    <p class="text-xs text-neutral-400 mt-1">JPEG, PNG, WEBP &mdash; Maks. <?= $sisa_slot ?> foto</p>
+                    <p class="text-xs text-neutral-400 mt-1">JPEG, PNG, WEBP &mdash; Otomatis dikompresi sebelum upload (Maks. <?= $sisa_slot ?> foto)</p>
                 </div>
                 <input type="file" id="foto_lampiran_input" name="foto_lampiran[]"
                        multiple accept="image/jpeg,image/png,image/webp"
@@ -426,24 +480,135 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
         </div>
     </div>
 
-    <!-- Actions -->
-    <div class="flex justify-end space-x-3">
-        <button type="submit" name="action" value="save_draft" class="px-6 py-2.5 border border-neutral-200 bg-white text-neutral-700 rounded-xl hover:bg-neutral-50 font-bold transition-all text-sm">
-            <i data-lucide="save" class="w-4 h-4 inline mr-1.5"></i> Simpan Draft
-        </button>
-        <button type="submit" name="action" value="submit" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20 text-sm active:scale-[0.98]">
-            <i data-lucide="send" class="w-4 h-4 inline mr-1.5"></i> Simpan &amp; Ajukan
-        </button>
+    <!-- Sticky Bottom Action Bar -->
+    <div class="sticky bottom-4 z-30 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-neutral-200/80 shadow-elevated flex flex-wrap items-center justify-between gap-3 transition-all">
+        <div class="flex items-center gap-2 text-xs font-medium text-neutral-500">
+            <span id="autosave_dot" class="inline-block w-2.5 h-2.5 rounded-full bg-neutral-300"></span>
+            <span id="autosave_status_text">Siap disimpan</span>
+        </div>
+        <div class="flex items-center space-x-3 ml-auto">
+            <button type="submit" name="action" value="save_draft" class="px-5 py-2.5 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 rounded-xl font-bold transition-all text-sm shadow-sm active:scale-95">
+                <i data-lucide="save" class="w-4 h-4 inline mr-1.5"></i> Simpan Draft
+            </button>
+            <button type="submit" name="action" value="submit" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-md shadow-primary-600/20 text-sm active:scale-95">
+                <i data-lucide="send" class="w-4 h-4 inline mr-1.5"></i> Simpan &amp; Ajukan
+            </button>
+        </div>
     </div>
 
 </form>
 
-<!-- Alpine.js untuk fitur Dropdown & Accordion yang ringan -->
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<!-- Modal Konfirmasi Custom Universal -->
+<div id="customConfirmModal" class="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all" onclick="if(event.target===this) closeConfirmModal(false)">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-neutral-200 overflow-hidden transform transition-all p-6">
+        <div class="flex items-start gap-3.5 mb-4">
+            <div id="confirm_modal_icon" class="p-2.5 bg-accent-100 text-accent-700 rounded-xl shrink-0">
+                <i data-lucide="help-circle" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 id="confirm_modal_title" class="text-base font-extrabold text-neutral-900 leading-tight">Konfirmasi</h3>
+                <p id="confirm_modal_message" class="text-xs text-neutral-600 mt-1.5 font-medium leading-relaxed"></p>
+            </div>
+        </div>
+        <div class="flex justify-end items-center gap-2.5 mt-6 pt-3 border-t border-neutral-100">
+            <button type="button" id="confirm_modal_btn_cancel" onclick="closeConfirmModal(false)" class="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs rounded-xl transition-colors">
+                Batal
+            </button>
+            <button type="button" id="confirm_modal_btn_action" onclick="closeConfirmModal(true)" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors">
+                Timpa
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+// ── Helper Modal Konfirmasi Custom ───────────────────────────────────────────
+let confirmModalResolver = null;
+
+function showCustomConfirm(options) {
+    const title = options.title || 'Konfirmasi';
+    const message = options.message || '';
+    const confirmText = options.confirmText || 'Ya, Lanjutkan';
+    const btnClass = options.confirmClass || 'bg-primary-600 hover:bg-primary-700 text-white';
+
+    document.getElementById('confirm_modal_title').textContent = title;
+    document.getElementById('confirm_modal_message').textContent = message;
+    const btnAction = document.getElementById('confirm_modal_btn_action');
+    btnAction.textContent = confirmText;
+    btnAction.className = 'px-4 py-2 font-bold text-xs rounded-xl shadow-sm transition-colors ' + btnClass;
+
+    document.getElementById('customConfirmModal').classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+
+    return new Promise((resolve) => {
+        confirmModalResolver = resolve;
+    });
+}
+
+function closeConfirmModal(result) {
+    document.getElementById('customConfirmModal').classList.add('hidden');
+    if (confirmModalResolver) {
+        confirmModalResolver(result);
+        confirmModalResolver = null;
+    }
+}
+
+// ── Client-Side Image Compression (Canvas API) ──────────────────────────────
+async function compressImageFile(file, maxWidth = 1600, maxHeight = 1600, quality = 0.75) {
+    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+        return file;
+    }
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    if (width / height > maxWidth / maxHeight) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    } else {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob || blob.size >= file.size) {
+                            resolve(file);
+                        } else {
+                            const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                            const compressedFile = new File([blob], newFileName, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(compressedFile);
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// ── Logika Form Utama & Wilayah Cascading ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     const apiBase = '<?= BASE_URL ?>/api';
-    const jatimId = '<?= $selected_provinsi_id ?>'; // ID Jawa Timur, selalu dari server
+    const jatimId = '<?= $selected_provinsi_id ?>';
 
     // Elements wilayah
     const kabSelect  = document.getElementById('kabupaten_id');
@@ -464,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const isEditWithKth = <?= ($is_edit && !empty($kegiatan['kth_id'])) ? 'true' : 'false' ?>;
 
     let tusiDataMap = {};
-    let currentMode = 'db'; // 'db' | 'manual'
+    let currentMode = 'db';
 
     // Helper: load dropdown -----------------------------------------------
     function loadOptions(selectEl, url, placeholder, selectedValue, callback) {
@@ -484,6 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 selectEl.disabled = false;
                 if (typeof callback === 'function') callback();
+                updateProgressIndicator();
             })
             .catch(function(err) { console.error(err); });
     }
@@ -497,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hint) hint.classList.toggle('hidden', !locked);
     }
 
-    // Pre-load kabupaten (pakai loadKabByProv setelah provSelect tersedia)
+    // Pre-load kabupaten
     function preloadKabJatim(selectedKab, callback) {
         if (!jatimId) return;
         loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + jatimId, 'Pilih Kabupaten', selectedKab, callback);
@@ -515,17 +681,16 @@ document.addEventListener('DOMContentLoaded', function() {
         infoText.textContent = messages[state] || messages['db-empty'];
     }
 
-    // Referensi provinsi select (untuk mode manual) ------------------------
     var provSelect = document.getElementById('provinsi_id');
 
-    // Helper: load kabupaten dari provinsi yang aktif ----------------------
+    // Helper: load kabupaten dari provinsi yang aktif
     function loadKabByProv(selectedKab, callback) {
         var provId = provSelect ? provSelect.value : jatimId;
         if (!provId) return;
         loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + provId, 'Pilih Kabupaten', selectedKab, callback);
     }
 
-    // Auto Fill Wilayah saat Pilih KTH (mode DB) ---------------------------
+    // Auto Fill Wilayah saat Pilih KTH (mode DB)
     var kthSelect    = document.getElementById('kth_id');
     var sasaranInput = document.querySelector('textarea[name="sasaran_hadir"]');
 
@@ -534,12 +699,12 @@ document.addEventListener('DOMContentLoaded', function() {
             var opt = this.options[this.selectedIndex];
 
             if (!opt || !this.value) {
-                // KTH di-reset: bebaskan wilayah & reload kabupaten
                 setWilayahLocked(false);
                 preloadKabJatim(null, null);
                 kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
                 desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
                 updateInfoBanner('db-empty');
+                updateProgressIndicator();
                 return;
             }
 
@@ -552,12 +717,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 sasaranInput.value = 'Pengurus dan Anggota ' + kthNama;
             }
 
-            // Lock wilayah & auto-fill dari data KTH
             setWilayahLocked(true);
             updateInfoBanner('db-filled');
 
             loadOptions(kabSelect, apiBase + '/get_kabupaten.php?provinsi_id=' + jatimId, 'Pilih Kabupaten', targetKab, function() {
-                setWilayahLocked(true); // tetap locked setelah load
+                setWilayahLocked(true);
                 if (targetKec) {
                     loadOptions(kecSelect, apiBase + '/get_kecamatan.php?kabupaten_id=' + targetKab, 'Pilih Kecamatan', targetKec, function() {
                         if (targetDesa) {
@@ -569,8 +733,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Wilayah cascade listeners --------------------------------------------
-    // Provinsi berubah (hanya di mode manual)
+    // Wilayah cascade listeners
     if (provSelect) {
         provSelect.addEventListener('change', function() {
             if (currentMode !== 'manual') return;
@@ -583,7 +746,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Kabupaten berubah (hanya di mode manual)
     kabSelect.addEventListener('change', function() {
         if (currentMode !== 'manual') return;
         kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
@@ -601,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // TUSI Listeners -------------------------------------------------------
+    // TUSI Listeners
     tusiSelect.addEventListener('change', function() {
         kegTusiSelect.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
         tusiDataMap = {};
@@ -618,23 +780,43 @@ document.addEventListener('DOMContentLoaded', function() {
                         tusiDataMap[item.id] = item;
                     });
                     kegTusiSelect.disabled = false;
+                    updateProgressIndicator();
                 });
         }
     });
 
-    kegTusiSelect.addEventListener('change', function() {
+    kegTusiSelect.addEventListener('change', async function() {
         if (this.value && tusiDataMap[this.value]) {
             var data = tusiDataMap[this.value];
-            if (uraianInput.value === '' || confirm('Timpa Uraian Kegiatan dengan teks dari master?')) {
+            if (uraianInput.value === '') {
                 uraianInput.value = data.uraian_tugas;
+            } else if (uraianInput.value !== data.uraian_tugas) {
+                const confirmed = await showCustomConfirm({
+                    title: 'Timpa Uraian Kegiatan?',
+                    message: 'Teks uraian kegiatan saat ini akan diganti dengan uraian standar master TUSI.',
+                    confirmText: 'Timpa Teks'
+                });
+                if (confirmed) uraianInput.value = data.uraian_tugas;
             }
-            if (data.substansi_materi && (substansiInput.value === '' || confirm('Timpa Substansi Materi dengan template?'))) {
-                substansiInput.value = data.substansi_materi;
+
+            if (data.substansi_materi) {
+                if (substansiInput.value === '') {
+                    substansiInput.value = data.substansi_materi;
+                } else if (substansiInput.value !== data.substansi_materi) {
+                    const confirmed = await showCustomConfirm({
+                        title: 'Timpa Substansi Materi?',
+                        message: 'Substansi materi saat ini akan diganti dengan template materi master TUSI.',
+                        confirmText: 'Timpa Template'
+                    });
+                    if (confirmed) substansiInput.value = data.substansi_materi;
+                }
             }
+            triggerAutosave();
+            updateProgressIndicator();
         }
     });
 
-    // Init data for Edit mode ----------------------------------------------
+    // Init data for Edit mode
     if (jatimId && initKab) {
         preloadKabJatim(initKab, function() {
             if (initKec) {
@@ -662,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // KTH Combo Mode (DB vs Manual) ----------------------------------------
+    // KTH Combo Mode (DB vs Manual)
     window.setKthMode = function(mode) {
         var dbWrap  = document.getElementById('kth_db_wrap');
         var manWrap = document.getElementById('kth_manual_wrap');
@@ -682,7 +864,6 @@ document.addEventListener('DOMContentLoaded', function() {
             btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-warning-500 text-white border-warning-500';
             btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
 
-            // Bebaskan wilayah & load semua kabupaten Jawa Timur
             setWilayahLocked(false);
             var currentKab = kabSelect.value;
             preloadKabJatim(currentKab || null, null);
@@ -700,13 +881,13 @@ document.addEventListener('DOMContentLoaded', function() {
             btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-primary-600 text-white border-info-600';
             btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
 
-            // Reset wilayah, tunggu user pilih KTH
             setWilayahLocked(false);
             kabSelect.innerHTML  = '<option value="">-- Pilih Kabupaten (dari KTH) --</option>';
             kecSelect.innerHTML  = '<option value="">-- Pilih Kecamatan --</option>';
             desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
             updateInfoBanner('db-empty');
         }
+        updateProgressIndicator();
     };
 
     // Auto-detect mode on edit page load
@@ -715,12 +896,11 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php else: ?>
     setKthMode('db');
     <?php if ($is_edit && !empty($kegiatan['kth_id'])): ?>
-    // Edit dengan KTH terpilih: lock wilayah setelah kabupaten selesai di-load
     setTimeout(function() { setWilayahLocked(true); updateInfoBanner('db-filled'); }, 1000);
     <?php endif; ?>
     <?php endif; ?>
 
-    // Calculate WPT & Duration ---------------------------------------------
+    // Calculate WPT & Duration
     window.calculateWptDuration = function() {
         var actSelect  = document.getElementById('aktivitas_harian_id');
         var volInput   = document.getElementById('volume_input');
@@ -736,6 +916,7 @@ document.addEventListener('DOMContentLoaded', function() {
             singleDisp.textContent = '0 Menit';
             totalDisp.textContent  = '0 Menit (0 Jam)';
             if (infoBox) infoBox.classList.add('hidden');
+            updateProgressIndicator();
             return;
         }
 
@@ -762,40 +943,46 @@ document.addEventListener('DOMContentLoaded', function() {
             infoBox.classList.add('hidden');
         }
 
-        // Auto fill Uraian Kegiatan if empty
         var uraianEl = document.getElementsByName('uraian_kegiatan')[0];
         if (uraianEl && !uraianEl.value) {
             uraianEl.value = nama;
         }
+        updateProgressIndicator();
     };
 
-    // Calculate on page load
     calculateWptDuration();
 });
-</script>
 
-<script>
-// ── Lampiran Foto ────────────────────────────────────────────────────────────
+// ── Lampiran Foto dengan Kompresi Otomatis ────────────────────────────────────
 var maxFotoSisa = <?= (int)$sisa_slot ?>;
 
-function previewFotoLampiran(input) {
-    var files = Array.from(input.files);
-    if (files.length > maxFotoSisa) {
+async function previewFotoLampiran(input) {
+    var rawFiles = Array.from(input.files);
+    if (rawFiles.length === 0) return;
+
+    if (rawFiles.length > maxFotoSisa) {
         alert('Maks. ' + maxFotoSisa + ' foto yang bisa ditambahkan. Hanya ' + maxFotoSisa + ' foto pertama yang akan digunakan.');
-        if (window.DataTransfer) {
-            var dt = new DataTransfer();
-            files.slice(0, maxFotoSisa).forEach(function(f) { dt.items.add(f); });
-            input.files = dt.files;
-        }
-        files = files.slice(0, maxFotoSisa);
+        rawFiles = rawFiles.slice(0, maxFotoSisa);
     }
 
     var grid = document.getElementById('foto_preview_grid');
     var info = document.getElementById('foto_count_info');
-    grid.innerHTML = '';
+    grid.innerHTML = '<div class="col-span-full py-4 text-xs font-semibold text-neutral-500 flex items-center justify-center gap-2"><i data-lucide="loader" class="w-4 h-4 animate-spin text-primary-600"></i> Mengompresi &amp; menyiapkan gambar...</div>';
+    grid.style.display = 'grid';
+    if (window.lucide) lucide.createIcons();
 
-    files.forEach(function(file) {
-        if (!file.type.startsWith('image/')) return;
+    // Jalankan kompresi client-side
+    var compressedFiles = await Promise.all(rawFiles.map(f => compressImageFile(f)));
+
+    // Update <input type="file"> dengan file terkompresi
+    if (window.DataTransfer) {
+        var dt = new DataTransfer();
+        compressedFiles.forEach(function(f) { dt.items.add(f); });
+        input.files = dt.files;
+    }
+
+    grid.innerHTML = '';
+    compressedFiles.forEach(function(file) {
         var reader = new FileReader();
         reader.onload = function(e) {
             var wrapper = document.createElement('div');
@@ -804,8 +991,8 @@ function previewFotoLampiran(input) {
             img.src = e.target.result;
             img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
             var badge = document.createElement('div');
-            badge.style.cssText = 'position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:2px 6px; border-radius:6px;';
-            badge.textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+            badge.style.cssText = 'position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.65); color:#fff; font-size:10px; padding:2px 6px; border-radius:6px; font-weight:bold;';
+            badge.textContent = (file.size / 1024).toFixed(0) + ' KB';
             wrapper.appendChild(img);
             wrapper.appendChild(badge);
             grid.appendChild(wrapper);
@@ -813,45 +1000,207 @@ function previewFotoLampiran(input) {
         reader.readAsDataURL(file);
     });
 
-    if (files.length > 0) {
-        grid.style.display = 'grid';
-        info.textContent = files.length + ' foto siap diupload.';
-        info.style.display = 'block';
-    } else {
-        grid.style.display = 'none';
-        info.style.display = 'none';
-    }
+    info.textContent = compressedFiles.length + ' foto siap diupload (terkompresi).';
+    info.style.display = 'block';
+    updateProgressIndicator();
 }
 
-function handleFotoDrop(event) {
+async function handleFotoDrop(event) {
     event.preventDefault();
     event.currentTarget.classList.remove('border-primary-500', 'bg-primary-50/40');
     var input = document.getElementById('foto_lampiran_input');
+    var dropped = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (dropped.length === 0) return;
+
     if (window.DataTransfer) {
         var dt = new DataTransfer();
-        Array.from(event.dataTransfer.files).forEach(function(f) {
-            if (f.type.startsWith('image/')) dt.items.add(f);
-        });
+        dropped.forEach(function(f) { dt.items.add(f); });
         input.files = dt.files;
     }
-    previewFotoLampiran(input);
+    await previewFotoLampiran(input);
 }
 
-function hapusLampiran(lampId, btn) {
-    if (!confirm('Hapus foto ini?')) return;
+async function hapusLampiran(lampId, btn) {
+    const confirmDelete = await showCustomConfirm({
+        title: 'Hapus Foto Lampiran?',
+        message: 'Foto ini akan ditandai untuk dihapus dari server saat Anda menyimpan form.',
+        confirmText: 'Ya, Hapus',
+        confirmClass: 'bg-error-600 hover:bg-error-700 text-white'
+    });
+
+    if (!confirmDelete) return;
+
     var card = btn.closest('.relative.group');
-    // Tandai untuk dihapus saat form disubmit
     var hiddenInput = document.createElement('input');
     hiddenInput.type = 'hidden';
     hiddenInput.name = 'hapus_lampiran_id[]';
     hiddenInput.value = lampId;
     document.querySelector('form').appendChild(hiddenInput);
-    // Visual feedback
+
     card.style.opacity = '0.35';
     card.style.pointerEvents = 'none';
     var overlay = card.querySelector('.absolute');
     if (overlay) overlay.innerHTML = '<div style="background:rgba(220,38,38,0.85); color:#fff; font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px;">Akan dihapus</div>';
 }
+
+// ── Autosave ke LocalStorage & Progress Indicator Tracker ────────────────────
+const isEditMode = <?= $is_edit ? 'true' : 'false' ?>;
+const kegiatanEditId = <?= $is_edit ? (int)$kegiatan['id'] : 0 ?>;
+const DRAFT_KEY = 'sigaluh_draft_kegiatan_' + (isEditMode ? ('edit_' + kegiatanEditId) : 'new_entry');
+
+function collectFormData() {
+    const form = document.querySelector('form');
+    const formData = {};
+    const elements = form.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select, textarea');
+    elements.forEach(el => {
+        if (el.name) {
+            formData[el.name] = el.value;
+        }
+    });
+    formData['_saved_at'] = new Date().toISOString();
+    return formData;
+}
+
+function triggerAutosave() {
+    try {
+        const data = collectFormData();
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+        const dot = document.getElementById('autosave_dot');
+        const text = document.getElementById('autosave_status_text');
+        if (dot && text) {
+            dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-success-500';
+            const now = new Date();
+            text.textContent = 'Tersimpan otomatis (' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ')';
+        }
+    } catch(e) {
+        console.error('Autosave error:', e);
+    }
+}
+
+function checkSavedDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (!draft || !draft._saved_at) return;
+
+        const banner = document.getElementById('draft_alert_banner');
+        const timeText = document.getElementById('draft_time_text');
+        if (banner && timeText) {
+            const savedDate = new Date(draft._saved_at);
+            timeText.textContent = 'Draft tersimpan pada ' + savedDate.toLocaleDateString('id-ID') + ' ' + savedDate.toLocaleTimeString('id-ID');
+            banner.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+    } catch(e) {
+        console.error('Check draft error:', e);
+    }
+}
+
+function restoreDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+
+        const form = document.querySelector('form');
+        Object.keys(draft).forEach(key => {
+            if (key.startsWith('_')) return;
+            const el = form.querySelector('[name="' + key + '"]');
+            if (el) {
+                el.value = draft[key];
+            }
+        });
+
+        if (window.calculateWptDuration) calculateWptDuration();
+        if (window.updateSelectedCardDisplay) updateSelectedCardDisplay();
+        
+        dismissDraft();
+        updateProgressIndicator();
+    } catch(e) {
+        console.error('Restore draft error:', e);
+    }
+}
+
+function dismissDraft() {
+    const banner = document.getElementById('draft_alert_banner');
+    if (banner) banner.classList.add('hidden');
+}
+
+function clearDraftStorage() {
+    try {
+        localStorage.removeItem(DRAFT_KEY);
+    } catch(e) {}
+}
+
+function updateProgressIndicator() {
+    // Section 1 Check
+    const actId = document.getElementById('aktivitas_harian_id')?.value;
+    const vol = document.getElementById('volume_input')?.value;
+    const prov = document.getElementById('provinsi_id')?.value;
+    const kab = document.getElementById('kabupaten_id')?.value;
+    const kec = document.getElementById('kecamatan_id')?.value;
+    const desa = document.getElementById('desa_id')?.value;
+    const tusi = document.getElementById('tusi_id')?.value;
+    const kegTusi = document.getElementById('kegiatan_tusi_id')?.value;
+    const s1Complete = !!(actId && vol && prov && kab && kec && desa && tusi && kegTusi);
+
+    // Section 2 Check
+    const uraian = document.getElementById('uraian_kegiatan')?.value?.trim();
+    const detail = document.querySelector('textarea[name="detail_kegiatan"]')?.value?.trim();
+    const s2Complete = !!(uraian && detail && detail.length >= 5);
+
+    // Section 3 Check
+    const pelaksanaan = document.querySelector('textarea[name="pelaksanaan_kegiatan"]')?.value?.trim();
+    const s3Complete = !!(pelaksanaan && pelaksanaan.length > 0);
+
+    const setBadge = (id, badgeId, complete, optional = false) => {
+        const el = document.getElementById(id);
+        const b = document.getElementById(badgeId);
+        if (!el || !b) return;
+        if (complete) {
+            el.className = 'p-2.5 rounded-xl border border-success-300 bg-success-50/60 font-semibold text-success-900 flex items-center justify-between';
+            b.className = 'text-[10px] px-1.5 py-0.5 rounded bg-success-200 text-success-900 font-bold';
+            b.textContent = 'Lengkap ✓';
+        } else {
+            el.className = 'p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between';
+            b.className = 'text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold';
+            b.textContent = optional ? 'Opsional' : 'Belum';
+        }
+    };
+
+    setBadge('step_indicator_1', 'step_badge_1', s1Complete);
+    setBadge('step_indicator_2', 'step_badge_2', s2Complete);
+    setBadge('step_indicator_3', 'step_badge_3', s3Complete);
+
+    let completedCount = (s1Complete ? 1 : 0) + (s2Complete ? 1 : 0) + (s3Complete ? 1 : 0);
+    const progressBadge = document.getElementById('progress_badge');
+    if (progressBadge) {
+        progressBadge.textContent = completedCount + ' dari 3 Bagian Wajib Terisi';
+    }
+}
+
+// Inisialisasi Autosave, Tracker, & Draft Check saat DOM Ready
+document.addEventListener('DOMContentLoaded', function() {
+    checkSavedDraft();
+    updateProgressIndicator();
+
+    setInterval(triggerAutosave, 15000);
+
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('change', function() {
+            triggerAutosave();
+            updateProgressIndicator();
+        });
+        form.addEventListener('input', function() {
+            updateProgressIndicator();
+        });
+        form.addEventListener('submit', function() {
+            clearDraftStorage();
+        });
+    }
+});
 </script>
 
 <!-- Modal Picker Aktivitas Harian dengan Live Search & Chip Kategori -->
