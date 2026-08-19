@@ -9,25 +9,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Validasi CSRF
 verify_csrf_token($_POST['csrf_token'] ?? '');
 
-$nip = trim($_POST['nip'] ?? '');
+$username = trim($_POST['username'] ?? $_POST['nip'] ?? '');
 $password = $_POST['password'] ?? '';
 
-if (empty($nip) || empty($password)) {
-    $_SESSION['login_error'] = "NIP dan Password harus diisi.";
+if (empty($username) || empty($password)) {
+    $_SESSION['login_error'] = "Username dan Password harus diisi.";
     header('Location: ' . BASE_URL . '/index.php?page=auth/login');
     exit;
 }
 
 try {
     global $pdo;
-    // Ambil data user beserta rolenya
+    // Ambil data user beserta rolenya (mencocokkan NIP / username)
     $stmt = $pdo->prepare("
         SELECT u.id, u.nip, u.nama, u.password, u.status_aktif, r.kode as role_kode 
         FROM users u 
         JOIN m_roles r ON u.role_id = r.id 
         WHERE u.nip = ?
     ");
-    $stmt->execute([$nip]);
+    $stmt->execute([$username]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
@@ -53,7 +53,7 @@ try {
         exit;
     } else {
         // Login gagal
-        $_SESSION['login_error'] = "NIP atau Password salah.";
+        $_SESSION['login_error'] = "Username atau Password salah.";
         header('Location: ' . BASE_URL . '/index.php?page=auth/login');
         exit;
     }
