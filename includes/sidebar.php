@@ -5,7 +5,7 @@ $current_page = $_GET['page'] ?? 'dashboard';
 // Helper untuk menu aktif
 function get_active_class($page_name, $current_page) {
     if ($page_name === 'laporan' && strpos($current_page, 'laporan/aktivitas') === 0) {
-        return 'active';
+        return '';
     }
     if ($current_page === $page_name || strpos($current_page, $page_name . '/') === 0) {
         return 'active';
