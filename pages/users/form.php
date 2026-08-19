@@ -172,13 +172,13 @@ $init_user_json = json_encode([
             <!-- Option: Ambil Data dari Data Penyuluh jika Role = Penyuluh -->
             <div x-show="roleKode === 'penyuluh'" class="p-3 mb-4" style="background:var(--md-sys-color-primary-container);border:1px solid var(--md-sys-color-primary);border-radius:12px;">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <label class="text-xs fw-bold text-uppercase tracking-wider d-flex align-items-center" style="color:var(--md-sys-color-on-primary-container);">
+                    <label for="select_pick_penyuluh" class="text-xs fw-bold text-uppercase tracking-wider d-flex align-items-center" style="color:var(--md-sys-color-on-primary-container);">
                         <span class="material-symbols-outlined me-1" style="font-size:16px;">person_check</span>
                         Ambil Data dari Data Penyuluh
                     </label>
                     <span class="badge badge-primary">Otomatisasi Biodata &amp; Wilayah</span>
                 </div>
-                <select @change="pickPenyuluh($event)" class="form-select fw-semibold" style="background-color:var(--md-sys-color-surface-container-lowest);border-color:var(--md-sys-color-primary);">
+                <select id="select_pick_penyuluh" aria-label="Pilih dari Daftar Penyuluh yang Sudah Ada" @change="pickPenyuluh($event)" class="form-select fw-semibold" style="background-color:var(--md-sys-color-surface-container-lowest);border-color:var(--md-sys-color-primary);">
                     <option value="">-- Pilih dari Daftar Penyuluh yang Sudah Ada --</option>
                     <?php foreach ($all_penyuluh_list as $p): ?>
                         <option value="<?= $p['id'] ?>" 
@@ -197,8 +197,8 @@ $init_user_json = json_encode([
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 
                 <div>
-                    <label class="form-label">Role / Peran Pengguna <span style="color:var(--md-sys-color-error);">*</span></label>
-                    <select name="role_id" @change="onRoleChange($event)" required class="form-select fw-bold">
+                    <label for="input_role_id" class="form-label">Role / Peran Pengguna <span style="color:var(--md-sys-color-error);">*</span></label>
+                    <select id="input_role_id" name="role_id" aria-label="Role / Peran Pengguna" @change="onRoleChange($event)" required class="form-select fw-bold">
                         <?php foreach ($roles_list as $r): ?>
                             <option value="<?= $r['id'] ?>" data-kode="<?= e($r['kode']) ?>" <?= ($is_edit && $user_data['role_id'] == $r['id']) ? 'selected' : (! $is_edit && $r['kode'] === 'penyuluh' ? 'selected' : '') ?>><?= e($r['nama']) ?></option>
                         <?php endforeach; ?>
@@ -259,8 +259,8 @@ $init_user_json = json_encode([
                 <div class="p-3 mb-3" style="background:var(--md-sys-color-surface-container-lowest);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
-                            <label class="form-label">Kabupaten</label>
-                            <select id="input_kabupaten" @change="onKabupatenChange($event)" class="form-select">
+                            <label for="input_kabupaten" class="form-label">Kabupaten</label>
+                            <select id="input_kabupaten" aria-label="Pilih Kabupaten Binaan" @change="onKabupatenChange($event)" class="form-select">
                                 <option value="">-- Pilih Kabupaten --</option>
                                 <?php foreach($kabupaten_list as $k): ?>
                                     <option value="<?= $k['id'] ?>" data-nama="<?= e($k['nama']) ?>"><?= e($k['nama']) ?></option>
@@ -269,8 +269,8 @@ $init_user_json = json_encode([
                         </div>
 
                         <div>
-                            <label class="form-label">Kecamatan</label>
-                            <select id="input_kecamatan" @change="onKecamatanChange($event)" :disabled="!selectedKabId" class="form-select">
+                            <label for="input_kecamatan" class="form-label">Kecamatan</label>
+                            <select id="input_kecamatan" aria-label="Pilih Kecamatan Binaan" @change="onKecamatanChange($event)" :disabled="!selectedKabId" class="form-select">
                                 <option value="">-- Pilih Kecamatan --</option>
                                 <template x-for="k in kecamatanList" :key="k.id">
                                     <option :value="k.id" :data-nama="k.nama" x-text="k.nama"></option>

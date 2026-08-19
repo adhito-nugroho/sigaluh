@@ -4,11 +4,11 @@
    ================================================================ */
 
 :root {
-  /* ── Color Tokens (palet persis referensi NTE KTH) ── */
+  /* ── Color Tokens (WCAG 2.1 AA Compliant) ── */
   --md-sys-color-primary: #3949AB;
   --md-sys-color-primary-container: #DEE1FF;
   --md-sys-color-on-primary-container: #0E1466;
-  --md-sys-color-secondary: #B4780A;
+  --md-sys-color-secondary: #7D4F00;
   --md-sys-color-secondary-container: #FFDEA6;
   --md-sys-color-on-secondary-container: #3E2600;
   --md-sys-color-tertiary: #146C5C;
@@ -25,7 +25,7 @@
   --md-sys-color-surface-container-highest: #E3E1E9;
   --md-sys-color-on-surface: #1B1B21;
   --md-sys-color-on-surface-variant: #46464F;
-  --md-sys-color-outline: #767680;
+  --md-sys-color-outline: #5C5B65;
   --md-sys-color-outline-variant: #C6C5D0;
 
   /* ── Dimensions ── */
@@ -608,7 +608,7 @@ h1, h2, h3, h4, h5, h6, .page-title, .brand-org-title {
 .form-select {
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23767680' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235C5B65' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 34px;

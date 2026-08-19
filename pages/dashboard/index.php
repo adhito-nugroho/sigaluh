@@ -326,12 +326,12 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
         <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
             <input type="hidden" name="page" value="dashboard">
             <label class="text-muted mb-0" style="font-size:12px;">Periode:</label>
-            <select name="rek_bln" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
+            <select name="rek_bln" aria-label="Pilih Bulan Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
                 <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_rek_bln ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
                 <?php endfor; ?>
             </select>
-            <select name="rek_thn" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
+            <select name="rek_thn" aria-label="Pilih Tahun Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
                 <?php for ($y = (int)date('Y'); $y >= 2020; $y--): ?>
                 <option value="<?= $y ?>" <?= $y === (int)$f_rek_thn ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>

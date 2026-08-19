@@ -218,7 +218,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 
         <div class="d-flex flex-wrap align-items-center gap-2 w-100" style="flex:0 0 auto;">
             <!-- Filter Seksi -->
-            <select name="seksi_id" onchange="this.form.submit()" class="form-select" style="flex:1 1 0;">
+            <select name="seksi_id" aria-label="Filter Berdasarkan Seksi / Sub Bagian" onchange="this.form.submit()" class="form-select" style="flex:1 1 0;">
                 <option value="0">Semua Seksi</option>
                 <?php foreach ($tusi_list as $t): ?>
                     <option value="<?= $t['id'] ?>" <?= $filter_seksi == $t['id'] ? 'selected' : '' ?>>
@@ -228,7 +228,7 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             </select>
 
             <!-- Filter Status -->
-            <select name="status" onchange="this.form.submit()" class="form-select" style="flex:1 1 0;">
+            <select name="status" aria-label="Filter Status TUSI" onchange="this.form.submit()" class="form-select" style="flex:1 1 0;">
                 <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>Semua Status</option>
                 <option value="active" <?= $status_filter === 'active' ? 'selected' : '' ?>>Aktif</option>
                 <option value="inactive" <?= $status_filter === 'inactive' ? 'selected' : '' ?>>Non-Aktif</option>

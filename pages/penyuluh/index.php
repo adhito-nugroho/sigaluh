@@ -125,7 +125,7 @@ if (!empty($user_ids)) {
         </div>
 
         <div class="flex flex-wrap align-items-center gap-2">
-            <select name="bulan" class="form-select form-select-sm">
+            <select name="bulan" aria-label="Filter Bulan Monitoring" class="form-select form-select-sm">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
                     <option value="<?= sprintf('%02d', $m) ?>" <?= $f_bln == sprintf('%02d', $m) ? 'selected' : '' ?>>
                         <?= get_bulan_indo($m) ?>
@@ -133,13 +133,13 @@ if (!empty($user_ids)) {
                 <?php endfor; ?>
             </select>
 
-            <select name="tahun" class="form-select form-select-sm">
+            <select name="tahun" aria-label="Filter Tahun Monitoring" class="form-select form-select-sm">
                 <?php for ($y = date('Y'); $y >= date('Y') - 4; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_thn == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
 
-            <select name="sort" class="form-select form-select-sm">
+            <select name="sort" aria-label="Urutkan Berdasarkan" class="form-select form-select-sm">
                 <option value="waktu_desc" <?= $f_sort === 'waktu_desc' ? 'selected' : '' ?>>Waktu Tertinggi</option>
                 <option value="waktu_asc" <?= $f_sort === 'waktu_asc' ? 'selected' : '' ?>>Waktu Terendah</option>
                 <option value="nama_asc" <?= $f_sort === 'nama_asc' ? 'selected' : '' ?>>Nama A-Z</option>

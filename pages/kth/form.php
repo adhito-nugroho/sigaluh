@@ -184,8 +184,8 @@ if ($is_penyuluh && $has_binaan) {
             </div>
 
             <div>
-                <label class="form-label">Kelas Kelompok</label>
-                <select name="kelas_kelompok" class="form-select">
+                <label for="kelas_kelompok" class="form-label">Kelas Kelompok</label>
+                <select id="kelas_kelompok" name="kelas_kelompok" aria-label="Kelas Kelompok KTH" class="form-select">
                     <option value="">-- Pilih Kelas --</option>
                     <option value="Pemula" <?= ($is_edit && $kth['kelas_kelompok'] === 'Pemula') ? 'selected' : '' ?>>Pemula</option>
                     <option value="Madya" <?= ($is_edit && $kth['kelas_kelompok'] === 'Madya') ? 'selected' : '' ?>>Madya</option>
@@ -228,8 +228,8 @@ if ($is_penyuluh && $has_binaan) {
             </div>
 
             <div>
-                <label class="form-label">Provinsi <span class="required">*</span></label>
-                <select id="provinsi_id" name="provinsi_id" required class="form-select">
+                <label for="provinsi_id" class="form-label">Provinsi <span class="required">*</span></label>
+                <select id="provinsi_id" name="provinsi_id" aria-label="Pilih Provinsi" required class="form-select">
                     <option value="">-- Pilih Provinsi --</option>
                     <?php foreach($provinsi_list as $p): ?>
                         <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -238,22 +238,22 @@ if ($is_penyuluh && $has_binaan) {
             </div>
 
             <div>
-                <label class="form-label">Kabupaten/Kota <span class="required">*</span></label>
-                <select id="kabupaten_id" name="kabupaten_id" required class="form-select">
+                <label for="kabupaten_id" class="form-label">Kabupaten/Kota <span class="required">*</span></label>
+                <select id="kabupaten_id" name="kabupaten_id" aria-label="Pilih Kabupaten/Kota" required class="form-select">
                     <option value="">-- Pilih Kabupaten --</option>
                 </select>
             </div>
 
             <div>
-                <label class="form-label">Kecamatan <span class="required">*</span></label>
-                <select id="kecamatan_id" name="kecamatan_id" required class="form-select">
+                <label for="kecamatan_id" class="form-label">Kecamatan <span class="required">*</span></label>
+                <select id="kecamatan_id" name="kecamatan_id" aria-label="Pilih Kecamatan" required class="form-select">
                     <option value="">-- Pilih Kecamatan --</option>
                 </select>
             </div>
 
             <div>
-                <label class="form-label">Desa/Kelurahan <span class="required">*</span></label>
-                <select id="desa_id" name="desa_id" required class="form-select">
+                <label for="desa_id" class="form-label">Desa/Kelurahan <span class="required">*</span></label>
+                <select id="desa_id" name="desa_id" aria-label="Pilih Desa/Kelurahan" required class="form-select">
                     <option value="">-- Pilih Desa --</option>
                 </select>
             </div>

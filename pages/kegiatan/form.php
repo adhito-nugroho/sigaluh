@@ -229,7 +229,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
                     <!-- Mode DB: dropdown -->
                     <div id="kth_db_wrap">
-                        <select name="kth_id" id="kth_id" class="form-select">
+                        <label for="kth_id" class="sr-only">Pilih Kelompok Tani Hutan</label>
+                        <select name="kth_id" id="kth_id" aria-label="Pilih Kelompok Tani Hutan (KTH)" class="form-select">
                             <option value="">-- Pilih KTH (Opsional) --</option>
                             <?php foreach($kth_list as $k): ?>
                                 <option value="<?= $k['id'] ?>"
@@ -256,8 +257,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
                 <!-- Provinsi: default Jawa Timur, bisa diubah user -->
                 <div>
-                    <label class="form-label">Provinsi <span class="required">*</span></label>
-                    <select id="provinsi_id" name="provinsi_id" required class="form-select">
+                    <label for="provinsi_id" class="form-label">Provinsi <span class="required">*</span></label>
+                    <select id="provinsi_id" name="provinsi_id" aria-label="Pilih Provinsi" required class="form-select">
                         <option value="">-- Pilih Provinsi --</option>
                         <?php foreach($provinsi_list as $p): ?>
                             <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -267,8 +268,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
                 <!-- Kabupaten -->
                 <div id="wilayah_kab_wrap">
-                    <label class="form-label">Kabupaten/Kota <span class="required">*</span></label>
-                    <select id="kabupaten_id" name="kabupaten_id" required class="form-select">
+                    <label for="kabupaten_id" class="form-label">Kabupaten/Kota <span class="required">*</span></label>
+                    <select id="kabupaten_id" name="kabupaten_id" aria-label="Pilih Kabupaten/Kota" required class="form-select">
                         <option value="">-- Pilih Kabupaten --</option>
                     </select>
                     <p id="wilayah_kab_hint" class="text-xs text-muted mt-1 hidden">Kabupaten terisi otomatis dari KTH yang dipilih.</p>
@@ -276,24 +277,24 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
                 <!-- Kecamatan -->
                 <div id="wilayah_kec_wrap">
-                    <label class="form-label">Kecamatan <span class="required">*</span></label>
-                    <select id="kecamatan_id" name="kecamatan_id" required class="form-select">
+                    <label for="kecamatan_id" class="form-label">Kecamatan <span class="required">*</span></label>
+                    <select id="kecamatan_id" name="kecamatan_id" aria-label="Pilih Kecamatan" required class="form-select">
                         <option value="">-- Pilih Kecamatan --</option>
                     </select>
                 </div>
 
                 <!-- Desa -->
                 <div id="wilayah_desa_wrap">
-                    <label class="form-label">Desa/Kelurahan <span class="required">*</span></label>
-                    <select id="desa_id" name="desa_id" required class="form-select">
+                    <label for="desa_id" class="form-label">Desa/Kelurahan <span class="required">*</span></label>
+                    <select id="desa_id" name="desa_id" aria-label="Pilih Desa/Kelurahan" required class="form-select">
                         <option value="">-- Pilih Desa --</option>
                     </select>
                 </div>
 
                 <!-- TUSI -->
                 <div>
-                    <label class="form-label">TUSI <span class="required">*</span></label>
-                    <select id="tusi_id" name="tusi_id" required class="form-select">
+                    <label for="tusi_id" class="form-label">TUSI <span class="required">*</span></label>
+                    <select id="tusi_id" name="tusi_id" aria-label="Pilih TUSI" required class="form-select">
                         <option value="">-- Pilih TUSI --</option>
                         <?php foreach($tusi_list as $t): ?>
                             <option value="<?= $t['id'] ?>" <?= ($is_edit && $kegiatan['tusi_id'] == $t['id']) ? 'selected' : '' ?>><?= e($t['nama']) ?></option>
@@ -302,8 +303,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                 </div>
 
                 <div>
-                    <label class="form-label">Kegiatan TUSI <span class="required">*</span></label>
-                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required class="form-select">
+                    <label for="kegiatan_tusi_id" class="form-label">Kegiatan TUSI <span class="required">*</span></label>
+                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" aria-label="Pilih Kegiatan TUSI" required class="form-select">
                         <option value="">-- Pilih Kegiatan --</option>
                     </select>
                 </div>

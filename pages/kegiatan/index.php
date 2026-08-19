@@ -137,8 +137,8 @@ function get_status_badge($status) {
             </div>
 
             <div class="w-full sm:w-auto">
-                <label class="form-label">Bulan</label>
-                <select name="bulan" class="form-select form-select-sm">
+                <label for="filter_keg_bulan" class="form-label">Bulan</label>
+                <select id="filter_keg_bulan" name="bulan" aria-label="Filter Bulan Kegiatan" class="form-select form-select-sm">
                     <option value="">Semua</option>
                     <?php for($i=1; $i<=12; $i++): ?>
                         <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -149,8 +149,8 @@ function get_status_badge($status) {
             </div>
 
             <div class="w-full sm:w-auto">
-                <label class="form-label">Tahun</label>
-                <select name="tahun" class="form-select form-select-sm">
+                <label for="filter_keg_tahun" class="form-label">Tahun</label>
+                <select id="filter_keg_tahun" name="tahun" aria-label="Filter Tahun Kegiatan" class="form-select form-select-sm">
                     <option value="">Semua</option>
                     <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                         <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
@@ -159,8 +159,8 @@ function get_status_badge($status) {
             </div>
 
             <div class="w-full sm:w-auto">
-                <label class="form-label">TUSI</label>
-                <select name="tusi_id" class="form-select form-select-sm">
+                <label for="filter_keg_tusi" class="form-label">TUSI</label>
+                <select id="filter_keg_tusi" name="tusi_id" aria-label="Filter TUSI Kegiatan" class="form-select form-select-sm">
                     <option value="">Semua</option>
                     <?php foreach($tusi_list as $t): ?>
                         <option value="<?= $t['id'] ?>" <?= $f_tusi == $t['id'] ? 'selected' : '' ?>><?= e($t['kode']) ?></option>
@@ -170,8 +170,8 @@ function get_status_badge($status) {
 
             <?php if ($role !== 'penyuluh'): ?>
             <div class="w-full sm:w-auto">
-                <label class="form-label">Penyuluh</label>
-                <select name="penyuluh_id" class="form-select form-select-sm">
+                <label for="filter_keg_penyuluh" class="form-label">Penyuluh</label>
+                <select id="filter_keg_penyuluh" name="penyuluh_id" aria-label="Filter Penyuluh Kegiatan" class="form-select form-select-sm">
                     <option value="">Semua Penyuluh</option>
                     <?php foreach($penyuluh_list as $p): ?>
                         <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>

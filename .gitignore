@@ -3,8 +3,9 @@
 .env.*
 !.env.example
 
-# Composer
+# Dependencies
 /vendor/
+/node_modules/
 
 # SQL Dumps & Database Backups
 *.sql

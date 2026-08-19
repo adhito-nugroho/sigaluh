@@ -19,35 +19,16 @@ $appLogoOk = is_file($appLogoPath);
     <link rel="icon" type="image/x-icon" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/favicon.ico">
     <?php endif; ?>
 
-    <!-- Fonts: Roboto Flex, Roboto Mono, Roboto -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Self-hosted Fonts: Roboto Flex, Roboto Mono, Roboto, Material Symbols Outlined -->
+    <link rel="stylesheet" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/fonts.css?v=<?= file_exists(__DIR__ . '/../assets/fonts.css') ? filemtime(__DIR__ . '/../assets/fonts.css') : '1' ?>">
 
-    <!-- Material Symbols Outlined -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0" />
-
-    <!-- Tailwind CSS (tetap untuk layout grid/flex) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        if (typeof tailwind !== 'undefined') {
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            sans: ['Roboto', 'Roboto Flex', 'system-ui', 'sans-serif'],
-                            display: ['Roboto Flex', 'Roboto', 'system-ui', 'sans-serif'],
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Compiled Tailwind CSS (Local Build) -->
+    <link rel="stylesheet" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/tailwind.css?v=<?= file_exists(__DIR__ . '/../assets/tailwind.css') ? filemtime(__DIR__ . '/../assets/tailwind.css') : '1' ?>">
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Design System -->
-    <link rel="stylesheet" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/design-system.css?v=<?= filemtime(__DIR__ . '/../assets/design-system.css') ?>">
+    <link rel="stylesheet" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/design-system.css?v=<?= file_exists(__DIR__ . '/../assets/design-system.css') ? filemtime(__DIR__ . '/../assets/design-system.css') : '1' ?>">
 </head>
 <body>

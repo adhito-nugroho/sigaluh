@@ -37,30 +37,11 @@ if (function_exists('generate_csrf_token')) {
     <title>SI GALUH — Portal Masuk</title>
     <link rel="icon" type="image/png" href="<?php echo $logo_path; ?>">
 
-    <!-- Google Fonts: Roboto Flex, Roboto, Roboto Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Self-hosted Fonts: Roboto Flex, Roboto, Roboto Mono, Material Symbols Outlined -->
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/assets/fonts.css">
 
-    <!-- Material Symbols Outlined -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0" />
-
-    <!-- Tailwind CSS (Layout helper) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        if (typeof tailwind !== 'undefined') {
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            sans: ['Roboto', 'Roboto Flex', 'system-ui', 'sans-serif'],
-                            display: ['Roboto Flex', 'Roboto', 'system-ui', 'sans-serif'],
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Compiled Tailwind CSS (Local Build) -->
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/assets/tailwind.css">
 
     <!-- Material Design 3 Design System -->
     <link rel="stylesheet" href="<?php echo $base_url; ?>/assets/design-system.css">

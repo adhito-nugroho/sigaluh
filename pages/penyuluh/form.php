@@ -155,8 +155,8 @@ $init_wilayah_json = json_encode(array_values($grouped_wilayah));
             <div class="card p-4 mb-4" style="background:var(--md-sys-color-surface-container);box-shadow:none;">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="form-label">Kabupaten</label>
-                        <select id="input_kabupaten" @change="onKabupatenChange($event)" class="form-select">
+                        <label for="input_kabupaten" class="form-label">Kabupaten</label>
+                        <select id="input_kabupaten" aria-label="Pilih Kabupaten Binaan" @change="onKabupatenChange($event)" class="form-select">
                             <option value="">-- Pilih Kabupaten --</option>
                             <?php foreach($kabupaten_list as $k): ?>
                                 <option value="<?= $k['id'] ?>" data-nama="<?= e($k['nama']) ?>"><?= e($k['nama']) ?></option>
@@ -165,8 +165,8 @@ $init_wilayah_json = json_encode(array_values($grouped_wilayah));
                     </div>
 
                     <div>
-                        <label class="form-label">Kecamatan</label>
-                        <select id="input_kecamatan" @change="onKecamatanChange($event)" :disabled="!selectedKabId" class="form-select">
+                        <label for="input_kecamatan" class="form-label">Kecamatan</label>
+                        <select id="input_kecamatan" aria-label="Pilih Kecamatan Binaan" @change="onKecamatanChange($event)" :disabled="!selectedKabId" class="form-select">
                             <option value="">-- Pilih Kecamatan --</option>
                             <template x-for="k in kecamatanList" :key="k.id">
                                 <option :value="k.id" :data-nama="k.nama" x-text="k.nama"></option>

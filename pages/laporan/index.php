@@ -130,8 +130,8 @@ if ($f_bulan && $f_tahun) {
 
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto">
-            <label class="form-label">Penyuluh</label>
-            <select name="penyuluh_id" class="form-select" style="min-width:200px;">
+            <label for="filter_penyuluh_id" class="form-label">Penyuluh</label>
+            <select id="filter_penyuluh_id" name="penyuluh_id" aria-label="Filter Penyuluh" class="form-select" style="min-width:200px;">
                 <option value="">-- Pilih Penyuluh --</option>
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -141,8 +141,8 @@ if ($f_bulan && $f_tahun) {
         <?php endif; ?>
 
         <div class="w-full sm:w-auto">
-            <label class="form-label">Bulan</label>
-            <select name="bulan" class="form-select">
+            <label for="filter_bulan" class="form-label">Bulan</label>
+            <select id="filter_bulan" name="bulan" aria-label="Filter Bulan Laporan" class="form-select">
                 <option value="">Semua</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -153,8 +153,8 @@ if ($f_bulan && $f_tahun) {
         </div>
 
         <div class="w-full sm:w-auto">
-            <label class="form-label">Tahun</label>
-            <select name="tahun" class="form-select">
+            <label for="filter_tahun" class="form-label">Tahun</label>
+            <select id="filter_tahun" name="tahun" aria-label="Filter Tahun Laporan" class="form-select">
                 <option value="">Semua</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>

@@ -153,8 +153,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
 
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto flex-1" style="min-width:220px;">
-            <label class="form-label">Pilih Penyuluh</label>
-            <select name="penyuluh_id" class="form-select">
+            <label for="filter_akt_penyuluh" class="form-label">Pilih Penyuluh</label>
+            <select id="filter_akt_penyuluh" name="penyuluh_id" aria-label="Filter Penyuluh" class="form-select">
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>>
                         <?= e($p['nama']) ?> (NIP. <?= e($p['nip']) ?>)
@@ -165,8 +165,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         <?php endif; ?>
 
         <div class="w-full sm:w-auto" style="min-width:150px;">
-            <label class="form-label">Bulan</label>
-            <select name="bulan" class="form-select">
+            <label for="filter_akt_bulan" class="form-label">Bulan</label>
+            <select id="filter_akt_bulan" name="bulan" aria-label="Filter Bulan Laporan Aktivitas" class="form-select">
                 <option value="">Semua Bulan</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -177,8 +177,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
         </div>
 
         <div class="w-full sm:w-auto" style="min-width:120px;">
-            <label class="form-label">Tahun</label>
-            <select name="tahun" class="form-select">
+            <label for="filter_akt_tahun" class="form-label">Tahun</label>
+            <select id="filter_akt_tahun" name="tahun" aria-label="Filter Tahun Laporan Aktivitas" class="form-select">
                 <option value="">Semua Tahun</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>

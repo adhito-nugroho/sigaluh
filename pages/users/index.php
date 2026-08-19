@@ -82,7 +82,7 @@ $roles_list = $pdo->query("SELECT * FROM m_roles ORDER BY id ASC")->fetchAll();
 
         <?php if ($role === 'admin'): ?>
         <div class="w-100" style="flex:0 0 auto;width:192px;">
-            <select name="role_filter" onchange="this.form.submit()" class="form-select">
+            <select name="role_filter" aria-label="Filter Berdasarkan Role Pengguna" onchange="this.form.submit()" class="form-select">
                 <option value="">Semua Role</option>
                 <?php foreach ($roles_list as $r): ?>
                     <option value="<?= $r['kode'] ?>" <?= $f_role === $r['kode'] ? 'selected' : '' ?>><?= e($r['nama']) ?></option>
