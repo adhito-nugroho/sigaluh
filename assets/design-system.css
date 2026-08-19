@@ -1104,6 +1104,27 @@ input:checked ~ .md-switch::after {
   white-space: nowrap !important;
 }
 
+.line-clamp-1 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.line-clamp-2 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.line-clamp-3 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
 .fw-normal { font-weight: 400 !important; }
 .fw-medium { font-weight: 500 !important; }
 .fw-semibold { font-weight: 600 !important; }

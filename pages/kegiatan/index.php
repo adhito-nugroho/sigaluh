@@ -208,7 +208,7 @@ function get_status_badge($status) {
                         <?php endif; ?>
                         <th>TUSI</th>
                         <th>Aktivitas Harian</th>
-                        <th style="width:33%;">Ringkasan Kegiatan</th>
+                        <th>Ringkasan Kegiatan</th>
                         <th>Status</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -246,14 +246,14 @@ function get_status_badge($status) {
                                 <?php $tc = $row['tusi_kode'] === 'RLPM' ? 'tertiary' : ($row['tusi_kode'] === 'TKUK' ? 'secondary' : 'primary'); ?>
                                 <span class="badge badge-<?= $tc ?>"><?= e($row['tusi_kode']) ?></span>
                             </td>
-                            <td class="text-xs fw-semibold">
-                                <div><?= e($row['nama_aktivitas'] ?: '-') ?></div>
+                            <td class="text-xs fw-semibold" style="max-width:240px;">
+                                <div class="line-clamp-2" title="<?= e($row['nama_aktivitas'] ?: '-') ?>"><?= e($row['nama_aktivitas'] ?: '-') ?></div>
                                 <?php if ($row['durasi_menit'] > 0): ?>
                                     <div class="text-[10px] fw-bold mt-0.5 text-primary"><?= $row['durasi_menit'] ?> Menit (<?= $row['volume'] ?? 1 ?> <?= e($row['act_satuan'] ?: 'Satuan') ?>)</div>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-sm text-muted">
-                                <div class="text-truncate" style="max-width:80%;" title="<?= e($row['uraian_kegiatan']) ?>">
+                            <td class="text-sm text-muted" style="max-width:320px;">
+                                <div class="line-clamp-2" title="<?= e($row['uraian_kegiatan']) ?>">
                                     <?= e($row['uraian_kegiatan']) ?>
                                 </div>
                             </td>
