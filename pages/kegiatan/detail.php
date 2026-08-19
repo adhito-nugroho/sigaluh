@@ -65,71 +65,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role !== 'penyuluh') {
 
 function get_status_badge($status) {
     switch ($status) {
-        case 'draft': return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-neutral-100 text-neutral-600 border border-neutral-200/80 inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>Draft</span>';
-        case 'submitted': return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-info-100 text-info-700 border border-info-200/60 inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-info-500"></span>Diajukan</span>';
-        case 'direview': return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-success-100 text-success-700 border border-success-200/60 inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>Disetujui</span>';
-        default: return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-neutral-100 text-neutral-600 border border-neutral-200/80">'.e($status).'</span>';
+        case 'draft': return '<span class="badge badge-neutral"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--md-sys-color-outline);"></span>Draft</span>';
+        case 'submitted': return '<span class="badge badge-warning"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--md-sys-color-secondary);"></span>Diajukan</span>';
+        case 'direview': return '<span class="badge badge-success"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--md-sys-color-tertiary);"></span>Disetujui</span>';
+        default: return '<span class="badge badge-neutral">'.e($status).'</span>';
     }
 }
 ?>
 
-<div class="mb-6 flex items-center justify-between">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Detail Kegiatan</h1>
-        <p class="text-sm text-neutral-500 mt-1 font-medium">Status saat ini: <?= get_status_badge($keg['status']) ?></p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Detail Kegiatan</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Status saat ini: <?= get_status_badge($keg['status']) ?></p>
     </div>
-    <div class="flex space-x-2">
+    <div class="d-flex gap-2">
         <?php if ($role === 'penyuluh' && ($keg['status'] === 'draft' || $keg['status'] === 'submitted')): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form&id=<?= $keg['id'] ?>" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-warning-600 hover:bg-warning-700 shadow-sm transition-all active:scale-[0.98]">
-            <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Edit
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form&id=<?= $keg['id'] ?>" class="btn btn-warning">
+            <span class="material-symbols-outlined">edit</span> Edit
         </a>
         <?php endif; ?>
-        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="inline-flex items-center justify-center px-4 py-2.5 border border-neutral-200 text-sm font-bold rounded-xl text-neutral-700 bg-white hover:bg-neutral-50 transition-all">
-            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Kembali
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-outline-secondary">
+            <span class="material-symbols-outlined">arrow_back</span> Kembali
         </a>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 space-y-6">
-        
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 space-y-4">
+
         <!-- Informasi Dasar -->
-        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
-                <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                    <i data-lucide="info" class="w-5 h-5 text-neutral-400 mr-2"></i> Informasi Dasar
-                </h2>
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">info</span> Informasi Dasar
             </div>
-            <div class="p-6">
+            <div class="card-body">
                 <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Tanggal Pelaksanaan</dt>
-                        <dd class="mt-1 text-sm text-neutral-900"><?= date('d F Y', strtotime($keg['tanggal'])) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Tanggal Pelaksanaan</dt>
+                        <dd class="mt-1 text-sm fw-medium" style="color:var(--md-sys-color-on-surface);"><?= date('d F Y', strtotime($keg['tanggal'])) ?></dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Penyuluh</dt>
-                        <dd class="mt-1 text-sm text-neutral-900"><?= e($keg['penyuluh_nama']) ?> (<?= e($keg['penyuluh_nip']) ?>)</dd>
+                        <dt class="text-sm fw-medium text-muted">Penyuluh</dt>
+                        <dd class="mt-1 text-sm fw-medium" style="color:var(--md-sys-color-on-surface);"><?= e($keg['penyuluh_nama']) ?> (<?= e($keg['penyuluh_nip']) ?>)</dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Lokasi / Wilayah</dt>
-                        <dd class="mt-1 text-sm text-neutral-900">
+                        <dt class="text-sm fw-medium text-muted">Lokasi / Wilayah</dt>
+                        <dd class="mt-1 text-sm fw-medium" style="color:var(--md-sys-color-on-surface);">
                             <?= e($keg['desa_nama']) ?>, <?= e($keg['kecamatan_nama']) ?><br>
                             <?= e($keg['kabupaten_nama']) ?>, <?= e($keg['provinsi_nama']) ?>
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Alamat Spesifik</dt>
-                        <dd class="mt-1 text-sm text-neutral-900"><?= nl2br(e($keg['lokasi'] ?: '-')) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Alamat Spesifik</dt>
+                        <dd class="mt-1 text-sm fw-medium" style="color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['lokasi'] ?: '-')) ?></dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Kelompok Tani Hutan (KTH)</dt>
-                        <dd class="mt-1 text-sm text-neutral-900"><?= e($keg['kth_nama'] ?: 'Tidak terkait KTH') ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Kelompok Tani Hutan (KTH)</dt>
+                        <dd class="mt-1 text-sm fw-medium" style="color:var(--md-sys-color-on-surface);"><?= e($keg['kth_nama'] ?: 'Tidak terkait KTH') ?></dd>
                     </div>
-                    <div class="sm:col-span-2 p-3 bg-primary-50 border border-primary-200 rounded-xl">
-                        <dt class="text-xs font-bold text-primary-900 uppercase tracking-wider mb-1">Aktivitas Harian & Alokasi Waktu</dt>
-                        <dd class="text-sm font-bold text-primary-950 flex flex-wrap items-center justify-between gap-2">
+                    <div class="sm:col-span-2 p-3 rounded-xl" style="background:var(--md-sys-color-primary-container);">
+                        <dt class="text-xs fw-bold uppercase tracking-wider mb-1" style="color:var(--md-sys-color-on-primary-container);">Aktivitas Harian & Alokasi Waktu</dt>
+                        <dd class="text-sm fw-bold d-flex flex-wrap align-items-center justify-content-between gap-2" style="color:var(--md-sys-color-on-primary-container);">
                             <span><?= e($keg['nama_aktivitas'] ?: 'Aktivitas Harian') ?> (<?= $keg['volume'] ?? 1 ?> <?= e($keg['act_satuan'] ?: 'Satuan') ?>)</span>
-                            <span class="px-3 py-1 bg-primary-700 text-white text-xs font-extrabold rounded-lg shadow-sm">
+                            <span class="px-3 py-1 text-xs fw-bold rounded-lg" style="background:var(--md-sys-color-primary);color:#fff;">
                                 Durasi: <?= $keg['durasi_menit'] ?? 0 ?> Menit (<?= round(($keg['durasi_menit'] ?? 0)/60, 1) ?> Jam)
                             </span>
                         </dd>
@@ -139,60 +137,56 @@ function get_status_badge($status) {
         </div>
 
         <!-- Uraian Kegiatan -->
-        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
-                <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                    <i data-lucide="file-text" class="w-5 h-5 text-neutral-400 mr-2"></i> Uraian Kegiatan
-                </h2>
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">description</span> Uraian Kegiatan
             </div>
-            <div class="p-6">
+            <div class="card-body">
                 <dl class="space-y-6">
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">TUSI yang Dilaksanakan (<?= e($keg['tusi_kode']) ?>)</dt>
-                        <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['uraian_kegiatan'])) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">TUSI yang Dilaksanakan (<?= e($keg['tusi_kode']) ?>)</dt>
+                        <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['uraian_kegiatan'])) ?></dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Substansi Materi</dt>
-                        <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['substansi_materi'] ?: '-')) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Substansi Materi</dt>
+                        <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['substansi_materi'] ?: '-')) ?></dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Uraian Tugas / Aktivitas</dt>
-                        <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['detail_kegiatan'])) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Uraian Tugas / Aktivitas</dt>
+                        <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['detail_kegiatan'])) ?></dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Sasaran / Hadir</dt>
-                        <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['sasaran_hadir'] ?: '-')) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Sasaran / Hadir</dt>
+                        <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['sasaran_hadir'] ?: '-')) ?></dd>
                     </div>
                 </dl>
             </div>
         </div>
 
         <!-- Hasil & Evaluasi -->
-        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
-                <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                    <i data-lucide="check-square" class="w-5 h-5 text-neutral-400 mr-2"></i> Hasil & Evaluasi
-                </h2>
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">fact_check</span> Hasil & Evaluasi
             </div>
-            <div class="p-6">
+            <div class="card-body">
                 <dl class="space-y-6">
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Penjelasan Hasil Pelaksanaan Kegiatan</dt>
-                        <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['pelaksanaan_kegiatan'])) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Penjelasan Hasil Pelaksanaan Kegiatan</dt>
+                        <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['pelaksanaan_kegiatan'])) ?></dd>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div>
-                            <dt class="text-sm font-medium text-neutral-500">Permasalahan / Kendala</dt>
-                            <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['permasalahan_kendala'] ?: '-')) ?></dd>
+                            <dt class="text-sm fw-medium text-muted">Permasalahan / Kendala</dt>
+                            <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['permasalahan_kendala'] ?: '-')) ?></dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-neutral-500">Solusi</dt>
-                            <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['solusi'] ?: '-')) ?></dd>
+                            <dt class="text-sm fw-medium text-muted">Solusi</dt>
+                            <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['solusi'] ?: '-')) ?></dd>
                         </div>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-neutral-500">Kesimpulan dan Saran</dt>
-                        <dd class="mt-1 text-sm text-neutral-900 bg-slate-50/80 p-3 rounded-lg border border-slate-100"><?= nl2br(e($keg['kesimpulan_saran'] ?: '-')) ?></dd>
+                        <dt class="text-sm fw-medium text-muted">Kesimpulan dan Saran</dt>
+                        <dd class="mt-1 text-sm p-3 rounded-lg border" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"><?= nl2br(e($keg['kesimpulan_saran'] ?: '-')) ?></dd>
                     </div>
                 </dl>
             </div>
@@ -200,28 +194,27 @@ function get_status_badge($status) {
 
         <?php if (!empty($lampiran_list)): ?>
         <!-- Lampiran Foto -->
-        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
-                <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                    <i data-lucide="camera" class="w-5 h-5 text-neutral-400 mr-2"></i>
-                    Lampiran Foto <span class="ml-2 text-xs font-normal text-neutral-400">(<?= count($lampiran_list) ?> foto)</span>
-                </h2>
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">photo_camera</span>
+                Lampiran Foto <span class="ms-2 text-xs fw-normal text-muted">(<?= count($lampiran_list) ?> foto)</span>
             </div>
-            <div class="p-6">
+            <div class="card-body">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <?php foreach ($lampiran_list as $lamp): ?>
-                    <div class="rounded-xl overflow-hidden border border-neutral-200 shadow-sm bg-neutral-100 cursor-pointer group"
+                    <div class="rounded-xl overflow-hidden border shadow-sm cursor-pointer"
+                         style="background:var(--md-sys-color-surface-container-low);border-color:var(--md-sys-color-outline-variant);"
                          onclick="openLightbox('<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>')">
                         <div style="aspect-ratio:16/9;">
                             <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>"
                                  alt="Lampiran foto"
                                  loading="lazy"
-                                 onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-neutral-400 text-xs bg-neutral-100 gap-1.5 p-4\'><i data-lucide=\'image-off\' class=\'w-6 h-6 text-neutral-400\'></i><span>Foto tidak dapat dimuat</span></div>'; if (typeof lucide !== 'undefined') lucide.createIcons();"
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                 onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-xs gap-1.5 p-4\' style=\'color:var(--md-sys-color-on-surface-variant);background:var(--md-sys-color-surface-container-low);\'><span class=\'material-symbols-outlined\'>image_not_supported</span><span>Foto tidak dapat dimuat</span></div>';"
+                                 class="w-full h-full object-cover transition-transform duration-300" style="aspect-ratio:16/9;">
                         </div>
-                        <div class="px-3 py-2 bg-neutral-50 border-t border-neutral-100 flex items-center justify-between">
-                            <span class="text-[11px] text-neutral-400"><?= $lamp['ukuran_bytes'] > 0 ? round($lamp['ukuran_bytes'] / 1024) . ' KB' : '' ?></span>
-                            <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-neutral-300"></i>
+                        <div class="px-3 py-2 d-flex align-items-center justify-content-between" style="border-top:1px solid var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container-low);">
+                            <span class="text-[11px] text-muted"><?= $lamp['ukuran_bytes'] > 0 ? round($lamp['ukuran_bytes'] / 1024) . ' KB' : '' ?></span>
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--md-sys-color-outline);">zoom_in</span>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -232,20 +225,20 @@ function get_status_badge($status) {
     </div>
 
     <!-- Sidebar Detail -->
-    <div class="space-y-6">
+    <div class="space-y-4">
         <!-- Review Card -->
-        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
-                <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                    <i data-lucide="message-square" class="w-5 h-5 text-neutral-400 mr-2"></i> Review Pimpinan
-                </h2>
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">chat</span> Review Pimpinan
             </div>
-            <div class="p-6">
+            <div class="card-body">
                 <?php if ($keg['status'] === 'direview'): ?>
-                    <div class="bg-success-50 text-success-800 p-3 rounded-xl text-sm mb-4 border border-success-200">
-                        <strong>Direview pada:</strong> <?= date('d M Y H:i', strtotime($keg['direview_at'])) ?>
+                    <div class="alert alert-success mb-4" style="padding:10px 14px;">
+                        <div>
+                            <strong>Direview pada:</strong> <?= date('d M Y H:i', strtotime($keg['direview_at'])) ?>
+                        </div>
                     </div>
-                    <div class="text-sm text-slate-700">
+                    <div class="text-sm" style="color:var(--md-sys-color-on-surface);">
                         <strong>Catatan:</strong><br>
                         <?= nl2br(e($keg['catatan_pimpinan'] ?: 'Tidak ada catatan.')) ?>
                     </div>
@@ -255,32 +248,30 @@ function get_status_badge($status) {
                         <form action="" method="POST" class="space-y-4">
                             <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
                             <div>
-                                <label class="block text-sm font-bold text-neutral-700 mb-1.5">Catatan (Opsional)</label>
-                                <textarea name="catatan_pimpinan" rows="3" class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm transition-colors"></textarea>
+                                <label class="form-label">Catatan (Opsional)</label>
+                                <textarea name="catatan_pimpinan" rows="3" class="form-control"></textarea>
                             </div>
-                            <button type="submit" class="w-full bg-primary-700 hover:bg-primary-800 text-white font-bold py-2.5 px-4 rounded-lg transition-colors shadow-sm text-sm">
-                                Setujui Laporan
-                            </button>
+                            <button type="submit" class="btn btn-primary w-100">Setujui Laporan</button>
                         </form>
                     <?php else: ?>
-                        <p class="text-sm text-slate-500 italic">Kegiatan ini belum direview atau masih berstatus draft.</p>
+                        <p class="text-sm text-muted fst-italic">Kegiatan ini belum direview atau masih berstatus draft.</p>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
-        
+
         <!-- Audit Trail -->
-        <div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-            <div class="p-6">
-                <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-4">Informasi Sistem</h3>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-sm fw-bold text-uppercase mb-4">Informasi Sistem</h3>
                 <dl class="space-y-3 text-sm">
-                    <div class="flex justify-between">
-                        <dt class="text-neutral-500 font-medium">Dibuat pada</dt>
-                        <dd class="text-slate-900 font-medium"><?= date('d/m/Y H:i', strtotime($keg['created_at'])) ?></dd>
+                    <div class="d-flex justify-content-between">
+                        <dt class="text-muted fw-medium">Dibuat pada</dt>
+                        <dd class="fw-medium" style="color:var(--md-sys-color-on-surface);"><?= date('d/m/Y H:i', strtotime($keg['created_at'])) ?></dd>
                     </div>
-                    <div class="flex justify-between">
-                        <dt class="text-slate-500">Terakhir diubah</dt>
-                        <dd class="text-slate-900 font-medium"><?= date('d/m/Y H:i', strtotime($keg['updated_at'])) ?></dd>
+                    <div class="d-flex justify-content-between">
+                        <dt class="text-muted">Terakhir diubah</dt>
+                        <dd class="fw-medium" style="color:var(--md-sys-color-on-surface);"><?= date('d/m/Y H:i', strtotime($keg['updated_at'])) ?></dd>
                     </div>
                 </dl>
             </div>

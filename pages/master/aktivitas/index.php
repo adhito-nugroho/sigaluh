@@ -85,96 +85,95 @@ $aktivitas_list = $stmt->fetchAll();
 ?>
 
 <!-- Header -->
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
-            Master Data
-        </div>
-        <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Master Aktivitas Harian</h1>
-        <p class="text-sm text-neutral-500 font-medium">Kelola standar aktivitas harian, deskripsi, dan Waktu Penyelesaian Tugas (WPT) penyuluh.</p>
+        <span class="badge badge-primary mb-1">Master Data</span>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Master Aktivitas Harian</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Kelola standar aktivitas harian, deskripsi, dan Waktu Penyelesaian Tugas (WPT) penyuluh.</p>
     </div>
     <div>
-        <button onclick="openModalCreate()" class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold rounded-lg text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors">
-            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Aktivitas
+        <button onclick="openModalCreate()" class="btn btn-primary">
+            <span class="material-symbols-outlined">add</span> Tambah Aktivitas
         </button>
     </div>
 </div>
 
 <?php if (!empty($error)): ?>
-    <div class="mb-6 p-4 rounded-xl bg-error-100 border border-error-200 text-error-700 text-sm font-medium flex items-center gap-2">
-        <i data-lucide="alert-circle" class="w-5 h-5"></i> <?= e($error) ?>
+    <div class="alert alert-danger mb-4">
+        <span class="material-symbols-outlined">error</span> <?= e($error) ?>
     </div>
 <?php endif; ?>
 
 <?php if (!empty($success)): ?>
-    <div class="mb-6 p-4 rounded-xl bg-success-100 border border-success-200 text-success-700 text-sm font-medium flex items-center gap-2">
-        <i data-lucide="check-circle" class="w-5 h-5"></i> <?= e($success) ?>
+    <div class="alert alert-success mb-4">
+        <span class="material-symbols-outlined">check_circle</span> <?= e($success) ?>
     </div>
 <?php endif; ?>
 
 <!-- Search Bar -->
-<div class="bg-white rounded-xl border border-neutral-200/80 shadow-card p-4 mb-6">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex gap-3">
+<div class="card mb-4">
+    <div class="card-body p-3">
+    <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex gap-2">
         <input type="hidden" name="page" value="master/aktivitas">
-        <div class="relative flex-1">
-            <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
-            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari nama aktivitas, deskripsi, atau objek kerja..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+        <div class="position-relative flex-1">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-outline);position:absolute;left:10px;top:50%;transform:translateY(-50%);">search</span>
+            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari nama aktivitas, deskripsi, atau objek kerja..." class="form-control" style="padding-left:34px;">
         </div>
-        <button type="submit" class="px-4 py-2 bg-neutral-800 text-white rounded-lg text-sm font-bold hover:bg-neutral-900 transition-colors">Cari</button>
+        <button type="submit" class="btn btn-primary">Cari</button>
         <?php if (!empty($q)): ?>
-            <a href="<?= BASE_URL ?>/index.php?page=master/aktivitas" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-200 transition-colors">Reset</a>
+            <a href="<?= BASE_URL ?>/index.php?page=master/aktivitas" class="btn btn-outline-secondary">Reset</a>
         <?php endif; ?>
     </form>
+    </div>
 </div>
 
 <!-- Table Card -->
-<div class="bg-white rounded-xl border border-neutral-200/80 shadow-card overflow-hidden mb-6">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200 text-sm">
-            <thead class="bg-neutral-50">
+<div class="card mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider w-12">No</th>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider">Aktivitas Harian & Deskripsi</th>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-600 uppercase tracking-wider">Objek Kerja</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-28">Satuan</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-32">WPT (Menit)</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-600 uppercase tracking-wider w-28">Aksi</th>
+                    <th style="width:48px;">No</th>
+                    <th>Aktivitas Harian & Deskripsi</th>
+                    <th>Objek Kerja</th>
+                    <th class="text-center" style="width:112px;">Satuan</th>
+                    <th class="text-center" style="width:128px;">WPT (Menit)</th>
+                    <th class="text-center" style="width:112px;">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-neutral-200 bg-white">
+            <tbody>
                 <?php if (empty($aktivitas_list)): ?>
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-neutral-400 font-medium">Data tidak ditemukan.</td>
+                        <td colspan="6" class="text-center py-4 text-muted fw-medium">Data tidak ditemukan.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($aktivitas_list as $idx => $item): ?>
-                        <tr class="hover:bg-neutral-50/80 transition-colors">
-                            <td class="px-4 py-3 text-neutral-500 font-medium text-center align-top"><?= $offset + $idx + 1 ?></td>
-                            <td class="px-4 py-3 text-neutral-900 align-top">
-                                <div class="font-bold"><?= e($item['nama_aktivitas']) ?></div>
+                        <tr>
+                            <td class="text-center align-top text-muted fw-medium"><?= $offset + $idx + 1 ?></td>
+                            <td class="align-top">
+                                <div class="fw-bold" style="color:var(--md-sys-color-on-surface);"><?= e($item['nama_aktivitas']) ?></div>
                                 <?php if (!empty($item['deskripsi'])): ?>
-                                    <div class="text-xs text-neutral-500 mt-1 leading-relaxed"><?= e($item['deskripsi']) ?></div>
+                                    <div class="text-xs text-muted mt-1" style="line-height:1.6;"><?= e($item['deskripsi']) ?></div>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-neutral-600 text-xs font-medium align-top">
+                            <td class="text-xs fw-medium text-muted align-top">
                                 <?= !empty($item['objek_kerja']) ? e($item['objek_kerja']) : '-' ?>
                             </td>
-                            <td class="px-4 py-3 text-center align-top">
-                                <span class="px-2.5 py-1 bg-primary-50 text-primary-800 border border-primary-200 text-xs font-semibold rounded-md inline-block">
-                                    <?= e($item['satuan']) ?>
-                                </span>
+                            <td class="text-center align-top">
+                                <span class="badge badge-primary"><?= e($item['satuan']) ?></span>
                             </td>
-                            <td class="px-4 py-3 text-center font-extrabold text-neutral-900 align-top">
+                            <td class="text-center fw-bold align-top" style="color:var(--md-sys-color-on-surface);">
                                 <?= $item['wpt_menit'] ?> Menit
-                                <div class="text-[11px] font-normal text-neutral-500"><?= round($item['wpt_menit'] / 60, 2) ?> Jam</div>
+                                <div class="text-[11px] fw-normal text-muted"><?= round($item['wpt_menit'] / 60, 2) ?> Jam</div>
                             </td>
-                            <td class="px-4 py-3 text-center align-top">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick='openModalEdit(<?= json_encode($item) ?>)' class="p-1.5 text-neutral-500 hover:text-primary-700 hover:bg-neutral-100 rounded-lg transition-colors" title="Edit">
-                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            <td class="text-center align-top">
+                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                    <button onclick='openModalEdit(<?= json_encode($item) ?>)' class="btn-icon" title="Edit">
+                                        <span class="material-symbols-outlined">edit</span>
                                     </button>
-                                    <button onclick="confirmDelete(<?= $item['id'] ?>, '<?= e(addslashes($item['nama_aktivitas'])) ?>')" class="p-1.5 text-neutral-500 hover:text-error-700 hover:bg-neutral-100 rounded-lg transition-colors" title="Hapus">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    <button onclick="confirmDelete(<?= $item['id'] ?>, '<?= e(addslashes($item['nama_aktivitas'])) ?>')" class="btn-icon btn-icon-danger" title="Hapus">
+                                        <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </div>
                             </td>
@@ -183,24 +182,25 @@ $aktivitas_list = $stmt->fetchAll();
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 
     <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
-    <div class="px-6 py-4 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-50/50">
-        <div class="text-xs sm:text-sm text-neutral-500 font-medium">
-            Menampilkan <span class="font-bold text-neutral-800"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="font-bold text-neutral-800"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="font-bold text-neutral-800"><?= $total_rows ?></span> data
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-muted" style="font-size:12.5px;">
+            Menampilkan <span class="fw-bold"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
         </div>
-        <div class="flex items-center gap-1 flex-wrap justify-center">
-            <?php 
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+            <?php
             $query_params = $_GET;
-            
-            if ($page_num > 1): 
+
+            if ($page_num > 1):
                 $query_params['p'] = $page_num - 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Sebelumnya">
-                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
-                    <span class="hidden sm:inline">Sebelumnya</span>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Sebelumnya">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                    <span class="d-none sm:inline">Sebelumnya</span>
                 </a>
             <?php endif; ?>
 
@@ -211,37 +211,37 @@ $aktivitas_list = $stmt->fetchAll();
             if ($start_p > 1):
                 $query_params['p'] = 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all">1</a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon">1</a>
                 <?php if ($start_p > 2): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php for ($i = $start_p; $i <= $end_p; $i++): 
+            <?php for ($i = $start_p; $i <= $end_p; $i++):
                 $query_params['p'] = $i;
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all <?= $is_active ? 'bg-primary-700 text-white shadow-sm shadow-primary-500/20' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100' ?>">
+                <a href="<?= $link ?>" class="btn-icon <?= $is_active ? '' : 'd-none' ?>" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
 
             <?php if ($end_p < $total_pages): ?>
                 <?php if ($end_p < $total_pages - 1): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
                 <?php $query_params['p'] = $total_pages; ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all"><?= $total_pages ?></a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon"><?= $total_pages ?></a>
             <?php endif; ?>
 
-            <?php 
-            if ($page_num < $total_pages): 
+            <?php
+            if ($page_num < $total_pages):
                 $query_params['p'] = $page_num + 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Selanjutnya">
-                    <span class="hidden sm:inline">Selanjutnya</span>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Selanjutnya">
+                    <span class="d-none sm:inline">Selanjutnya</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
                 </a>
             <?php endif; ?>
         </div>
@@ -250,70 +250,74 @@ $aktivitas_list = $stmt->fetchAll();
 </div>
 
 <!-- Modal Form (Tambah / Edit) -->
-<div id="modalForm" class="fixed inset-0 bg-neutral-900/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-neutral-200 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="modalTitle" class="text-lg font-bold text-neutral-900">Tambah Aktivitas Harian</h3>
-            <button onclick="closeModalForm()" class="text-neutral-400 hover:text-neutral-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+<div id="modalForm" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);">
+    <div class="card w-full" style="max-width:32rem;max-height:90vh;overflow-y:auto;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 id="modalTitle" class="fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Tambah Aktivitas Harian</h3>
+            <button onclick="closeModalForm()" class="btn btn-icon" style="border:none;"><span class="material-symbols-outlined">close</span></button>
         </div>
+        <div class="card-body">
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
             <input type="hidden" name="action" id="formAction" value="create">
             <input type="hidden" name="id" id="formId" value="">
 
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Nama Aktivitas Harian *</label>
-                    <input type="text" name="nama_aktivitas" id="formNama" required placeholder="Contoh: Melakukan koordinasi..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+                    <label class="form-label">Nama Aktivitas Harian *</label>
+                    <input type="text" name="nama_aktivitas" id="formNama" required placeholder="Contoh: Melakukan koordinasi..." class="form-control">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Satuan Hasil *</label>
-                    <input type="text" name="satuan" id="formSatuan" required placeholder="Contoh: Laporan, Kegiatan, Data, Surat..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+                    <label class="form-label">Satuan Hasil *</label>
+                    <input type="text" name="satuan" id="formSatuan" required placeholder="Contoh: Laporan, Kegiatan, Data, Surat..." class="form-control">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">WPT (Waktu Penyelesaian Tugas dalam Menit) *</label>
-                    <input type="number" name="wpt_menit" id="formWpt" required min="1" placeholder="30" class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
-                    <p class="text-[11px] text-neutral-500 mt-1">Estimasi waktu penyelesaian standar per 1 satuan.</p>
+                    <label class="form-label">WPT (Waktu Penyelesaian Tugas dalam Menit) *</label>
+                    <input type="number" name="wpt_menit" id="formWpt" required min="1" placeholder="30" class="form-control">
+                    <p class="text-muted" style="font-size:11px;margin-top:4px;">Estimasi waktu penyelesaian standar per 1 satuan.</p>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Deskripsi Aktivitas</label>
-                    <textarea name="deskripsi" id="formDeskripsi" rows="3" placeholder="Penjelasan detail aktivitas..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none"></textarea>
+                    <label class="form-label">Deskripsi Aktivitas</label>
+                    <textarea name="deskripsi" id="formDeskripsi" rows="3" placeholder="Penjelasan detail aktivitas..." class="form-control"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-neutral-700 uppercase tracking-wider mb-1">Objek Kerja</label>
-                    <input type="text" name="objek_kerja" id="formObjekKerja" placeholder="Contoh: Kendaraan dinas, Notulen, Dokumen SK..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+                    <label class="form-label">Objek Kerja</label>
+                    <input type="text" name="objek_kerja" id="formObjekKerja" placeholder="Contoh: Kendaraan dinas, Notulen, Dokumen SK..." class="form-control">
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" onclick="closeModalForm()" class="px-4 py-2 border border-neutral-300 rounded-xl text-sm font-semibold text-neutral-700 hover:bg-neutral-50">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-xl text-sm font-bold shadow-sm">Simpan Data</button>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" onclick="closeModalForm()" class="btn btn-outline-secondary">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Data</button>
             </div>
         </form>
+        </div>
     </div>
 </div>
 
 <!-- Modal Confirm Delete -->
-<div id="modalDelete" class="fixed inset-0 bg-neutral-900/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-neutral-200 text-center">
-        <div class="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
-            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+<div id="modalDelete" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);">
+    <div class="card w-full text-center" style="max-width:24rem;">
+        <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center mx-auto mb-4" style="width:48px;height:48px;border-radius:50%;background:var(--md-sys-color-error-container);">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-error);">warning</span>
         </div>
-        <h3 class="text-base font-bold text-neutral-900 mb-1">Konfirmasi Hapus</h3>
-        <p class="text-xs text-neutral-500 mb-6">Apakah Anda yakin ingin menghapus <strong id="deleteTargetName"></strong>?</p>
+        <h3 class="text-base fw-bold mb-1" style="color:var(--md-sys-color-on-surface);">Konfirmasi Hapus</h3>
+        <p class="text-xs text-muted mb-4">Apakah Anda yakin ingin menghapus <strong id="deleteTargetName"></strong>?</p>
         <form method="POST" action="">
             <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="id" id="deleteTargetId" value="">
-            <div class="flex justify-center gap-3">
-                <button type="button" onclick="closeModalDelete()" class="px-4 py-2 border border-neutral-300 rounded-xl text-sm font-semibold text-neutral-700 hover:bg-neutral-50">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-error-700 hover:bg-error-800 text-white rounded-xl text-sm font-bold shadow-sm">Hapus</button>
+            <div class="d-flex justify-content-center gap-2">
+                <button type="button" onclick="closeModalDelete()" class="btn btn-outline-secondary">Batal</button>
+                <button type="submit" class="btn btn-danger">Hapus</button>
             </div>
         </form>
+        </div>
     </div>
 </div>
 

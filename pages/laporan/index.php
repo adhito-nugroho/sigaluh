@@ -79,20 +79,20 @@ if ($f_bulan && $f_tahun) {
 }
 ?>
 
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Laporan Renja Kegiatan</h1>
-        <p class="text-sm text-neutral-500 mt-1 font-medium">Preview dan export laporan kegiatan penyuluh.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Laporan Renja Kegiatan</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Preview dan export laporan kegiatan penyuluh.</p>
     </div>
-    
-    <div class="mt-4 sm:mt-0 flex space-x-2">
+
+    <div class="d-flex gap-2">
         <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank">
             <input type="hidden" name="page" value="laporan/export_excel">
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-success-600 text-sm font-medium rounded-lg text-success-700 bg-white hover:bg-success-50 shadow-sm transition-colors">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i> Download Excel
+            <button type="submit" class="btn btn-success">
+                <span class="material-symbols-outlined">table_chart</span> Download Excel
             </button>
         </form>
         <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank">
@@ -100,22 +100,23 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors">
-                <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Download PDF
+            <button type="submit" class="btn btn-danger">
+                <span class="material-symbols-outlined">picture_as_pdf</span> Download PDF
             </button>
         </form>
     </div>
 </div>
 
 <!-- Filter -->
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-4 items-end">
+<div class="card mb-4">
+    <div class="card-body p-3">
+    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-3 items-end">
         <input type="hidden" name="page" value="laporan">
-        
+
         <?php if ($role !== 'penyuluh'): ?>
         <div class="w-full sm:w-auto">
-            <label class="block text-xs font-medium text-neutral-700 mb-1">Penyuluh</label>
-            <select name="penyuluh_id" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white min-w-[200px]">
+            <label class="form-label">Penyuluh</label>
+            <select name="penyuluh_id" class="form-select" style="min-width:200px;">
                 <option value="">-- Pilih Penyuluh --</option>
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -125,8 +126,8 @@ if ($f_bulan && $f_tahun) {
         <?php endif; ?>
 
         <div class="w-full sm:w-auto">
-            <label class="block text-xs font-medium text-neutral-700 mb-1">Bulan</label>
-            <select name="bulan" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+            <label class="form-label">Bulan</label>
+            <select name="bulan" class="form-select">
                 <option value="">Semua</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -137,8 +138,8 @@ if ($f_bulan && $f_tahun) {
         </div>
 
         <div class="w-full sm:w-auto">
-            <label class="block text-xs font-medium text-neutral-700 mb-1">Tahun</label>
-            <select name="tahun" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+            <label class="form-label">Tahun</label>
+            <select name="tahun" class="form-select">
                 <option value="">Semua</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
@@ -147,19 +148,20 @@ if ($f_bulan && $f_tahun) {
         </div>
 
         <div class="w-full sm:w-auto">
-            <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-6 rounded-lg text-sm transition-colors">
-                Tampilkan Preview
+            <button type="submit" class="btn btn-primary">
+                <span class="material-symbols-outlined">visibility</span> Tampilkan Preview
             </button>
         </div>
     </form>
+    </div>
 </div>
 
 <!-- Preview Laporan -->
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden overflow-x-auto p-8 font-sans">
+<div class="card p-4 p-8 font-sans" style="overflow-x:auto;">
     <?php if (empty($f_penyuluh) && $role !== 'penyuluh'): ?>
-        <div class="text-center py-10 text-neutral-500">
-            <i data-lucide="filter" class="w-12 h-12 mx-auto text-neutral-300 mb-3"></i>
-            <p>Silakan pilih penyuluh terlebih dahulu untuk melihat preview laporan.</p>
+        <div class="text-center py-10 text-muted">
+            <span class="material-symbols-outlined" style="font-size:48px;color:var(--md-sys-color-outline);">filter_alt</span>
+            <p class="mt-2">Silakan pilih penyuluh terlebih dahulu untuk melihat preview laporan.</p>
         </div>
     <?php else: ?>
         <!-- Kop Surat Mockup -->
@@ -308,7 +310,7 @@ if ($f_bulan && $f_tahun) {
                         <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $item['kegiatan_id'] ?>/<?= e($item['lamp']['nama_file']) ?>"
                              alt="Foto kegiatan"
                              loading="lazy"
-                             onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-neutral-400 text-xs bg-neutral-100 gap-1.5 p-4\'><i data-lucide=\'image-off\' class=\'w-6 h-6 text-neutral-400\'></i><span>Foto tidak dapat dimuat</span></div>'; if (typeof lucide !== 'undefined') lucide.createIcons();"
+                             onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-muted text-xs gap-1.5 p-4\' style=\'background:var(--md-sys-color-surface-container);\'><span class=\'material-symbols-outlined\' style=\'font-size:24px;\'>image_not_supported</span><span>Foto tidak dapat dimuat</span></div>';"
                              style="width:100%; height:100%; object-fit:cover;">
                     </div>
                     <div class="px-3 py-2 text-xs text-neutral-500 bg-neutral-50 border-t border-neutral-100">

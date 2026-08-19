@@ -53,7 +53,7 @@ $needs_layout = !in_array($page, $public_pages) && strpos($page, 'api/') === fal
 // Breadcrumb helper
 function get_breadcrumb($page) {
     $map = [
-        'dashboard' => ['Dashboard'],
+        'dashboard' => ['Beranda', 'Dashboard'],
         'kegiatan' => ['Kegiatan Penyuluh'],
         'kegiatan/form' => ['Kegiatan Penyuluh', 'Form'],
         'kegiatan/detail' => ['Kegiatan Penyuluh', 'Detail'],
@@ -88,59 +88,35 @@ if ($needs_layout) {
     require_once 'includes/header.php';
     require_once 'includes/sidebar.php';
     
-    // Wrapper utama konten
-    echo '<main class="flex-1 flex flex-col h-screen bg-neutral-50 relative">';
-    
     // ── TOPBAR ──
     echo '
-    <header class="bg-white/80 glass-light border-b border-neutral-200/60 h-[64px] flex items-center px-4 md:px-6 lg:px-8 sticky top-0 z-30">
-        <!-- Mobile hamburger -->
-        <button class="text-neutral-500 hover:text-neutral-700 mr-3 lg:hidden transition-colors p-1.5 rounded-xl hover:bg-neutral-100" onclick="toggleSidebar()">
-            <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
-        
-        <!-- Breadcrumb -->
-        <nav class="hidden sm:flex items-center text-sm flex-1">
-            <a href="' . BASE_URL . '/index.php?page=dashboard" class="text-neutral-400 hover:text-primary-600 transition-colors">
-                <i data-lucide="home" class="w-4 h-4"></i>
-            </a>';
-    
-    foreach ($breadcrumbs as $i => $crumb) {
-        echo '<i data-lucide="chevron-right" class="w-3.5 h-3.5 text-neutral-300 mx-2"></i>';
-        if ($i === count($breadcrumbs) - 1) {
-            echo '<span class="text-neutral-800 font-semibold">' . htmlspecialchars($crumb) . '</span>';
-        } else {
-            echo '<span class="text-neutral-400">' . htmlspecialchars($crumb) . '</span>';
-        }
-    }
-    
-    echo '
-        </nav>
-        
-        <!-- Mobile title -->
-        <span class="sm:hidden text-sm font-bold text-neutral-900 flex-1">' . htmlspecialchars($page_title) . '</span>
-        
-        <!-- Right side -->
-        <div class="flex items-center space-x-2">
-            <!-- Date -->
-            <div class="hidden md:flex items-center text-xs text-neutral-500 bg-neutral-50 px-3 py-1.5 rounded-xl border border-neutral-200/60">
-                <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 text-neutral-400"></i>
-                <span>' . date('d M Y') . '</span>
+    <header id="topbar">
+        <div class="d-flex align-items-center gap-3 min-w-0">
+            <button type="button" class="btn topbar-menu-btn d-lg-none" id="sidebarToggle" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <div class="min-w-0">
+                <h1 class="page-title">' . htmlspecialchars($page_title) . '</h1>
+                <div class="topbar-brand-line d-none d-md-block">' . htmlspecialchars(implode(' / ', $breadcrumbs)) . '</div>
             </div>
-            
-            <!-- User Avatar (compact) -->
-            <div class="flex items-center bg-neutral-50 rounded-lg px-2.5 py-1.5 border border-neutral-200/60">
-                <div class="w-7 h-7 rounded-lg bg-primary-700 flex items-center justify-center text-white font-bold text-xs shadow-xs">
-                    ' . strtoupper(substr($_SESSION['user_nama'] ?? 'U', 0, 1)) . '
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge" style="background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);font-weight:500;padding:6px 12px;">
+                <span class="material-symbols-outlined me-1" style="font-size:14px;">calendar_today</span>' . date('d M Y') . '
+            </span>
+            <div class="topbar-user">
+                <div class="user-avatar">
+                    <span class="material-symbols-outlined">person</span>
                 </div>
-                <span class="ml-2 text-xs font-semibold text-neutral-700 hidden lg:inline">' . htmlspecialchars($_SESSION['user_nama'] ?? '') . '</span>
+                <span class="user-name d-none d-sm-inline">' . htmlspecialchars($_SESSION['user_nama'] ?? '') . '</span>
             </div>
         </div>
     </header>';
     
-    // Area konten yang bisa di-scroll
-    echo '<div class="flex-1 overflow-y-auto">';
-    echo '<div class="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">';
+    // Main content
+    echo '<main id="main-content">';
+    echo '<div class="max-w-[1600px] mx-auto w-full">';
 }
 
 // Masukkan konten halaman
@@ -148,7 +124,6 @@ require_once $file_path;
 
 if ($needs_layout) {
     echo '</div>'; // Tutup div max-width wrapper
-    echo '</div>'; // Tutup div scroll area
     echo '</main>'; // Tutup main
     require_once 'includes/footer.php';
 }

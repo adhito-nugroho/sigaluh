@@ -97,31 +97,32 @@ if (!empty($user_ids)) {
 }
 ?>
 
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Data Penyuluh Kehutanan</h1>
-        <p class="text-xs font-medium text-neutral-500 mt-1">Daftar tenaga fungsional penyuluh kehutanan dan alokasi wilayah binaan.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Data Penyuluh Kehutanan</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Daftar tenaga fungsional penyuluh kehutanan dan alokasi wilayah binaan.</p>
     </div>
-    <div class="mt-4 sm:mt-0">
+    <div>
         <?php if ($role === 'admin'): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form" class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all">
-            <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i> Tambah Penyuluh
+        <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form" class="btn btn-primary">
+            <span class="material-symbols-outlined">person_add</span> Tambah Penyuluh
         </a>
         <?php endif; ?>
     </div>
 </div>
 
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6">
+<div class="card mb-4">
+    <div class="card-body p-3">
     <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <input type="hidden" name="page" value="penyuluh">
-        
-        <div class="relative flex-1">
-            <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
-            <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama penyuluh atau NIP..." class="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-xs focus:ring-1 focus:ring-primary-600 focus:border-primary-600 outline-none">
+
+        <div class="position-relative flex-1">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-outline);position:absolute;left:10px;top:50%;transform:translateY(-50%);">search</span>
+            <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama penyuluh atau NIP..." class="form-control form-control-sm" style="padding-left:34px;">
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <select name="bulan" class="text-xs font-semibold border border-neutral-200 rounded-lg px-3 py-2 bg-white focus:border-primary-600 outline-none">
+        <div class="flex flex-wrap align-items-center gap-2">
+            <select name="bulan" class="form-select form-select-sm">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
                     <option value="<?= sprintf('%02d', $m) ?>" <?= $f_bln == sprintf('%02d', $m) ? 'selected' : '' ?>>
                         <?= get_bulan_indo($m) ?>
@@ -129,87 +130,87 @@ if (!empty($user_ids)) {
                 <?php endfor; ?>
             </select>
 
-            <select name="tahun" class="text-xs font-semibold border border-neutral-200 rounded-lg px-3 py-2 bg-white focus:border-primary-600 outline-none">
+            <select name="tahun" class="form-select form-select-sm">
                 <?php for ($y = date('Y'); $y >= date('Y') - 4; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_thn == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
 
-            <select name="sort" class="text-xs font-semibold border border-neutral-200 rounded-lg px-3 py-2 bg-white focus:border-primary-600 outline-none">
+            <select name="sort" class="form-select form-select-sm">
                 <option value="waktu_desc" <?= $f_sort === 'waktu_desc' ? 'selected' : '' ?>>Waktu Tertinggi</option>
                 <option value="waktu_asc" <?= $f_sort === 'waktu_asc' ? 'selected' : '' ?>>Waktu Terendah</option>
                 <option value="nama_asc" <?= $f_sort === 'nama_asc' ? 'selected' : '' ?>>Nama A-Z</option>
             </select>
 
-            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-lg text-xs font-bold transition-colors shadow-sm">
-                Filter
+            <button type="submit" class="btn btn-primary btn-sm">
+                <span class="material-symbols-outlined" style="font-size:16px;">filter_alt</span> Filter
             </button>
 
             <?php if (!empty($f_q) || $f_bln != date('m') || $f_thn != date('Y') || $f_sort != 'waktu_desc'): ?>
-                <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="px-3 py-2 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-200 transition-colors">Reset</a>
+                <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="btn btn-outline-secondary btn-sm">Reset</a>
             <?php endif; ?>
         </div>
     </form>
+    </div>
 </div>
 
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-100">
-            <thead class="bg-neutral-50/50">
+<div class="card mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
                 <tr>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Nama / NIP</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Jabatan / Golongan</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Wilayah Kerja Binaan</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Capaian Target Waktu (Bulan Ini)</th>
-                    <th class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Status</th>
+                    <th>Nama / NIP</th>
+                    <th>Jabatan / Golongan</th>
+                    <th>Wilayah Kerja Binaan</th>
+                    <th>Capaian Target Waktu (Bulan Ini)</th>
+                    <th>Status</th>
                     <?php if ($role === 'admin'): ?>
-                    <th class="px-6 py-3.5 text-right text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Aksi</th>
+                    <th class="text-end">Aksi</th>
                     <?php endif; ?>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-slate-100">
+            <tbody>
                 <?php if (empty($users_list)): ?>
                 <tr>
-                    <td colspan="<?= $role === 'admin' ? 6 : 5 ?>" class="px-6 py-8 text-center text-neutral-500 text-sm">
+                    <td colspan="<?= $role === 'admin' ? 6 : 5 ?>" class="text-center py-4 text-muted text-sm">
                         Data penyuluh tidak ditemukan.
                     </td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($users_list as $row): ?>
-                    <tr class="hover:bg-neutral-50/50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-xl bg-primary-100 flex items-center justify-center text-primary-700 font-bold border border-primary-200/60">
-                                        <?= strtoupper(substr($row['nama'], 0, 1)) ?>
-                                    </div>
+                    <tr>
+                        <td class="whitespace-nowrap">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon-wrap primary" style="width:38px;height:38px;font-size:15px;">
+                                    <?= strtoupper(substr($row['nama'], 0, 1)) ?>
                                 </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-bold text-neutral-900"><?= e($row['nama']) ?></div>
-                                    <div class="text-xs font-mono text-neutral-500"><?= e($row['nip']) ?></div>
+                                <div class="ml-3">
+                                    <div class="text-sm fw-bold" style="color:var(--md-sys-color-on-surface);"><?= e($row['nama']) ?></div>
+                                    <div class="text-xs font-mono text-muted"><?= e($row['nip']) ?></div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-xs font-semibold text-neutral-900"><?= e($row['jabatan'] ?: '-') ?></div>
-                            <div class="text-xs text-neutral-500"><?= e($row['pangkat_golongan'] ?: '-') ?></div>
+                        <td class="whitespace-nowrap">
+                            <div class="text-xs fw-semibold" style="color:var(--md-sys-color-on-surface);"><?= e($row['jabatan'] ?: '-') ?></div>
+                            <div class="text-xs text-muted"><?= e($row['pangkat_golongan'] ?: '-') ?></div>
                         </td>
-                        <td class="px-6 py-4">
-                            <?php 
+                        <td>
+                            <?php
                             $uid = $row['id'];
                             $w_items = $wilayah_map[$uid] ?? [];
                             ?>
                             <?php if (empty($w_items)): ?>
-                                <span class="text-xs text-neutral-400 italic">Belum diatur</span>
+                                <span class="text-xs text-muted fst-italic">Belum diatur</span>
                             <?php else: ?>
-                                <div class="space-y-1 max-w-xs">
+                                <div class="space-y-1" style="max-width:320px;">
                                     <?php foreach ($w_items as $item): ?>
                                         <div class="text-xs">
-                                            <span class="font-bold text-neutral-800">Kec. <?= e($item['kecamatan_nama']) ?></span>
+                                            <span class="fw-bold" style="color:var(--md-sys-color-on-surface);">Kec. <?= e($item['kecamatan_nama']) ?></span>
                                             <?php if ($item['all_desas']): ?>
-                                                <span class="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-semibold ml-1">Seluruh Desa</span>
+                                                <span class="badge badge-success" style="font-size:10px;">Seluruh Desa</span>
                                             <?php else: ?>
-                                                <span class="text-[10px] text-neutral-600 block pl-2 font-medium">
+                                                <span class="text-[10px] text-muted d-block pl-2 fw-medium">
                                                     - <?= e(implode(', ', $item['desas'])) ?>
                                                 </span>
                                             <?php endif; ?>
@@ -218,31 +219,31 @@ if (!empty($user_ids)) {
                                 </div>
                             <?php endif; ?>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <?php 
+                        <td class="whitespace-nowrap">
+                            <?php
                             $cur_menit = (int)($row['total_durasi_bulan_ini'] ?? 0);
                             $cur_jam = round($cur_menit / 60, 1);
                             $cur_pct = min(100, round(($cur_menit / 6750) * 100, 1));
                             ?>
-                            <div class="flex items-center justify-between text-xs font-bold mb-1">
-                                <span class="text-neutral-900"><?= number_format($cur_menit, 0, ',', '.') ?> Mnt (<?= $cur_jam ?> Jam)</span>
-                                <span class="<?= $cur_pct >= 100 ? 'text-success-700 font-black' : 'text-accent-600 font-bold' ?>"><?= $cur_pct ?>%</span>
+                            <div class="d-flex align-items-center justify-content-between gap-2 text-xs fw-bold mb-1">
+                                <span style="color:var(--md-sys-color-on-surface);"><?= number_format($cur_menit, 0, ',', '.') ?> Mnt (<?= $cur_jam ?> Jam)</span>
+                                <span class="<?= $cur_pct >= 100 ? 'badge badge-success' : 'badge badge-primary' ?>" style="font-size:10px;"><?= $cur_pct ?>%</span>
                             </div>
-                            <div class="w-36 h-2 bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
-                                <div class="h-full <?= $cur_pct >= 100 ? 'bg-success-500' : 'bg-gradient-to-r from-primary-600 to-accent-500' ?> rounded-full" style="width: <?= $cur_pct ?>%"></div>
+                            <div class="progress" style="width:144px;height:8px;">
+                                <div class="progress-bar<?= $cur_pct >= 100 ? '' : ' progress-bar-primary' ?>" style="width:<?= $cur_pct ?>%"></div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="whitespace-nowrap">
                             <?php if ($row['status_aktif']): ?>
-                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70 inline-flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5"></span>Aktif</span>
+                                <span class="badge badge-success"><span class="w-1.5 h-1.5 rounded-full d-inline-block me-1" style="background:var(--md-sys-color-tertiary);"></span>Aktif</span>
                             <?php else: ?>
-                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 border border-rose-200/70 inline-flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-rose-600 mr-1.5"></span>Nonaktif</span>
+                                <span class="badge badge-danger"><span class="w-1.5 h-1.5 rounded-full d-inline-block me-1" style="background:var(--md-sys-color-error);"></span>Nonaktif</span>
                             <?php endif; ?>
                         </td>
                         <?php if ($role === 'admin'): ?>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form&id=<?= $row['id'] ?>" class="text-warning-600 hover:text-warning-900 bg-warning-50 p-2 rounded-xl border border-warning-200/60 inline-flex items-center mr-2 transition-all" title="Edit Penyuluh & Wilayah">
-                                <i data-lucide="edit" class="w-4 h-4"></i>
+                        <td class="whitespace-nowrap text-end">
+                            <a href="<?= BASE_URL ?>/index.php?page=penyuluh/form&id=<?= $row['id'] ?>" class="btn-icon" title="Edit Penyuluh & Wilayah">
+                                <span class="material-symbols-outlined">edit</span>
                             </a>
                         </td>
                         <?php endif; ?>
@@ -251,24 +252,25 @@ if (!empty($user_ids)) {
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 
     <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
-    <div class="px-6 py-4 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-50/50">
-        <div class="text-xs sm:text-sm text-neutral-500 font-medium">
-            Menampilkan <span class="font-bold text-neutral-800"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="font-bold text-neutral-800"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="font-bold text-neutral-800"><?= $total_rows ?></span> data
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-muted" style="font-size:12.5px;">
+            Menampilkan <span class="fw-bold"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
         </div>
-        <div class="flex items-center gap-1 flex-wrap justify-center">
-            <?php 
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+            <?php
             $query_params = $_GET;
-            
-            if ($page_num > 1): 
+
+            if ($page_num > 1):
                 $query_params['p'] = $page_num - 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Sebelumnya">
-                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
-                    <span class="hidden sm:inline">Sebelumnya</span>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Sebelumnya">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                    <span class="d-none sm:inline">Sebelumnya</span>
                 </a>
             <?php endif; ?>
 
@@ -279,37 +281,37 @@ if (!empty($user_ids)) {
             if ($start_p > 1):
                 $query_params['p'] = 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all">1</a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon">1</a>
                 <?php if ($start_p > 2): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php for ($i = $start_p; $i <= $end_p; $i++): 
+            <?php for ($i = $start_p; $i <= $end_p; $i++):
                 $query_params['p'] = $i;
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all <?= $is_active ? 'bg-primary-700 text-white shadow-sm shadow-primary-500/20' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100' ?>">
+                <a href="<?= $link ?>" class="btn-icon <?= $is_active ? '' : 'd-none' ?>" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
 
             <?php if ($end_p < $total_pages): ?>
                 <?php if ($end_p < $total_pages - 1): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
                 <?php $query_params['p'] = $total_pages; ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all"><?= $total_pages ?></a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon"><?= $total_pages ?></a>
             <?php endif; ?>
 
-            <?php 
-            if ($page_num < $total_pages): 
+            <?php
+            if ($page_num < $total_pages):
                 $query_params['p'] = $page_num + 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Selanjutnya">
-                    <span class="hidden sm:inline">Selanjutnya</span>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Selanjutnya">
+                    <span class="d-none sm:inline">Selanjutnya</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
                 </a>
             <?php endif; ?>
         </div>

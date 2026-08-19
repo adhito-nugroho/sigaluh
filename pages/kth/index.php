@@ -40,99 +40,107 @@ $stmt_data->execute($params);
 $kth_list = $stmt_data->fetchAll();
 ?>
 
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Kelompok Tani Hutan (KTH)</h1>
-        <p class="text-sm text-neutral-500 mt-1 font-medium">Kelola master data KTH di wilayah kerja CDK Nganjuk.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Kelompok Tani Hutan (KTH)</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Kelola master data KTH di wilayah kerja CDK Nganjuk.</p>
     </div>
-    <div class="mt-4 sm:mt-0">
-        <a href="<?= BASE_URL ?>/index.php?page=kth/form" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all">
-            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah KTH
+    <div>
+        <a href="<?= BASE_URL ?>/index.php?page=kth/form" class="btn btn-primary">
+            <span class="material-symbols-outlined">add</span> Tambah KTH
         </a>
     </div>
 </div>
 
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-4 mb-6 flex justify-between items-center">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex items-center w-full max-w-md">
-        <input type="hidden" name="page" value="kth">
-        <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama, No SK, ketua..." 
-            class="w-full px-3 py-2 border border-neutral-200 rounded-l-lg text-sm focus:ring-2 focus:ring-primary-500/20 outline-none border-r-0">
-        <button type="submit" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 font-medium py-2 px-4 rounded-r-lg text-sm transition-colors">
-            Cari
-        </button>
-    </form>
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex items-center w-full max-w-md">
+            <input type="hidden" name="page" value="kth">
+            <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari nama, No SK, ketua..." class="form-control form-control-sm" style="border-radius:8px 0 0 8px;">
+            <button type="submit" class="btn btn-outline-secondary btn-sm" style="border-radius:0 8px 8px 0;height:calc(2.25em + 2px);">Cari</button>
+        </form>
+    </div>
 </div>
 
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-100">
-            <thead class="bg-neutral-50/50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Nama KTH</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">No SK</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Ketua</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Desa/Kecamatan</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-neutral-100">
-                <?php if (empty($kth_list)): ?>
-                <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-neutral-500">
-                        <p>Data KTH tidak ditemukan.</p>
-                    </td>
-                </tr>
-                <?php else: ?>
-                    <?php foreach ($kth_list as $row): ?>
-                    <tr class="hover:bg-neutral-50/50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900"><?= e($row['nama']) ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500"><?= e($row['no_sk'] ?: '-') ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500"><?= e($row['ketua'] ?: '-') ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                            <?= e($row['desa_nama']) ?><br>
-                            <span class="text-xs text-neutral-400"><?= e($row['kecamatan_nama']) ?></span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="<?= BASE_URL ?>/index.php?page=kth/detail&id=<?= $row['id'] ?>" class="text-primary-600 hover:text-primary-900 inline-flex items-center mr-3" title="Detail">
-                                <i data-lucide="eye" class="w-4 h-4"></i>
-                            </a>
-                            <a href="<?= BASE_URL ?>/index.php?page=kth/form&id=<?= $row['id'] ?>" class="text-warning-600 hover:text-warning-900 inline-flex items-center mr-3" title="Edit">
-                                <i data-lucide="edit" class="w-4 h-4"></i>
-                            </a>
-                            <?php if ($role === 'admin'): ?>
-                            <form action="<?= BASE_URL ?>/index.php?page=kth/process" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data KTH ini?');">
-                                <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                <button type="submit" class="text-rose-600 hover:text-rose-900 inline-flex items-center" title="Hapus">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </form>
-                            <?php endif; ?>
+<div class="card mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nama KTH</th>
+                        <th>No SK</th>
+                        <th>Ketua</th>
+                        <th>Desa/Kecamatan</th>
+                        <th class="text-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($kth_list)): ?>
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-14 h-14 rounded-2xl mb-3 d-flex align-items-center justify-content-center" style="background:var(--md-sys-color-surface-container);">
+                                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--md-sys-color-outline);">forest</span>
+                                </div>
+                                <p class="text-sm fw-medium text-muted">Data KTH tidak ditemukan.</p>
+                            </div>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php else: ?>
+                        <?php foreach ($kth_list as $row): ?>
+                        <tr>
+                            <td class="whitespace-nowrap fw-medium"><?= e($row['nama']) ?></td>
+                            <td class="whitespace-nowrap text-muted"><?= e($row['no_sk'] ?: '-') ?></td>
+                            <td class="whitespace-nowrap text-muted"><?= e($row['ketua'] ?: '-') ?></td>
+                            <td class="whitespace-nowrap text-muted">
+                                <div><?= e($row['desa_nama']) ?></div>
+                                <div class="text-xs text-muted"><?= e($row['kecamatan_nama']) ?></div>
+                            </td>
+                            <td class="whitespace-nowrap text-end">
+                                <div class="d-flex align-items-center justify-content-end gap-1">
+                                    <a href="<?= BASE_URL ?>/index.php?page=kth/detail&id=<?= $row['id'] ?>" class="btn-icon" title="Detail">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </a>
+                                    <a href="<?= BASE_URL ?>/index.php?page=kth/form&id=<?= $row['id'] ?>" class="btn-icon" title="Edit">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </a>
+                                    <?php if ($role === 'admin'): ?>
+                                    <form action="<?= BASE_URL ?>/index.php?page=kth/process" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data KTH ini?');">
+                                        <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                        <button type="submit" class="btn-icon btn-icon-danger" title="Hapus">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
-    <div class="px-6 py-4 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-50/50">
-        <div class="text-xs sm:text-sm text-neutral-500 font-medium">
-            Menampilkan <span class="font-bold text-neutral-800"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="font-bold text-neutral-800"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="font-bold text-neutral-800"><?= $total_rows ?></span> data
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-muted" style="font-size:12.5px;">
+            Menampilkan <span class="fw-bold"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
         </div>
-        <div class="flex items-center gap-1 flex-wrap justify-center">
-            <?php 
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+            <?php
             $query_params = $_GET;
-            
-            if ($page_num > 1): 
+
+            if ($page_num > 1):
                 $query_params['p'] = $page_num - 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Sebelumnya">
-                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
-                    <span class="hidden sm:inline">Sebelumnya</span>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Sebelumnya">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                    <span class="d-none sm:inline">Sebelumnya</span>
                 </a>
             <?php endif; ?>
 
@@ -143,37 +151,37 @@ $kth_list = $stmt_data->fetchAll();
             if ($start_p > 1):
                 $query_params['p'] = 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all">1</a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon">1</a>
                 <?php if ($start_p > 2): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php for ($i = $start_p; $i <= $end_p; $i++): 
+            <?php for ($i = $start_p; $i <= $end_p; $i++):
                 $query_params['p'] = $i;
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all <?= $is_active ? 'bg-primary-700 text-white shadow-sm shadow-primary-500/20' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100' ?>">
+                <a href="<?= $link ?>" class="btn-icon <?= $is_active ? '' : 'd-none' ?>" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
 
             <?php if ($end_p < $total_pages): ?>
                 <?php if ($end_p < $total_pages - 1): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
                 <?php $query_params['p'] = $total_pages; ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all"><?= $total_pages ?></a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon"><?= $total_pages ?></a>
             <?php endif; ?>
 
-            <?php 
-            if ($page_num < $total_pages): 
+            <?php
+            if ($page_num < $total_pages):
                 $query_params['p'] = $page_num + 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Selanjutnya">
-                    <span class="hidden sm:inline">Selanjutnya</span>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Selanjutnya">
+                    <span class="d-none sm:inline">Selanjutnya</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
                 </a>
             <?php endif; ?>
         </div>

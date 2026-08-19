@@ -54,71 +54,65 @@ $max_lampiran = 3;
 $sisa_slot = $max_lampiran - count($lampiran_list);
 ?>
 
-<div class="mb-6 flex items-center justify-between">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight"><?= $is_edit ? 'Edit Kegiatan' : 'Tambah Kegiatan Baru' ?></h1>
-        <p class="text-sm text-neutral-500 mt-1 font-medium">Isi detail pelaksanaan tugas dan fungsi penyuluh.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;"><?= $is_edit ? 'Edit Kegiatan' : 'Tambah Kegiatan Baru' ?></h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Isi detail pelaksanaan tugas dan fungsi penyuluh.</p>
     </div>
-    <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="inline-flex items-center text-sm font-semibold text-neutral-500 hover:text-neutral-700 transition-colors bg-neutral-50 hover:bg-neutral-100 px-4 py-2 rounded-xl border border-neutral-200/60">
-        <i data-lucide="arrow-left" class="w-4 h-4 mr-1.5"></i> Kembali
+    <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-outline-secondary btn-sm">
+        <span class="material-symbols-outlined">arrow_back</span> Kembali
     </a>
 </div>
 
 <!-- Banner Pulihkan Draft Autosave -->
-<div id="draft_alert_banner" class="hidden mb-6 p-4 bg-accent-50 border border-accent-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm transition-all shadow-sm">
-    <div class="flex items-center gap-3 text-accent-950">
-        <div class="p-2.5 bg-accent-100 text-accent-700 rounded-xl shrink-0">
-            <i data-lucide="file-clock" class="w-5 h-5"></i>
+<div id="draft_alert_banner" class="hidden mb-4 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm transition-all shadow-sm" style="background:var(--md-sys-color-secondary-container);border:1px solid var(--md-sys-color-secondary-container);">
+    <div class="flex items-center gap-3" style="color:var(--md-sys-color-on-secondary-container);">
+        <div class="p-2.5 rounded-xl shrink-0" style="background:var(--md-sys-color-secondary);color:#fff;">
+            <span class="material-symbols-outlined">description</span>
         </div>
         <div>
-            <p class="font-bold text-neutral-900 text-sm">Draft otomatis ditemukan</p>
-            <p class="text-xs text-neutral-600" id="draft_time_text">Tersimpan dari sesi pengisian sebelumnya.</p>
+            <p class="fw-bold text-sm" style="color:var(--md-sys-color-on-surface);">Draft otomatis ditemukan</p>
+            <p class="text-xs" id="draft_time_text" style="color:var(--md-sys-color-on-surface-variant);">Tersimpan dari sesi pengisian sebelumnya.</p>
         </div>
     </div>
     <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-        <button type="button" onclick="restoreDraft()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-95">
-            Pulihkan
-        </button>
-        <button type="button" onclick="dismissDraft()" class="px-4 py-2 bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-200 font-bold text-xs rounded-xl transition-all">
-            Abaikan
-        </button>
+        <button type="button" onclick="restoreDraft()" class="btn btn-primary btn-sm">Pulihkan</button>
+        <button type="button" onclick="dismissDraft()" class="btn btn-outline-secondary btn-sm">Abaikan</button>
     </div>
 </div>
 
 <!-- Progress Indicator (4 Section) -->
-<div class="bg-white rounded-2xl border border-neutral-200/60 p-4 mb-6 shadow-card">
+<div class="card p-3 mb-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
-            <span class="p-1.5 bg-primary-100 text-primary-700 rounded-lg">
-                <i data-lucide="list-checks" class="w-4 h-4"></i>
+            <span class="stat-icon-wrap primary" style="width:30px;height:30px;">
+                <span class="material-symbols-outlined" style="font-size:18px;">fact_check</span>
             </span>
-            <span class="text-xs font-bold text-neutral-900">Kemajuan Pengisian Formulir</span>
+            <span class="text-xs fw-bold" style="color:var(--md-sys-color-on-surface);">Kemajuan Pengisian Formulir</span>
         </div>
-        <span id="progress_badge" class="text-xs font-extrabold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-lg w-fit">
-            Langkah 1 dari 4 Aktif
-        </span>
+        <span id="progress_badge" class="text-xs fw-bold badge badge-primary w-fit">Langkah 1 dari 4 Aktif</span>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-        <div id="step_indicator_1" class="p-2.5 rounded-xl border border-primary-300 bg-primary-50/60 font-semibold text-primary-900 flex items-center justify-between">
+        <div id="step_indicator_1" class="p-2.5 rounded-xl border flex items-center justify-between" style="border-color:var(--md-sys-color-primary);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
             <span class="truncate">1. Info Dasar</span>
-            <span id="step_badge_1" class="text-[10px] px-1.5 py-0.5 rounded bg-primary-200 text-primary-900 font-bold">Wajib</span>
+            <span id="step_badge_1" class="text-[10px] px-1.5 py-0.5 rounded fw-bold">Wajib</span>
         </div>
-        <div id="step_indicator_2" class="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between">
+        <div id="step_indicator_2" class="p-2.5 rounded-xl border flex items-center justify-between" style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);">
             <span class="truncate">2. Uraian</span>
-            <span id="step_badge_2" class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold">Belum</span>
+            <span id="step_badge_2" class="text-[10px] px-1.5 py-0.5 rounded fw-bold">Belum</span>
         </div>
-        <div id="step_indicator_3" class="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between">
+        <div id="step_indicator_3" class="p-2.5 rounded-xl border flex items-center justify-between" style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);">
             <span class="truncate">3. Hasil &amp; Evaluasi</span>
-            <span id="step_badge_3" class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold">Belum</span>
+            <span id="step_badge_3" class="text-[10px] px-1.5 py-0.5 rounded fw-bold">Belum</span>
         </div>
-        <div id="step_indicator_4" class="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between">
+        <div id="step_indicator_4" class="p-2.5 rounded-xl border flex items-center justify-between" style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);">
             <span class="truncate">4. Lampiran</span>
-            <span id="step_badge_4" class="text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold">Opsional</span>
+            <span id="step_badge_4" class="text-[10px] px-1.5 py-0.5 rounded fw-bold">Opsional</span>
         </div>
     </div>
 </div>
 
-<form action="<?= BASE_URL ?>/index.php?page=kegiatan/process" method="POST" enctype="multipart/form-data" class="space-y-6">
+<form action="<?= BASE_URL ?>/index.php?page=kegiatan/process" method="POST" enctype="multipart/form-data" class="space-y-4">
     <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
     <input type="hidden" name="action" value="<?= $is_edit ? 'update' : 'create' ?>">
     <?php if ($is_edit): ?>
@@ -126,33 +120,30 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
     <?php endif; ?>
 
     <!-- Section 1: Informasi Dasar (Default Terbuka) -->
-    <div id="section_1" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: true }">
-        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                Informasi Dasar
-            </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+    <div id="section_1" class="card mb-4" x-data="{ open: true }">
+        <div class="card-header d-flex justify-content-between align-items-center cursor-pointer" @click="open = !open">
+            <span class="fw-semibold">Informasi Dasar</span>
+            <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-on-surface-variant);transition:transform 0.2s;" :class="{'rotate-180': open}">expand_more</span>
         </div>
-        <div class="p-6" x-show="open">
-            <div id="wilayah_info_banner" class="mb-6 p-3.5 bg-primary-50 border border-primary-100 rounded-xl flex items-center text-xs font-semibold text-primary-800">
-                <i data-lucide="info" class="w-4 h-4 mr-2 text-primary-600 flex-shrink-0"></i>
+        <div class="card-body" x-show="open">
+            <div id="wilayah_info_banner" class="alert alert-info mb-4" style="padding:10px 14px;">
+                <span class="material-symbols-outlined">info</span>
                 <span id="wilayah_info_text">Pilih KTH dari database &rarr; lokasi &amp; sasaran akan terisi otomatis dan wilayah terkunci.</span>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <!-- Aktivitas Harian (Master) -->
-                <div class="md:col-span-2 bg-primary-50/70 p-4.5 rounded-2xl border border-primary-200 shadow-sm">
+                <div class="md:col-span-2 p-4 rounded-2xl border" style="background:var(--md-sys-color-primary-container);border-color:var(--md-sys-color-primary);">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                         <div>
-                            <label class="block text-sm font-bold text-primary-950 flex items-center gap-1.5">
-                                <i data-lucide="sparkles" class="w-4 h-4 text-primary-600"></i>
-                                Aktivitas Harian <span class="text-error-500">*</span>
+                            <label class="form-label mb-0 fw-bold" style="color:var(--md-sys-color-on-primary-container);">
+                                <span class="material-symbols-outlined align-middle" style="font-size:16px;color:var(--md-sys-color-primary);">auto_awesome</span>
+                                Aktivitas Harian <span class="required">*</span>
                             </label>
-                            <p class="text-xs text-primary-700">Pilih dari 96 data standar aktivitas harian ASN Kehutanan Jatim untuk alokasi WPT.</p>
+                            <p class="text-xs mb-0" style="color:var(--md-sys-color-on-primary-container);opacity:0.85;">Pilih dari 96 data standar aktivitas harian ASN Kehutanan Jatim untuk alokasi WPT.</p>
                         </div>
-                        <button type="button" onclick="openPickerModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95">
-                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
-                            Cari / Pilih Aktivitas
+                        <button type="button" onclick="openPickerModal()" class="btn btn-primary btn-sm">
+                            <span class="material-symbols-outlined">search</span> Cari / Pilih Aktivitas
                         </button>
                     </div>
 
@@ -175,73 +166,70 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                     <!-- Interactive Selected Card & Quick Input -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                         <div class="md:col-span-2">
-                            <div id="selected_act_card" onclick="openPickerModal()" class="cursor-pointer bg-white p-3.5 rounded-xl border border-primary-300 hover:border-primary-500 hover:shadow-md transition-all group relative">
+                            <div id="selected_act_card" onclick="openPickerModal()" class="cursor-pointer bg-white p-3.5 rounded-xl border hover:shadow-md transition-all group relative" style="border-color:var(--md-sys-color-primary);">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-xs font-semibold text-primary-600 mb-0.5 flex items-center gap-1">
-                                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-primary-600"></i>
+                                        <div class="text-xs fw-semibold mb-0.5 d-flex align-items-center gap-1" style="color:var(--md-sys-color-primary);">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">verified</span>
                                             <span id="card_satuan_tag">Aktivitas Terpilih</span>
                                         </div>
-                                        <h4 id="card_act_title" class="text-sm font-extrabold text-neutral-900 leading-snug group-hover:text-primary-700 transition-colors">
+                                        <h4 id="card_act_title" class="text-sm fw-bold leading-snug mb-0" style="color:var(--md-sys-color-on-surface);">
                                             -- Klik untuk Pilih Aktivitas Harian --
                                         </h4>
-                                        <p id="card_act_deskripsi" class="text-xs text-neutral-500 mt-1 line-clamp-2 hidden"></p>
+                                        <p id="card_act_deskripsi" class="text-xs text-muted mt-1 line-clamp-2 hidden"></p>
                                     </div>
                                     <div class="shrink-0 text-right">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-100 text-primary-800 text-xs font-bold">
-                                            <i data-lucide="search" class="w-3 h-3"></i> Cari
-                                        </span>
+                                        <span class="badge badge-primary"><span class="material-symbols-outlined" style="font-size:14px;">search</span> Cari</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-primary-900 mb-1">Volume Hasil</label>
-                            <div class="flex items-center space-x-2">
+                            <label class="form-label mb-1" style="color:var(--md-sys-color-on-primary-container);">Volume Hasil</label>
+                            <div class="flex items-center gap-2">
                                 <input type="number" name="volume" id="volume_input" min="1" value="<?= $is_edit ? ($kegiatan['volume'] ?? 1) : 1 ?>" oninput="calculateWptDuration()" required
-                                    class="w-full px-3 py-2.5 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none text-sm font-bold bg-white text-center">
-                                <span id="satuan_badge" class="text-xs font-bold text-primary-800 bg-primary-200/80 px-2.5 py-2.5 rounded-xl whitespace-nowrap">Satuan</span>
+                                    class="form-control text-center fw-bold">
+                                <span id="satuan_badge" class="text-xs fw-bold px-2.5 py-2 rounded-xl whitespace-nowrap" style="background:var(--md-sys-color-primary);color:#fff;">Satuan</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Output Kalkulasi WPT -->
-                    <div class="mt-3 pt-3 border-t border-primary-200/80 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-primary-900">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="clock" class="w-4 h-4 text-primary-600"></i>
+                    <div class="mt-3 pt-3 d-flex flex-wrap align-items-center justify-content-between gap-2 text-xs fw-semibold" style="border-top:1px solid var(--md-sys-color-primary);color:var(--md-sys-color-on-primary-container);">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--md-sys-color-primary);">schedule</span>
                             <span>Estimasi Waktu Standar: <strong id="wpt_single_display">0 Menit</strong> / satuan</span>
                         </div>
-                        <div class="bg-primary-700 text-white px-3 py-1 rounded-lg font-extrabold text-xs shadow-sm">
+                        <div class="px-3 py-1 rounded-lg fw-bold text-xs" style="background:var(--md-sys-color-primary);color:#fff;">
                             Total Durasi: <span id="wpt_total_display">0 Menit (0 Jam)</span>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Kegiatan <span class="text-error-500">*</span></label>
-                    <input type="date" name="tanggal" required value="<?= $is_edit ? $kegiatan['tanggal'] : date('Y-m-d') ?>"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all">
+                    <label class="form-label">Tanggal Kegiatan <span class="required">*</span></label>
+                    <input type="date" name="tanggal" required value="<?= $is_edit ? $kegiatan['tanggal'] : date('Y-m-d') ?>" class="form-control">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kelompok Tani Hutan (KTH)</label>
+                    <label class="form-label">Kelompok Tani Hutan (KTH)</label>
 
                     <!-- Mode toggle -->
-                    <div class="flex items-center mb-2 gap-2" id="kth_mode_toggle">
+                    <div class="d-flex align-items-center mb-2 gap-2" id="kth_mode_toggle">
                         <button type="button" id="btn_kth_db" onclick="setKthMode('db')"
-                            class="px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-primary-600 text-white border-info-600">
-                            <i class="inline-block mr-1">&#x1F4CB;</i> Pilih dari Database KTH
+                            class="btn btn-sm" style="background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);">
+                            <span class="material-symbols-outlined" style="font-size:16px;">database</span> Pilih dari Database KTH
                         </button>
                         <button type="button" id="btn_kth_manual" onclick="setKthMode('manual')"
-                            class="px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700">
-                            <i class="inline-block mr-1">&#x270F;&#xFE0F;</i> Ketik Manual
+                            class="btn btn-outline-secondary btn-sm">
+                            <span class="material-symbols-outlined" style="font-size:16px;">edit</span> Ketik Manual
                         </button>
                     </div>
 
                     <!-- Mode DB: dropdown -->
                     <div id="kth_db_wrap">
-                        <select name="kth_id" id="kth_id" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                        <select name="kth_id" id="kth_id" class="form-select">
                             <option value="">-- Pilih KTH (Opsional) --</option>
                             <?php foreach($kth_list as $k): ?>
                                 <option value="<?= $k['id'] ?>"
@@ -253,7 +241,7 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="text-xs text-slate-400 mt-1">Pilih KTH &rarr; lokasi &amp; sasaran terisi otomatis dan wilayah terkunci.</p>
+                        <p class="text-xs text-muted mt-1">Pilih KTH &rarr; lokasi &amp; sasaran terisi otomatis dan wilayah terkunci.</p>
                     </div>
 
                     <!-- Mode Manual: text input -->
@@ -261,16 +249,15 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                         <input type="text" id="kth_nama_manual_input" name="kth_nama_manual"
                             value="<?= e($is_edit ? ($kegiatan['kth_nama_manual'] ?? '') : '') ?>"
                             placeholder="Contoh: Balai Desa Nganjuk, Kantor Cabang, dll."
-                            class="w-full px-4 py-2.5 border border-warning-200 bg-warning-50/40 rounded-xl focus:ring-4 focus:ring-amber-400/20 focus:border-warning-500 outline-none text-sm transition-all">
-                        <p class="text-xs text-slate-400 mt-1">Isi nama tempat/sasaran. Pilih kabupaten, kecamatan, dan desa secara bebas di bawah.</p>
+                            class="form-control">
+                        <p class="text-xs text-muted mt-1">Isi nama tempat/sasaran. Pilih kabupaten, kecamatan, dan desa secara bebas di bawah.</p>
                     </div>
                 </div>
 
                 <!-- Provinsi: default Jawa Timur, bisa diubah user -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi <span class="text-error-500">*</span></label>
-                    <select id="provinsi_id" name="provinsi_id" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                    <label class="form-label">Provinsi <span class="required">*</span></label>
+                    <select id="provinsi_id" name="provinsi_id" required class="form-select">
                         <option value="">-- Pilih Provinsi --</option>
                         <?php foreach($provinsi_list as $p): ?>
                             <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -280,37 +267,33 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
                 <!-- Kabupaten -->
                 <div id="wilayah_kab_wrap">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kabupaten/Kota <span class="text-error-500">*</span></label>
-                    <select id="kabupaten_id" name="kabupaten_id" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                    <label class="form-label">Kabupaten/Kota <span class="required">*</span></label>
+                    <select id="kabupaten_id" name="kabupaten_id" required class="form-select">
                         <option value="">-- Pilih Kabupaten --</option>
                     </select>
-                    <p id="wilayah_kab_hint" class="text-xs text-slate-400 mt-1 hidden">Kabupaten terisi otomatis dari KTH yang dipilih.</p>
+                    <p id="wilayah_kab_hint" class="text-xs text-muted mt-1 hidden">Kabupaten terisi otomatis dari KTH yang dipilih.</p>
                 </div>
 
                 <!-- Kecamatan -->
                 <div id="wilayah_kec_wrap">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kecamatan <span class="text-error-500">*</span></label>
-                    <select id="kecamatan_id" name="kecamatan_id" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                    <label class="form-label">Kecamatan <span class="required">*</span></label>
+                    <select id="kecamatan_id" name="kecamatan_id" required class="form-select">
                         <option value="">-- Pilih Kecamatan --</option>
                     </select>
                 </div>
 
                 <!-- Desa -->
                 <div id="wilayah_desa_wrap">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Desa/Kelurahan <span class="text-error-500">*</span></label>
-                    <select id="desa_id" name="desa_id" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                    <label class="form-label">Desa/Kelurahan <span class="required">*</span></label>
+                    <select id="desa_id" name="desa_id" required class="form-select">
                         <option value="">-- Pilih Desa --</option>
                     </select>
                 </div>
 
                 <!-- TUSI -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">TUSI <span class="text-error-500">*</span></label>
-                    <select id="tusi_id" name="tusi_id" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                    <label class="form-label">TUSI <span class="required">*</span></label>
+                    <select id="tusi_id" name="tusi_id" required class="form-select">
                         <option value="">-- Pilih TUSI --</option>
                         <?php foreach($tusi_list as $t): ?>
                             <option value="<?= $t['id'] ?>" <?= ($is_edit && $kegiatan['tusi_id'] == $t['id']) ? 'selected' : '' ?>><?= e($t['nama']) ?></option>
@@ -319,9 +302,8 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Kegiatan TUSI <span class="text-error-500">*</span></label>
-                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-white">
+                    <label class="form-label">Kegiatan TUSI <span class="required">*</span></label>
+                    <select id="kegiatan_tusi_id" name="kegiatan_tusi_id" required class="form-select">
                         <option value="">-- Pilih Kegiatan --</option>
                     </select>
                 </div>
@@ -331,43 +313,36 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
     </div>
 
     <!-- Section 2: Uraian Kegiatan (Default Tertutup) -->
-    <div id="section_2" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: false }">
-        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                Uraian Kegiatan
-            </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+    <div id="section_2" class="card mb-4" x-data="{ open: false }">
+        <div class="card-header d-flex justify-content-between align-items-center cursor-pointer" @click="open = !open">
+            <span class="fw-semibold">Uraian Kegiatan</span>
+            <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-on-surface-variant);transition:transform 0.2s;" :class="{'rotate-180': open}">expand_more</span>
         </div>
-        <div class="p-6 space-y-6" x-show="open">
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">TUSI yang Dilaksanakan (Otomatis dari Master) <span class="text-error-500">*</span></label>
-                <textarea id="uraian_kegiatan" name="uraian_kegiatan" required rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all bg-slate-50/80"><?= $is_edit ? e($kegiatan['uraian_kegiatan']) : '' ?></textarea>
+        <div class="card-body" x-show="open">
+
+            <div class="mb-4">
+                <label class="form-label">TUSI yang Dilaksanakan (Otomatis dari Master) <span class="required">*</span></label>
+                <textarea id="uraian_kegiatan" name="uraian_kegiatan" required rows="2" class="form-control"><?= $is_edit ? e($kegiatan['uraian_kegiatan']) : '' ?></textarea>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Substansi Materi (Template dapat diubah)</label>
-                <textarea id="substansi_materi" name="substansi_materi" rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['substansi_materi']) : '' ?></textarea>
+            <div class="mb-4">
+                <label class="form-label">Substansi Materi (Template dapat diubah)</label>
+                <textarea id="substansi_materi" name="substansi_materi" rows="3" class="form-control"><?= $is_edit ? e($kegiatan['substansi_materi']) : '' ?></textarea>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Uraian Tugas / Aktivitas (Detail) <span class="text-error-500">*</span></label>
-                <textarea name="detail_kegiatan" required minlength="5" rows="3" placeholder="Tuliskan uraian tugas/aktivitas secara deskriptif (hindari singkatan singkat tanpa penjelasan)"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
+            <div class="mb-4">
+                <label class="form-label">Uraian Tugas / Aktivitas (Detail) <span class="required">*</span></label>
+                <textarea name="detail_kegiatan" required minlength="5" rows="3" placeholder="Tuliskan uraian tugas/aktivitas secara deskriptif (hindari singkatan singkat tanpa penjelasan)" class="form-control"><?= $is_edit ? e($kegiatan['detail_kegiatan']) : '' ?></textarea>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Sasaran / Peserta yang Hadir</label>
-                    <textarea name="sasaran_hadir" rows="2"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['sasaran_hadir']) : '' ?></textarea>
+                    <label class="form-label">Sasaran / Peserta yang Hadir</label>
+                    <textarea name="sasaran_hadir" rows="2" class="form-control"><?= $is_edit ? e($kegiatan['sasaran_hadir']) : '' ?></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Detail Lokasi (Alamat spesifik)</label>
-                    <textarea name="lokasi" rows="2"
-                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['lokasi']) : '' ?></textarea>
+                    <label class="form-label">Detail Lokasi (Alamat spesifik)</label>
+                    <textarea name="lokasi" rows="2" class="form-control"><?= $is_edit ? e($kegiatan['lokasi']) : '' ?></textarea>
                 </div>
             </div>
 
@@ -375,68 +350,62 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
     </div>
 
     <!-- Section 3: Hasil & Evaluasi (Default Tertutup) -->
-    <div id="section_3" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: false }">
-        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                Hasil &amp; Evaluasi
-            </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+    <div id="section_3" class="card mb-4" x-data="{ open: false }">
+        <div class="card-header d-flex justify-content-between align-items-center cursor-pointer" @click="open = !open">
+            <span class="fw-semibold">Hasil &amp; Evaluasi</span>
+            <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-on-surface-variant);transition:transform 0.2s;" :class="{'rotate-180': open}">expand_more</span>
         </div>
-        <div class="p-6 space-y-6" x-show="open">
-            
-            <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Penjelasan Hasil Pelaksanaan Kegiatan <span class="text-error-500">*</span></label>
-                <textarea name="pelaksanaan_kegiatan" required rows="3"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['pelaksanaan_kegiatan']) : '' ?></textarea>
+        <div class="card-body" x-show="open">
+
+            <div class="mb-4">
+                <label class="form-label">Penjelasan Hasil Pelaksanaan Kegiatan <span class="required">*</span></label>
+                <textarea name="pelaksanaan_kegiatan" required rows="3" class="form-control"><?= $is_edit ? e($kegiatan['pelaksanaan_kegiatan']) : '' ?></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Kendala / Permasalahan</label>
+                <textarea name="permasalahan_kendala" rows="2" class="form-control"><?= $is_edit ? e($kegiatan['permasalahan_kendala']) : '' ?></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Solusi / Pemecahan Masalah</label>
+                <textarea name="solusi" rows="2" class="form-control"><?= $is_edit ? e($kegiatan['solusi']) : '' ?></textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Kendala / Permasalahan</label>
-                <textarea name="permasalahan_kendala" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['permasalahan_kendala']) : '' ?></textarea>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Solusi / Pemecahan Masalah</label>
-                <textarea name="solusi" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['solusi']) : '' ?></textarea>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Kesimpulan &amp; Saran</label>
-                <textarea name="kesimpulan_saran" rows="2"
-                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
+                <label class="form-label">Kesimpulan &amp; Saran</label>
+                <textarea name="kesimpulan_saran" rows="2" class="form-control"><?= $is_edit ? e($kegiatan['kesimpulan_saran']) : '' ?></textarea>
             </div>
 
         </div>
     </div>
 
     <!-- Section Lampiran Foto (Default Tertutup) -->
-    <div id="section_4" class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden" x-data="{ open: false }">
-        <div class="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 cursor-pointer flex justify-between items-center" @click="open = !open">
-            <h2 class="text-lg font-bold text-neutral-900 flex items-center">
-                <i data-lucide="camera" class="w-5 h-5 text-neutral-400 mr-2"></i>
+    <div id="section_4" class="card mb-4" x-data="{ open: false }">
+        <div class="card-header d-flex justify-content-between align-items-center cursor-pointer" @click="open = !open">
+            <span class="fw-semibold d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-on-surface-variant);">photo_camera</span>
                 Lampiran Foto
-                <span class="ml-2 text-xs font-normal text-neutral-400">(Opsional, maks. <?= $max_lampiran ?> foto)</span>
-            </h2>
-            <i data-lucide="chevron-down" class="w-5 h-5 text-neutral-400 transition-transform duration-200" :class="{'rotate-180': open}"></i>
+                <span class="text-muted fw-normal" style="font-size:12px;">(Opsional, maks. <?= $max_lampiran ?> foto)</span>
+            </span>
+            <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-on-surface-variant);transition:transform 0.2s;" :class="{'rotate-180': open}">expand_more</span>
         </div>
-        <div class="p-6" x-show="open">
+        <div class="card-body" x-show="open">
 
             <?php if (!empty($lampiran_list)): ?>
             <!-- Foto yang sudah ada -->
-            <div class="mb-5">
-                <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Foto Terlampir (<?= count($lampiran_list) ?>/<?= $max_lampiran ?>)</p>
+            <div class="mb-4">
+                <p class="text-xs fw-semibold text-muted text-uppercase" style="letter-spacing:0.05em;">Foto Terlampir (<?= count($lampiran_list) ?>/<?= $max_lampiran ?>)</p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <?php foreach ($lampiran_list as $lamp): ?>
-                    <div class="relative group rounded-xl overflow-hidden border border-neutral-200 shadow-sm bg-neutral-100" style="aspect-ratio:16/9;">
+                    <div class="relative group rounded-xl overflow-hidden border" style="border-color:var(--md-sys-color-outline-variant);box-shadow:var(--md-sys-elevation-1);background:var(--md-sys-color-surface-container);aspect-ratio:16/9;">
                         <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $kegiatan['id'] ?>/<?= e($lamp['nama_file']) ?>"
                              alt="Lampiran" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                             <button type="button"
                                 onclick="hapusLampiran(<?= $lamp['id'] ?>, this)"
-                                class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-colors">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5 inline mr-1"></i> Hapus
+                                class="btn btn-danger btn-sm">
+                                <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Hapus
                             </button>
                         </div>
                     </div>
@@ -448,19 +417,20 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
             <?php if ($sisa_slot > 0): ?>
             <!-- Upload foto baru -->
             <div id="upload_foto_area">
-                <label class="block text-sm font-medium text-slate-700 mb-2">
+                <label class="form-label mb-2">
                     <?= $is_edit ? 'Tambah Foto Baru' : 'Upload Foto' ?>
-                    <span class="text-neutral-400 font-normal">(maks. <?= $sisa_slot ?> foto lagi, JPEG/PNG/WEBP, maks. 10MB per foto)</span>
+                    <span class="text-muted fw-normal">(maks. <?= $sisa_slot ?> foto lagi, JPEG/PNG/WEBP, maks. 10MB per foto)</span>
                 </label>
                 <div id="foto_dropzone"
-                     class="border-2 border-dashed border-neutral-300 rounded-xl p-6 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50/30 transition-all"
+                     class="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all"
+                     style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container-low);"
                      onclick="document.getElementById('foto_lampiran_input').click()"
-                     ondragover="event.preventDefault(); this.classList.add('border-primary-500', 'bg-primary-50/40')"
-                     ondragleave="this.classList.remove('border-primary-500', 'bg-primary-50/40')"
+                     ondragover="event.preventDefault(); this.style.borderColor='var(--md-sys-color-primary)'; this.style.background='var(--md-sys-color-primary-container)'"
+                     ondragleave="this.style.borderColor='var(--md-sys-color-outline-variant)'; this.style.background='var(--md-sys-color-surface-container-low)'"
                      ondrop="handleFotoDrop(event)">
-                    <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-neutral-400 mb-2"></i>
-                    <p class="text-sm text-neutral-600 font-medium">Klik atau seret foto ke sini</p>
-                    <p class="text-xs text-neutral-400 mt-1">JPEG, PNG, WEBP &mdash; Otomatis dikompresi sebelum upload (Maks. <?= $sisa_slot ?> foto)</p>
+                    <span class="material-symbols-outlined" style="font-size:36px;color:var(--md-sys-color-outline);">upload</span>
+                    <p class="text-sm fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Klik atau seret foto ke sini</p>
+                    <p class="text-xs text-muted mt-1">JPEG, PNG, WEBP &mdash; Otomatis dikompresi sebelum upload (Maks. <?= $sisa_slot ?> foto)</p>
                 </div>
                 <input type="file" id="foto_lampiran_input" name="foto_lampiran[]"
                        multiple accept="image/jpeg,image/png,image/webp"
@@ -468,11 +438,11 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 
                 <!-- Preview thumbnail foto baru -->
                 <div id="foto_preview_grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3" style="display:none;"></div>
-                <p id="foto_count_info" class="text-xs text-neutral-500 mt-2" style="display:none;"></p>
+                <p id="foto_count_info" class="text-xs text-muted mt-2" style="display:none;"></p>
             </div>
             <?php else: ?>
-            <div class="p-4 bg-warning-50 border border-warning-200 rounded-xl text-sm text-warning-800">
-                <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+            <div class="alert alert-warning mb-0">
+                <span class="material-symbols-outlined">info</span>
                 Batas maksimal <?= $max_lampiran ?> foto sudah tercapai. Hapus foto yang ada untuk menambahkan yang baru.
             </div>
             <?php endif; ?>
@@ -481,17 +451,17 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
     </div>
 
     <!-- Sticky Bottom Action Bar -->
-    <div class="sticky bottom-4 z-30 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-neutral-200/80 shadow-elevated flex flex-wrap items-center justify-between gap-3 transition-all">
-        <div class="flex items-center gap-2 text-xs font-medium text-neutral-500">
-            <span id="autosave_dot" class="inline-block w-2.5 h-2.5 rounded-full bg-neutral-300"></span>
+    <div class="sticky bottom-4 z-30 card p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-2 text-xs fw-medium text-muted">
+            <span id="autosave_dot" class="inline-block" style="width:10px;height:10px;border-radius:50%;background:var(--md-sys-color-outline-variant);"></span>
             <span id="autosave_status_text">Siap disimpan</span>
         </div>
-        <div class="flex items-center space-x-3 ml-auto">
-            <button type="submit" name="action" value="save_draft" class="px-5 py-2.5 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 rounded-xl font-bold transition-all text-sm shadow-sm active:scale-95">
-                <i data-lucide="save" class="w-4 h-4 inline mr-1.5"></i> Simpan Draft
+        <div class="d-flex align-items-center gap-3 ml-auto">
+            <button type="submit" name="action" value="save_draft" class="btn btn-outline-secondary">
+                <span class="material-symbols-outlined">save</span> Simpan Draft
             </button>
-            <button type="submit" name="action" value="submit" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-md shadow-primary-600/20 text-sm active:scale-95">
-                <i data-lucide="send" class="w-4 h-4 inline mr-1.5"></i> Simpan &amp; Ajukan
+            <button type="submit" name="action" value="submit" class="btn btn-primary">
+                <span class="material-symbols-outlined">send</span> Simpan &amp; Ajukan
             </button>
         </div>
     </div>
@@ -499,24 +469,22 @@ $sisa_slot = $max_lampiran - count($lampiran_list);
 </form>
 
 <!-- Modal Konfirmasi Custom Universal -->
-<div id="customConfirmModal" class="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all" onclick="if(event.target===this) closeConfirmModal(false)">
-    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-neutral-200 overflow-hidden transform transition-all p-6">
-        <div class="flex items-start gap-3.5 mb-4">
-            <div id="confirm_modal_icon" class="p-2.5 bg-accent-100 text-accent-700 rounded-xl shrink-0">
-                <i data-lucide="help-circle" class="w-6 h-6"></i>
+<div id="customConfirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 transition-all" style="background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);" onclick="if(event.target===this) closeConfirmModal(false)">
+    <div class="card w-full" style="max-width:28rem;">
+        <div class="card-body">
+            <div class="d-flex gap-3 mb-4">
+                <div id="confirm_modal_icon" class="p-2.5 rounded-xl shrink-0" style="background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);">
+                    <span class="material-symbols-outlined" style="font-size:24px;">help</span>
+                </div>
+                <div>
+                    <h3 id="confirm_modal_title" class="fw-bold text-base" style="color:var(--md-sys-color-on-surface);">Konfirmasi</h3>
+                    <p id="confirm_modal_message" class="text-xs text-muted mt-1 fw-medium" style="line-height:1.6;"></p>
+                </div>
             </div>
-            <div>
-                <h3 id="confirm_modal_title" class="text-base font-extrabold text-neutral-900 leading-tight">Konfirmasi</h3>
-                <p id="confirm_modal_message" class="text-xs text-neutral-600 mt-1.5 font-medium leading-relaxed"></p>
+            <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top" style="border-color:var(--md-sys-color-outline-variant);">
+                <button type="button" id="confirm_modal_btn_cancel" onclick="closeConfirmModal(false)" class="btn btn-outline-secondary btn-sm">Batal</button>
+                <button type="button" id="confirm_modal_btn_action" onclick="closeConfirmModal(true)" class="btn btn-primary btn-sm">Timpa</button>
             </div>
-        </div>
-        <div class="flex justify-end items-center gap-2.5 mt-6 pt-3 border-t border-neutral-100">
-            <button type="button" id="confirm_modal_btn_cancel" onclick="closeConfirmModal(false)" class="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-xs rounded-xl transition-colors">
-                Batal
-            </button>
-            <button type="button" id="confirm_modal_btn_action" onclick="closeConfirmModal(true)" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors">
-                Timpa
-            </button>
         </div>
     </div>
 </div>
@@ -529,16 +497,15 @@ function showCustomConfirm(options) {
     const title = options.title || 'Konfirmasi';
     const message = options.message || '';
     const confirmText = options.confirmText || 'Ya, Lanjutkan';
-    const btnClass = options.confirmClass || 'bg-primary-600 hover:bg-primary-700 text-white';
+    const btnClass = options.confirmClass || 'btn btn-primary';
 
     document.getElementById('confirm_modal_title').textContent = title;
     document.getElementById('confirm_modal_message').textContent = message;
     const btnAction = document.getElementById('confirm_modal_btn_action');
     btnAction.textContent = confirmText;
-    btnAction.className = 'px-4 py-2 font-bold text-xs rounded-xl shadow-sm transition-colors ' + btnClass;
+    btnAction.className = btnClass;
 
     document.getElementById('customConfirmModal').classList.remove('hidden');
-    if (window.lucide) lucide.createIcons();
 
     return new Promise((resolve) => {
         confirmModalResolver = resolve;
@@ -861,8 +828,11 @@ document.addEventListener('DOMContentLoaded', function() {
             kthSel.disabled = true;
             kthSel.value    = '';
             manInp.disabled = false;
-            btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-warning-500 text-white border-warning-500';
-            btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
+            btnMan.className = 'btn btn-sm';
+            btnMan.style.background = 'var(--md-sys-color-primary)';
+            btnMan.style.color = '#fff';
+            btnMan.style.borderColor = 'var(--md-sys-color-primary)';
+            btnDb.className  = 'btn btn-outline-secondary btn-sm';
 
             setWilayahLocked(false);
             var currentKab = kabSelect.value;
@@ -878,8 +848,11 @@ document.addEventListener('DOMContentLoaded', function() {
             kthSel.disabled = false;
             manInp.disabled = true;
             manInp.value    = '';
-            btnDb.className  = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-primary-600 text-white border-info-600';
-            btnMan.className = 'px-3 py-1 text-xs font-semibold rounded-lg border transition-all bg-white text-slate-600 border-slate-300 hover:border-info-400 hover:text-primary-700';
+            btnDb.className  = 'btn btn-sm';
+            btnDb.style.background = 'var(--md-sys-color-primary)';
+            btnDb.style.color = '#fff';
+            btnDb.style.borderColor = 'var(--md-sys-color-primary)';
+            btnMan.className = 'btn btn-outline-secondary btn-sm';
 
             setWilayahLocked(false);
             kabSelect.innerHTML  = '<option value="">-- Pilih Kabupaten (dari KTH) --</option>';
@@ -907,15 +880,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var satBadge   = document.getElementById('satuan_badge');
         var singleDisp = document.getElementById('wpt_single_display');
         var totalDisp  = document.getElementById('wpt_total_display');
-        var infoBox    = document.getElementById('act_info_box');
-        var deskText   = document.getElementById('act_deskripsi_text');
-        var objText    = document.getElementById('act_objek_text');
 
         if (!actSelect || !actSelect.value) {
             satBadge.textContent   = 'Satuan';
             singleDisp.textContent = '0 Menit';
             totalDisp.textContent  = '0 Menit (0 Jam)';
-            if (infoBox) infoBox.classList.add('hidden');
             updateProgressIndicator();
             return;
         }
@@ -934,14 +903,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var totalMenit = wpt * Math.max(1, vol);
         var totalJam   = (totalMenit / 60).toFixed(1);
         totalDisp.textContent = totalMenit + ' Menit (' + totalJam + ' Jam)';
-
-        if (infoBox && (deskripsi || objek)) {
-            if (deskText) deskText.textContent = deskripsi ? '📌 Deskripsi: ' + deskripsi : '';
-            if (objText) objText.textContent = objek ? '📦 Objek Kerja: ' + objek : '';
-            infoBox.classList.remove('hidden');
-        } else if (infoBox) {
-            infoBox.classList.add('hidden');
-        }
 
         var uraianEl = document.getElementsByName('uraian_kegiatan')[0];
         if (uraianEl && !uraianEl.value) {
@@ -967,9 +928,8 @@ async function previewFotoLampiran(input) {
 
     var grid = document.getElementById('foto_preview_grid');
     var info = document.getElementById('foto_count_info');
-    grid.innerHTML = '<div class="col-span-full py-4 text-xs font-semibold text-neutral-500 flex items-center justify-center gap-2"><i data-lucide="loader" class="w-4 h-4 animate-spin text-primary-600"></i> Mengompresi &amp; menyiapkan gambar...</div>';
+    grid.innerHTML = '<div class="col-span-full py-4 text-xs fw-semibold text-muted d-flex align-items-center justify-content-center gap-2"><span class="material-symbols-outlined" style="font-size:16px;">progress_activity</span> Mengompresi &amp; menyiapkan gambar...</div>';
     grid.style.display = 'grid';
-    if (window.lucide) lucide.createIcons();
 
     // Jalankan kompresi client-side
     var compressedFiles = await Promise.all(rawFiles.map(f => compressImageFile(f)));
@@ -1007,7 +967,8 @@ async function previewFotoLampiran(input) {
 
 async function handleFotoDrop(event) {
     event.preventDefault();
-    event.currentTarget.classList.remove('border-primary-500', 'bg-primary-50/40');
+    event.currentTarget.style.borderColor = 'var(--md-sys-color-outline-variant)';
+    event.currentTarget.style.background = 'var(--md-sys-color-surface-container-low)';
     var input = document.getElementById('foto_lampiran_input');
     var dropped = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('image/'));
     if (dropped.length === 0) return;
@@ -1025,7 +986,7 @@ async function hapusLampiran(lampId, btn) {
         title: 'Hapus Foto Lampiran?',
         message: 'Foto ini akan ditandai untuk dihapus dari server saat Anda menyimpan form.',
         confirmText: 'Ya, Hapus',
-        confirmClass: 'bg-error-600 hover:bg-error-700 text-white'
+        confirmClass: 'btn btn-danger'
     });
 
     if (!confirmDelete) return;
@@ -1068,7 +1029,7 @@ function triggerAutosave() {
         const dot = document.getElementById('autosave_dot');
         const text = document.getElementById('autosave_status_text');
         if (dot && text) {
-            dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-success-500';
+            dot.style.background = 'var(--md-sys-color-primary)';
             const now = new Date();
             text.textContent = 'Tersimpan otomatis (' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ')';
         }
@@ -1090,7 +1051,6 @@ function checkSavedDraft() {
             const savedDate = new Date(draft._saved_at);
             timeText.textContent = 'Draft tersimpan pada ' + savedDate.toLocaleDateString('id-ID') + ' ' + savedDate.toLocaleTimeString('id-ID');
             banner.classList.remove('hidden');
-            if (window.lucide) lucide.createIcons();
         }
     } catch(e) {
         console.error('Check draft error:', e);
@@ -1159,12 +1119,20 @@ function updateProgressIndicator() {
         const b = document.getElementById(badgeId);
         if (!el || !b) return;
         if (complete) {
-            el.className = 'p-2.5 rounded-xl border border-success-300 bg-success-50/60 font-semibold text-success-900 flex items-center justify-between';
-            b.className = 'text-[10px] px-1.5 py-0.5 rounded bg-success-200 text-success-900 font-bold';
-            b.textContent = 'Lengkap ✓';
+            el.className = 'p-2.5 rounded-xl border d-flex align-items-center justify-content-between fw-semibold';
+            el.style.borderColor = 'var(--md-sys-color-primary)';
+            el.style.background = 'var(--md-sys-color-primary-container)';
+            el.style.color = 'var(--md-sys-color-on-primary-container)';
+            b.className = 'badge badge-primary';
+            b.style.fontSize = '10px';
+            b.textContent = 'Lengkap';
         } else {
-            el.className = 'p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/80 font-medium text-neutral-500 flex items-center justify-between';
-            b.className = 'text-[10px] px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-600 font-bold';
+            el.className = 'p-2.5 rounded-xl border d-flex align-items-center justify-content-between fw-medium';
+            el.style.borderColor = 'var(--md-sys-color-outline-variant)';
+            el.style.background = 'var(--md-sys-color-surface-container)';
+            el.style.color = 'var(--md-sys-color-on-surface-variant)';
+            b.className = 'badge badge-neutral';
+            b.style.fontSize = '10px';
             b.textContent = optional ? 'Opsional' : 'Belum';
         }
     };
@@ -1204,56 +1172,54 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Modal Picker Aktivitas Harian dengan Live Search & Chip Kategori -->
-<div id="pickerModal" class="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-5" onclick="if(event.target===this) closePickerModal()">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl border border-neutral-200 overflow-hidden">
+<div id="pickerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-5" style="background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);" onclick="if(event.target===this) closePickerModal()">
+    <div class="card flex flex-col" style="max-width:42rem;width:100%;max-height:88vh;">
         
         <!-- Header & Search Input -->
-        <div class="p-4 sm:p-5 border-b border-neutral-100 bg-neutral-50/90 shrink-0">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-primary-100 text-primary-700 rounded-xl">
-                        <i data-lucide="list-checks" class="w-5 h-5"></i>
+        <div class="p-4 sm:p-5 border-bottom shrink-0" style="background:var(--md-sys-color-surface-container);border-color:var(--md-sys-color-outline-variant);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="p-2 rounded-xl" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-primary);">
+                        <span class="material-symbols-outlined" style="font-size:20px;">fact_check</span>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold text-neutral-900 leading-tight">Pilih Aktivitas Harian</h3>
-                        <p class="text-xs text-neutral-500 font-medium">96 Standar Aktivitas Kehutanan &amp; ASN Jawa Timur</p>
+                        <h3 class="text-base fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Pilih Aktivitas Harian</h3>
+                        <p class="text-xs text-muted fw-medium mb-0">96 Standar Aktivitas Kehutanan &amp; ASN Jawa Timur</p>
                     </div>
                 </div>
-                <button type="button" onclick="closePickerModal()" class="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200/60 rounded-xl transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <button type="button" onclick="closePickerModal()" class="btn btn-icon" style="border:none;">
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
 
             <!-- Search Bar -->
-            <div class="relative">
-                <i data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <div class="position-relative">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-outline);position:absolute;left:12px;top:50%;transform:translateY(-50%);">search</span>
                 <input type="text" id="picker_search_input" oninput="filterPickerItems()" placeholder="Ketik kata kunci (misal: patroli, KTH, karhutla, laporan, surat, aplikasi)..."
-                    class="w-full pl-10 pr-10 py-2.5 border border-neutral-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none bg-white shadow-sm">
-                <button type="button" id="btn_clear_picker_search" onclick="clearPickerSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600">
-                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    class="form-control" style="padding-left:38px;padding-right:38px;">
+                <button type="button" id="btn_clear_picker_search" onclick="clearPickerSearch()" class="hidden btn btn-icon" style="border:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);">
+                    <span class="material-symbols-outlined" style="font-size:18px;">cancel</span>
                 </button>
             </div>
 
             <!-- Category Chips Filter -->
-            <div class="flex items-center gap-1.5 mt-3 overflow-x-auto pb-1 text-xs no-scrollbar">
-                <button type="button" onclick="setPickerCategory('all', this)" class="chip-cat active-chip px-3 py-1.5 rounded-full font-bold bg-primary-700 text-white whitespace-nowrap transition-all shadow-sm">Semua (<?= count($aktivitas_harian_list) ?>)</button>
-                <button type="button" onclick="setPickerCategory('kehutanan', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">🌲 Kehutanan &amp; Patroli</button>
-                <button type="button" onclick="setPickerCategory('kth', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">👥 KTH &amp; Binaan</button>
-                <button type="button" onclick="setPickerCategory('dokumen', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">📝 Surat &amp; Laporan</button>
-                <button type="button" onclick="setPickerCategory('rapat', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">🤝 Rapat &amp; Koordinasi</button>
-                <button type="button" onclick="setPickerCategory('it', this)" class="chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all">💻 IT &amp; Sistem</button>
+            <div class="d-flex align-items-center gap-1 mt-3 text-xs" style="overflow-x:auto;">
+                <button type="button" onclick="setPickerCategory('all', this)" class="chip-cat active-chip px-3 py-1.5 rounded-pill fw-bold btn btn-sm" style="background:var(--md-sys-color-primary);color:#fff;border:none;white-space:nowrap;">Semua (<?= count($aktivitas_harian_list) ?>)</button>
+                <button type="button" onclick="setPickerCategory('kehutanan', this)" class="chip-cat px-3 py-1.5 rounded-pill fw-semibold btn btn-outline-secondary btn-sm">Kehutanan &amp; Patroli</button>
+                <button type="button" onclick="setPickerCategory('kth', this)" class="chip-cat px-3 py-1.5 rounded-pill fw-semibold btn btn-outline-secondary btn-sm">KTH &amp; Binaan</button>
+                <button type="button" onclick="setPickerCategory('dokumen', this)" class="chip-cat px-3 py-1.5 rounded-pill fw-semibold btn btn-outline-secondary btn-sm">Surat &amp; Laporan</button>
+                <button type="button" onclick="setPickerCategory('rapat', this)" class="chip-cat px-3 py-1.5 rounded-pill fw-semibold btn btn-outline-secondary btn-sm">Rapat &amp; Koordinasi</button>
+                <button type="button" onclick="setPickerCategory('it', this)" class="chip-cat px-3 py-1.5 rounded-pill fw-semibold btn btn-outline-secondary btn-sm">IT &amp; Sistem</button>
             </div>
         </div>
 
         <!-- Scrollable List of Items -->
-        <div id="picker_items_container" class="p-3 sm:p-4 overflow-y-auto space-y-2 flex-1 bg-neutral-50/50">
-            <!-- Dynamically populated -->
-        </div>
+        <div id="picker_items_container" class="p-3 sm:p-4 overflow-y-auto flex-1" style="background:var(--md-sys-color-surface-container-low);"></div>
 
         <!-- Footer -->
-        <div class="p-3 px-5 border-t border-neutral-100 bg-white flex items-center justify-between text-xs text-neutral-500 shrink-0">
-            <span id="picker_count_info" class="font-medium text-neutral-600">Menampilkan seluruh data</span>
-            <button type="button" onclick="closePickerModal()" class="px-4 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-xl transition-colors">Tutup</button>
+        <div class="p-3 px-5 border-top d-flex align-items-center justify-content-between text-xs text-muted" style="border-color:var(--md-sys-color-outline-variant);">
+            <span id="picker_count_info" class="fw-medium">Menampilkan seluruh data</span>
+            <button type="button" onclick="closePickerModal()" class="btn btn-outline-secondary btn-sm">Tutup</button>
         </div>
     </div>
 </div>
@@ -1270,7 +1236,6 @@ function openPickerModal() {
         document.getElementById('picker_search_input').focus();
     }, 50);
     renderPickerItems();
-    if (window.lucide) lucide.createIcons();
 }
 
 function closePickerModal() {
@@ -1286,9 +1251,12 @@ function clearPickerSearch() {
 function setPickerCategory(cat, btn) {
     currentCategory = cat;
     document.querySelectorAll('.chip-cat').forEach(function(c) {
-        c.className = 'chip-cat px-3 py-1.5 rounded-full font-semibold bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100 whitespace-nowrap transition-all';
+        c.className = 'chip-cat px-3 py-1.5 rounded-pill fw-semibold btn btn-outline-secondary btn-sm';
     });
-    btn.className = 'chip-cat active-chip px-3 py-1.5 rounded-full font-bold bg-primary-700 text-white whitespace-nowrap transition-all shadow-sm';
+    btn.className = 'chip-cat active-chip px-3 py-1.5 rounded-pill fw-bold btn btn-sm';
+    btn.style.background = 'var(--md-sys-color-primary)';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
     renderPickerItems();
 }
 
@@ -1337,42 +1305,44 @@ function renderPickerItems() {
     countInfo.textContent = 'Menampilkan ' + filtered.length + ' dari ' + allAktivitasData.length + ' aktivitas';
 
     if (filtered.length === 0) {
-        container.innerHTML = '<div class="p-8 text-center text-neutral-400 font-medium bg-white rounded-xl border border-neutral-200"><i data-lucide="search-x" class="w-8 h-8 mx-auto mb-2 text-neutral-300"></i>Tidak ada aktivitas harian yang cocok dengan pencarian.</div>';
-        if (window.lucide) lucide.createIcons();
+        container.innerHTML = '<div class="p-8 text-center text-muted fw-medium card"><span class="material-symbols-outlined" style="font-size:32px;color:var(--md-sys-color-outline);margin:0 auto 8px;">search_off</span>Tidak ada aktivitas harian yang cocok dengan pencarian.</div>';
         return;
     }
 
     filtered.forEach(function(item) {
         var isSelected = (String(item.id) === String(selectedId));
         var card = document.createElement('div');
-        card.className = 'p-3.5 bg-white hover:bg-primary-50/50 rounded-xl border ' + (isSelected ? 'border-primary-600 bg-primary-50/80 shadow-sm' : 'border-neutral-200/80 hover:border-primary-300') + ' cursor-pointer transition-all flex items-start justify-between gap-3 group';
+        card.className = 'p-3.5 rounded-xl border cursor-pointer transition-all mb-2 d-flex align-items-start justify-content-between gap-3 group';
+        card.style.cssText = isSelected
+            ? 'border-color:var(--md-sys-color-primary);background:var(--md-sys-color-primary-container);box-shadow:var(--md-sys-elevation-1);'
+            : 'border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface);';
+        card.onmouseenter = function() { if (!isSelected) { card.style.borderColor = 'var(--md-sys-color-primary)'; card.style.background = 'var(--md-sys-color-primary-container)'; } };
+        card.onmouseleave = function() { if (!isSelected) { card.style.borderColor = 'var(--md-sys-color-outline-variant)'; card.style.background = 'var(--md-sys-color-surface)'; } };
         card.onclick = function() { selectPickerItem(item.id); };
 
         var html = '<div class="flex-1 min-w-0">' +
-            '<div class="flex items-center gap-2 mb-1 flex-wrap">' +
-                '<span class="px-2 py-0.5 bg-primary-100 text-primary-800 text-[11px] font-bold rounded-md">' + escapeHtml(item.satuan) + '</span>' +
-                '<span class="px-2 py-0.5 bg-neutral-100 text-neutral-700 text-[11px] font-bold rounded-md">WPT: ' + item.wpt_menit + ' Mnt (' + (item.wpt_menit/60).toFixed(1) + ' Jam)</span>' +
+            '<div class="d-flex align-items-center gap-2 mb-1 flex-wrap">' +
+                '<span class="badge badge-primary" style="font-size:11px;">' + escapeHtml(item.satuan) + '</span>' +
+                '<span class="badge badge-neutral" style="font-size:11px;">WPT: ' + item.wpt_menit + ' Mnt (' + (item.wpt_menit/60).toFixed(1) + ' Jam)</span>' +
             '</div>' +
-            '<h4 class="text-sm font-bold text-neutral-900 group-hover:text-primary-700 transition-colors">' + escapeHtml(item.nama_aktivitas) + '</h4>';
+            '<h4 class="text-sm fw-bold" style="color:var(--md-sys-color-on-surface);">' + escapeHtml(item.nama_aktivitas) + '</h4>';
 
         if (item.deskripsi) {
-            html += '<p class="text-xs text-neutral-500 mt-1 line-clamp-2 leading-relaxed">' + escapeHtml(item.deskripsi) + '</p>';
+            html += '<p class="text-xs text-muted mt-1" style="line-height:1.6;">' + escapeHtml(item.deskripsi) + '</p>';
         }
         if (item.objek_kerja) {
-            html += '<span class="inline-block text-[11px] text-primary-600 font-semibold mt-1 bg-primary-50 px-2 py-0.5 rounded">📦 Objek: ' + escapeHtml(item.objek_kerja) + '</span>';
+            html += '<span class="badge badge-outline mt-1" style="font-size:11px;color:var(--md-sys-color-primary);">Objek: ' + escapeHtml(item.objek_kerja) + '</span>';
         }
 
         html += '</div>';
 
         if (isSelected) {
-            html += '<div class="shrink-0 text-primary-600 font-bold text-xs flex items-center gap-1 bg-primary-100 px-2.5 py-1 rounded-lg"><i data-lucide="check" class="w-4 h-4"></i> Terpilih</div>';
+            html += '<div class="badge badge-primary d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:14px;">check</span> Terpilih</div>';
         }
 
         card.innerHTML = html;
         container.appendChild(card);
     });
-
-    if (window.lucide) lucide.createIcons();
 }
 
 function selectPickerItem(id) {
@@ -1391,7 +1361,8 @@ function updateSelectedCardDisplay() {
 
     if (!select || !select.value) {
         titleEl.textContent = '-- Klik untuk Pilih Aktivitas Harian --';
-        titleEl.className = 'text-sm font-extrabold text-neutral-400 leading-snug';
+        titleEl.className = 'text-sm fw-bold leading-snug';
+        titleEl.style.color = 'var(--md-sys-color-outline)';
         tagEl.textContent = 'Aktivitas Terpilih';
         deskEl.classList.add('hidden');
         return;
@@ -1405,7 +1376,8 @@ function updateSelectedCardDisplay() {
         var deskripsi = selectedOpt.getAttribute('data-deskripsi') || '';
 
         titleEl.textContent = nama;
-        titleEl.className = 'text-sm font-extrabold text-neutral-900 leading-snug group-hover:text-primary-700 transition-colors';
+        titleEl.className = 'text-sm fw-bold leading-snug';
+        titleEl.style.color = 'var(--md-sys-color-on-surface)';
         tagEl.textContent = satuan ? (satuan + ' • WPT: ' + wpt + ' Menit') : 'Aktivitas Terpilih';
 
         if (deskripsi) {

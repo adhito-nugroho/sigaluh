@@ -142,53 +142,50 @@ if ($is_penyuluh && $has_binaan) {
 }
 ?>
 
-<div class="mb-6 flex items-center justify-between">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight"><?= $is_edit ? 'Edit KTH' : 'Tambah KTH Baru' ?></h1>
-        <p class="text-sm text-neutral-500 mt-1 font-medium">Kelola master data Kelompok Tani Hutan.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;"><?= $is_edit ? 'Edit KTH' : 'Tambah KTH Baru' ?></h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Kelola master data Kelompok Tani Hutan.</p>
     </div>
-    <a href="<?= BASE_URL ?>/index.php?page=kth" class="inline-flex items-center text-sm font-semibold text-neutral-500 hover:text-neutral-700 transition-colors bg-neutral-50 hover:bg-neutral-100 px-4 py-2 rounded-xl border border-neutral-200/60">
-        <i data-lucide="arrow-left" class="w-4 h-4 mr-1.5"></i> Kembali
+    <a href="<?= BASE_URL ?>/index.php?page=kth" class="btn btn-outline-secondary btn-sm">
+        <span class="material-symbols-outlined">arrow_back</span> Kembali
     </a>
 </div>
 
-<div class="bg-white rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
-    <form action="<?= BASE_URL ?>/index.php?page=kth/process" method="POST" class="p-6 space-y-6">
+<div class="card">
+    <form action="<?= BASE_URL ?>/index.php?page=kth/process" method="POST">
+        <div class="card-body">
         <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= $is_edit ? 'update' : 'create' ?>">
         <?php if ($is_edit): ?>
             <input type="hidden" name="id" value="<?= $kth['id'] ?>">
         <?php endif; ?>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Nama Kelompok Tani Hutan (KTH) <span class="text-error-500">*</span></label>
-                <input type="text" name="nama" required value="<?= $is_edit ? e($kth['nama']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Nama Kelompok Tani Hutan (KTH) <span class="required">*</span></label>
+                <input type="text" name="nama" required value="<?= $is_edit ? e($kth['nama']) : '' ?>" class="form-control">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Nama Ketua</label>
-                <input type="text" name="ketua" value="<?= $is_edit ? e($kth['ketua']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Nama Ketua</label>
+                <input type="text" name="ketua" value="<?= $is_edit ? e($kth['ketua']) : '' ?>" class="form-control">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Nomor SK Pengukuhan</label>
-                <input type="text" name="no_sk" value="<?= $is_edit ? e($kth['no_sk']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Nomor SK Pengukuhan</label>
+                <input type="text" name="no_sk" value="<?= $is_edit ? e($kth['no_sk']) : '' ?>" class="form-control">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Tanggal SK</label>
-                <input type="date" name="tanggal_sk" value="<?= $is_edit ? e($kth['tanggal_sk']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Tanggal SK</label>
+                <input type="date" name="tanggal_sk" value="<?= $is_edit ? e($kth['tanggal_sk']) : '' ?>" class="form-control">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Kelas Kelompok</label>
-                <select name="kelas_kelompok" class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+                <label class="form-label">Kelas Kelompok</label>
+                <select name="kelas_kelompok" class="form-select">
                     <option value="">-- Pilih Kelas --</option>
                     <option value="Pemula" <?= ($is_edit && $kth['kelas_kelompok'] === 'Pemula') ? 'selected' : '' ?>>Pemula</option>
                     <option value="Madya" <?= ($is_edit && $kth['kelas_kelompok'] === 'Madya') ? 'selected' : '' ?>>Madya</option>
@@ -197,36 +194,33 @@ if ($is_penyuluh && $has_binaan) {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Jumlah Anggota</label>
-                <input type="number" name="jumlah_anggota" min="0" value="<?= $is_edit ? e($kth['jumlah_anggota']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Jumlah Anggota</label>
+                <input type="number" name="jumlah_anggota" min="0" value="<?= $is_edit ? e($kth['jumlah_anggota']) : '' ?>" class="form-control">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Luas Lahan (Ha)</label>
-                <input type="number" step="0.01" name="luas_lahan_ha" min="0" value="<?= $is_edit ? e($kth['luas_lahan_ha']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Luas Lahan (Ha)</label>
+                <input type="number" step="0.01" name="luas_lahan_ha" min="0" value="<?= $is_edit ? e($kth['luas_lahan_ha']) : '' ?>" class="form-control">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Kontak KTH</label>
-                <input type="text" name="kontak" value="<?= $is_edit ? e($kth['kontak']) : '' ?>"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none">
+                <label class="form-label">Kontak KTH</label>
+                <input type="text" name="kontak" value="<?= $is_edit ? e($kth['kontak']) : '' ?>" class="form-control">
             </div>
 
             <div class="md:col-span-2">
-                <hr class="my-4 border-neutral-200/60">
-                <h3 class="text-sm font-semibold text-neutral-900 mb-2">Wilayah Kedudukan KTH</h3>
-                
+                <hr class="my-4" style="border-color:var(--md-sys-color-outline-variant);">
+                <h3 class="text-sm fw-semibold mb-2" style="color:var(--md-sys-color-on-surface);">Wilayah Kedudukan KTH</h3>
+
                 <?php if ($is_penyuluh): ?>
                     <?php if (!$has_binaan): ?>
-                        <div class="p-3.5 bg-warning-50 border border-warning-200 rounded-xl flex items-start text-xs font-semibold text-warning-900 mb-4 gap-2">
-                            <i data-lucide="alert-triangle" class="w-4 h-4 text-warning-600 flex-shrink-0 mt-0.5"></i>
+                        <div class="alert alert-warning mb-4 d-flex align-items-start gap-2">
+                            <span class="material-symbols-outlined" style="font-size:18px;margin-top:1px;">warning</span>
                             <span>Perhatian: Akun Anda belum memiliki Wilayah Kerja Binaan yang diatur oleh Administrator. Silakan hubungi Administrator untuk menetapkan wilayah binaan Anda.</span>
                         </div>
                     <?php else: ?>
-                        <div class="p-3.5 bg-primary-50 border border-primary-100 rounded-xl flex items-center text-xs font-semibold text-primary-800 mb-4">
-                            <i data-lucide="shield-check" class="w-4 h-4 mr-2 text-primary-600 flex-shrink-0"></i>
+                        <div class="alert alert-info mb-4 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined" style="font-size:18px;">verified_user</span>
                             <span>Pilihan wilayah dibatasi secara otomatis sesuai <b>Wilayah Kerja Binaan</b> Anda (Kecamatan: <?= e(implode(', ', $binaan_kecamatan_names)) ?>).</span>
                         </div>
                     <?php endif; ?>
@@ -234,8 +228,8 @@ if ($is_penyuluh && $has_binaan) {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Provinsi <span class="text-error-500">*</span></label>
-                <select id="provinsi_id" name="provinsi_id" required class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+                <label class="form-label">Provinsi <span class="required">*</span></label>
+                <select id="provinsi_id" name="provinsi_id" required class="form-select">
                     <option value="">-- Pilih Provinsi --</option>
                     <?php foreach($provinsi_list as $p): ?>
                         <option value="<?= $p['id'] ?>" <?= ($selected_provinsi_id == $p['id']) ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
@@ -244,36 +238,37 @@ if ($is_penyuluh && $has_binaan) {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Kabupaten/Kota <span class="text-error-500">*</span></label>
-                <select id="kabupaten_id" name="kabupaten_id" required class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+                <label class="form-label">Kabupaten/Kota <span class="required">*</span></label>
+                <select id="kabupaten_id" name="kabupaten_id" required class="form-select">
                     <option value="">-- Pilih Kabupaten --</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Kecamatan <span class="text-error-500">*</span></label>
-                <select id="kecamatan_id" name="kecamatan_id" required class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+                <label class="form-label">Kecamatan <span class="required">*</span></label>
+                <select id="kecamatan_id" name="kecamatan_id" required class="form-select">
                     <option value="">-- Pilih Kecamatan --</option>
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Desa/Kelurahan <span class="text-error-500">*</span></label>
-                <select id="desa_id" name="desa_id" required class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none bg-white">
+                <label class="form-label">Desa/Kelurahan <span class="required">*</span></label>
+                <select id="desa_id" name="desa_id" required class="form-select">
                     <option value="">-- Pilih Desa --</option>
                 </select>
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-neutral-700 mb-1">Keterangan Tambahan</label>
-                <textarea name="keterangan" rows="3"
-                    class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 outline-none"><?= $is_edit ? e($kth['keterangan']) : '' ?></textarea>
+                <label class="form-label">Keterangan Tambahan</label>
+                <textarea name="keterangan" rows="3" class="form-control"><?= $is_edit ? e($kth['keterangan']) : '' ?></textarea>
             </div>
 
         </div>
+        </div>
 
-        <div class="flex justify-end pt-4 border-t border-neutral-200/60">
-            <button type="submit" class="px-6 py-2.5 bg-primary-700 hover:bg-primary-800 text-white rounded-xl font-bold text-sm transition-all active:scale-95 shadow-sm">
+        <div class="card-footer d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">
+                <span class="material-symbols-outlined"><?= $is_edit ? 'save' : 'add' ?></span>
                 <?= $is_edit ? 'Simpan Perubahan' : 'Tambah KTH' ?>
             </button>
         </div>

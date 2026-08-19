@@ -42,47 +42,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="max-w-2xl mx-auto bg-white rounded-2xl border border-neutral-200/60 shadow-sm p-6 md:p-8">
-    <h2 class="text-2xl font-bold text-neutral-900 mb-6">Ganti Password</h2>
+<div class="card mx-auto" style="max-width:576px;">
+    <div class="card-body">
+    <h2 class="page-title" style="font-size:20px;margin-bottom:24px;">Ganti Password</h2>
     
     <?php if ($error_msg): ?>
-        <div class="mb-6 p-4 bg-error-50 border-l-4 border-error-500 text-error-700 rounded text-sm">
-            <?= e($error_msg) ?>
+        <div class="alert alert-danger mb-4">
+            <span class="material-symbols-outlined">error</span> <?= e($error_msg) ?>
         </div>
     <?php endif; ?>
 
     <?php if ($success_msg): ?>
-        <div class="mb-6 p-4 bg-success-50 border-l-4 border-success-500 text-success-700 rounded text-sm">
-            <?= e($success_msg) ?>
+        <div class="alert alert-success mb-4">
+            <span class="material-symbols-outlined">check_circle</span> <?= e($success_msg) ?>
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="" class="space-y-5">
+    <form method="POST" action="" class="space-y-3">
         <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
         
         <div>
-            <label for="password_lama" class="block text-sm font-medium text-neutral-700 mb-1">Password Lama</label>
-            <input type="password" id="password_lama" name="password_lama" required
-                class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 focus:border-primary-600 outline-none transition-all">
+            <label for="password_lama" class="form-label">Password Lama</label>
+            <input type="password" id="password_lama" name="password_lama" required class="form-control">
         </div>
         
         <div>
-            <label for="password_baru" class="block text-sm font-medium text-neutral-700 mb-1">Password Baru</label>
-            <input type="password" id="password_baru" name="password_baru" required minlength="6"
-                class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 focus:border-primary-600 outline-none transition-all">
+            <label for="password_baru" class="form-label">Password Baru</label>
+            <input type="password" id="password_baru" name="password_baru" required minlength="6" class="form-control">
         </div>
         
         <div>
-            <label for="konfirmasi" class="block text-sm font-medium text-neutral-700 mb-1">Konfirmasi Password Baru</label>
-            <input type="password" id="konfirmasi" name="konfirmasi" required minlength="6"
-                class="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm transition-all focus:ring-2 focus:ring-primary-500/20 focus:border-primary-600 outline-none transition-all">
+            <label for="konfirmasi" class="form-label">Konfirmasi Password Baru</label>
+            <input type="password" id="konfirmasi" name="konfirmasi" required minlength="6" class="form-control">
         </div>
         
-        <div class="pt-4 flex justify-end">
-            <button type="submit" 
-                class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">
-                Simpan Perubahan
-            </button>
+        <div class="pt-3 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
         </div>
     </form>
+    </div>
 </div>

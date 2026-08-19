@@ -176,50 +176,49 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 ?>
 
 <!-- Header Section -->
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold mb-1">
-            Master Data
-        </div>
-        <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Tugas, Pokok dan Fungsi (TUSI)</h1>
-        <p class="text-sm text-neutral-500 font-medium">Kelola daftar seluruh kegiatan TUSI penyuluh kehutanan beserta seksi penanggung jawab.</p>
+        <span class="badge badge-primary mb-1">Master Data</span>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Tugas, Pokok dan Fungsi (TUSI)</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Kelola daftar seluruh kegiatan TUSI penyuluh kehutanan beserta seksi penanggung jawab.</p>
     </div>
-    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-        <button type="button" onclick="openModalSeksiCreate()" class="inline-flex items-center justify-center px-3.5 py-2 text-sm font-semibold rounded-lg text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 shadow-sm transition-colors cursor-pointer">
-            <i data-lucide="layers" class="w-4 h-4 mr-2 text-neutral-500"></i> Kelola Seksi
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button type="button" onclick="openModalSeksiCreate()" class="btn btn-outline-secondary">
+            <span class="material-symbols-outlined">layers</span> Kelola Seksi
         </button>
-        <button type="button" onclick="openModalKegiatanCreate()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-lg text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
-            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah TUSI
+        <button type="button" onclick="openModalKegiatanCreate()" class="btn btn-primary">
+            <span class="material-symbols-outlined">add</span> Tambah TUSI
         </button>
     </div>
 </div>
 
 <!-- Alert Banners -->
 <?php if (!empty($error)): ?>
-    <div class="mb-6 p-4 rounded-xl bg-error-100 border border-error-200 text-error-700 text-sm font-medium flex items-center gap-2">
-        <i data-lucide="alert-circle" class="w-5 h-5 shrink-0"></i> <?= e($error) ?>
+    <div class="alert alert-danger mb-4">
+        <span class="material-symbols-outlined">error</span> <?= e($error) ?>
     </div>
 <?php endif; ?>
 
 <?php if (!empty($success)): ?>
-    <div class="mb-6 p-4 rounded-xl bg-success-100 border border-success-200 text-success-700 text-sm font-medium flex items-center gap-2">
-        <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i> <?= e($success) ?>
+    <div class="alert alert-success mb-4">
+        <span class="material-symbols-outlined">check_circle</span> <?= e($success) ?>
     </div>
 <?php endif; ?>
 
 <!-- Filter & Search Toolbar -->
-<div class="bg-white rounded-xl border border-neutral-200/80 p-4 shadow-card mb-6">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-col md:flex-row items-center justify-between gap-3">
+<div class="card mb-4">
+    <div class="card-body p-3">
+    <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
         <input type="hidden" name="page" value="master/tusi">
 
-        <div class="relative flex-1 w-full">
-            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
-            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari Uraian Kegiatan TUSI..." class="w-full pl-10 pr-4 py-2 rounded-lg text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
+        <div class="position-relative flex-1 w-100">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-outline);position:absolute;left:10px;top:50%;transform:translateY(-50%);">search</span>
+            <input type="text" name="q" value="<?= e($q) ?>" placeholder="Cari Uraian Kegiatan TUSI..." class="form-control" style="padding-left:34px;">
         </div>
 
-        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto">
+        <div class="d-flex flex-wrap align-items-center gap-2 w-100" style="flex:0 0 auto;">
             <!-- Filter Seksi -->
-            <select name="seksi_id" onchange="this.form.submit()" class="px-3 py-2 rounded-lg text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
+            <select name="seksi_id" onchange="this.form.submit()" class="form-select" style="flex:1 1 0;">
                 <option value="0">Semua Seksi</option>
                 <?php foreach ($tusi_list as $t): ?>
                     <option value="<?= $t['id'] ?>" <?= $filter_seksi == $t['id'] ? 'selected' : '' ?>>
@@ -229,80 +228,74 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             </select>
 
             <!-- Filter Status -->
-            <select name="status" onchange="this.form.submit()" class="px-3 py-2 rounded-lg text-sm border border-neutral-200/80 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium text-neutral-700 flex-1 sm:flex-none">
+            <select name="status" onchange="this.form.submit()" class="form-select" style="flex:1 1 0;">
                 <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>Semua Status</option>
                 <option value="active" <?= $status_filter === 'active' ? 'selected' : '' ?>>Aktif</option>
                 <option value="inactive" <?= $status_filter === 'inactive' ? 'selected' : '' ?>>Non-Aktif</option>
             </select>
 
-            <button type="submit" class="px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white text-sm font-bold rounded-lg transition-colors">
-                Filter
-            </button>
+            <button type="submit" class="btn btn-primary">Filter</button>
             <?php if (!empty($q) || $filter_seksi > 0 || $status_filter !== 'all'): ?>
-                <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-semibold rounded-lg transition-colors">
-                    Reset
-                </a>
+                <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="btn btn-outline-secondary">Reset</a>
             <?php endif; ?>
         </div>
     </form>
+    </div>
 </div>
 
 <!-- Data Table Utama TUSI -->
-<div class="bg-white rounded-xl border border-neutral-200/80 shadow-card overflow-hidden mb-6">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+<div class="card mb-4">
+    <div class="card-body p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
             <thead>
-                <tr class="bg-neutral-50/80 border-b border-neutral-200/70 text-[11px] uppercase tracking-wider font-bold text-neutral-500">
-                    <th class="py-3.5 px-4 w-14 text-center">No</th>
-                    <th class="py-3.5 px-4 min-w-[360px]">Kegiatan / Uraian Tugas TUSI</th>
-                    <th class="py-3.5 px-4 w-36 text-center">Seksi</th>
-                    <th class="py-3.5 px-4 w-28 text-center">Status</th>
-                    <th class="py-3.5 px-4 w-32 text-center">Tool</th>
+                <tr>
+                    <th style="width:56px;" class="text-center">No</th>
+                    <th style="min-width:360px;">Kegiatan / Uraian Tugas TUSI</th>
+                    <th class="text-center" style="width:144px;">Seksi</th>
+                    <th class="text-center" style="width:112px;">Status</th>
+                    <th class="text-center" style="width:128px;">Tool</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-neutral-200/60 text-sm">
+            <tbody>
                 <?php if (empty($kegiatan_tusi_list)): ?>
                     <tr>
-                        <td colspan="5" class="py-12 px-4 text-center text-neutral-400">
-                            <i data-lucide="file-x-2" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
-                            <p class="font-medium text-neutral-600">Tidak ada data TUSI yang ditemukan.</p>
-                            <p class="text-xs text-neutral-400 mt-0.5">Coba ubah kata kunci pencarian atau tambah kegiatan TUSI baru.</p>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <span class="material-symbols-outlined" style="font-size:36px;opacity:.5;">description</span>
+                            <p class="fw-medium mb-0" style="color:var(--md-sys-color-on-surface);">Tidak ada data TUSI yang ditemukan.</p>
+                            <p class="text-xs text-muted mt-1 mb-0">Coba ubah kata kunci pencarian atau tambah kegiatan TUSI baru.</p>
                         </td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($kegiatan_tusi_list as $index => $keg): ?>
-                        <tr class="hover:bg-neutral-50/70 transition-colors">
-                            <td class="py-3.5 px-4 text-center font-bold text-neutral-500">
-                                <?= $offset + $index + 1 ?>
-                            </td>
-                            <td class="py-3.5 px-4">
-                                <div class="font-semibold text-neutral-900 leading-relaxed">
+                        <tr>
+                            <td class="text-center fw-bold text-muted"><?= $offset + $index + 1 ?></td>
+                            <td>
+                                <div class="fw-semibold" style="color:var(--md-sys-color-on-surface);line-height:1.6;">
                                     <?= e($keg['uraian_tugas']) ?>
                                 </div>
                                 <?php if (!empty($keg['substansi_materi'])): ?>
-                                    <div class="text-xs text-neutral-500 mt-0.5 font-normal">
-                                        <span class="font-medium text-neutral-400">Substansi:</span> <?= e($keg['substansi_materi']) ?>
+                                    <div class="text-xs text-muted mt-1 fw-normal">
+                                        <span class="fw-medium text-muted">Substansi:</span> <?= e($keg['substansi_materi']) ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3.5 px-4 text-center">
-                                <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-neutral-100 text-neutral-700 border border-neutral-200/80">
-                                    <?= e($keg['seksi_kode']) ?>
-                                </span>
+                            <td class="text-center">
+                                <span class="badge badge-neutral"><?= e($keg['seksi_kode']) ?></span>
                             </td>
-                            <td class="py-3.5 px-4 text-center">
+                            <td class="text-center">
                                 <?php if ($keg['aktif'] == 1): ?>
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-success-50 text-success-700 border border-success-200/60">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span> Aktif
+                                    <span class="badge badge-success">
+                                        <span class="d-inline-block" style="width:6px;height:6px;border-radius:50%;background:var(--md-sys-color-tertiary);"></span> Aktif
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-neutral-100 text-neutral-500 border border-neutral-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span> Non-Aktif
+                                    <span class="badge badge-neutral">
+                                        <span class="d-inline-block" style="width:6px;height:6px;border-radius:50%;background:var(--md-sys-color-outline);"></span> Non-Aktif
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <td class="py-3.5 px-4 text-center">
-                                <div class="flex items-center justify-center gap-3 text-xs font-bold">
+                            <td class="text-center">
+                                <div class="d-flex align-items-center justify-content-center gap-2 text-xs fw-bold">
                                     <!-- Edit Link -->
                                     <button type="button"
                                             data-id="<?= $keg['id'] ?>"
@@ -310,20 +303,20 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                                             data-uraian="<?= e($keg['uraian_tugas']) ?>"
                                             data-substansi="<?= e($keg['substansi_materi'] ?? '') ?>"
                                             data-aktif="<?= $keg['aktif'] ?>"
-                                            onclick="handleEditKegiatan(this)" 
-                                            class="text-primary-600 hover:text-primary-800 hover:underline transition-colors cursor-pointer">
+                                            onclick="handleEditKegiatan(this)"
+                                            class="fw-bold" style="background:none;border:none;padding:0;color:var(--md-sys-color-primary);text-decoration:underline;cursor:pointer;">
                                         Edit
                                     </button>
 
-                                    <span class="text-neutral-300">|</span>
+                                    <span class="text-muted">|</span>
 
                                     <!-- Delete Link -->
                                     <button type="button"
                                             data-action="delete_kegiatan"
                                             data-id="<?= $keg['id'] ?>"
                                             data-name="<?= e($keg['uraian_tugas']) ?>"
-                                            onclick="handleDeleteData(this)" 
-                                            class="text-error-600 hover:text-error-800 hover:underline transition-colors cursor-pointer">
+                                            onclick="handleDeleteData(this)"
+                                            class="fw-bold" style="background:none;border:none;padding:0;color:var(--md-sys-color-error);text-decoration:underline;cursor:pointer;">
                                         Hapus
                                     </button>
                                 </div>
@@ -334,23 +327,24 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             </tbody>
         </table>
     </div>
+    </div>
 
     <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
-    <div class="px-6 py-4 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-neutral-50/50">
-        <div class="text-xs sm:text-sm text-neutral-500 font-medium">
-            Menampilkan <span class="font-bold text-neutral-800"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="font-bold text-neutral-800"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="font-bold text-neutral-800"><?= $total_rows ?></span> data
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-muted" style="font-size:12.5px;">
+            Menampilkan <span class="fw-bold"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
         </div>
-        <div class="flex items-center gap-1 flex-wrap justify-center">
-            <?php 
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+            <?php
             $query_params = $_GET;
-            
-            if ($page_num > 1): 
+
+            if ($page_num > 1):
                 $query_params['p'] = $page_num - 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Sebelumnya">
-                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
-                    <span class="hidden sm:inline">Sebelumnya</span>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Sebelumnya">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                    <span class="d-none sm:inline">Sebelumnya</span>
                 </a>
             <?php endif; ?>
 
@@ -361,37 +355,37 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             if ($start_p > 1):
                 $query_params['p'] = 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all">1</a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon">1</a>
                 <?php if ($start_p > 2): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
             <?php endif; ?>
 
-            <?php for ($i = $start_p; $i <= $end_p; $i++): 
+            <?php for ($i = $start_p; $i <= $end_p; $i++):
                 $query_params['p'] = $i;
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all <?= $is_active ? 'bg-primary-700 text-white shadow-sm shadow-primary-500/20' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100' ?>">
+                <a href="<?= $link ?>" class="btn-icon" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
 
             <?php if ($end_p < $total_pages): ?>
                 <?php if ($end_p < $total_pages - 1): ?>
-                    <span class="px-1 text-neutral-400 text-xs">...</span>
+                    <span class="text-muted" style="font-size:12px;">...</span>
                 <?php endif; ?>
                 <?php $query_params['p'] = $total_pages; ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all"><?= $total_pages ?></a>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon"><?= $total_pages ?></a>
             <?php endif; ?>
 
-            <?php 
-            if ($page_num < $total_pages): 
+            <?php
+            if ($page_num < $total_pages):
                 $query_params['p'] = $page_num + 1;
             ?>
-                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-all flex items-center gap-1" title="Halaman Selanjutnya">
-                    <span class="hidden sm:inline">Selanjutnya</span>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Selanjutnya">
+                    <span class="d-none sm:inline">Selanjutnya</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
                 </a>
             <?php endif; ?>
         </div>
@@ -402,41 +396,39 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
 <!-- MODAL FORMS (Rendered at top z-index layer) -->
 
 <!-- Modal 1: Form Seksi TUSI (Kelola / Tambah / Edit) -->
-<div id="modalSeksi" style="display:none;" class="fixed inset-0 z-[9999] overflow-y-auto bg-neutral-900/60 backdrop-blur-sm items-center justify-center p-4">
-    <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
-        <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
-            <h3 id="modalSeksiTitle" class="text-base font-bold text-neutral-900">Kelola Seksi TUSI</h3>
-            <button type="button" onclick="closeModalSeksi()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100 cursor-pointer">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+<div id="modalSeksi" class="fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4" style="display:none;background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);">
+    <div class="card w-full my-4" style="max-width:32rem;">
+        <div class="card-header d-flex align-items-center justify-content-between" style="background:var(--md-sys-color-surface-container-low);">
+            <h3 id="modalSeksiTitle" class="fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Kelola Seksi TUSI</h3>
+            <button type="button" onclick="closeModalSeksi()" class="btn btn-icon" style="border:none;"><span class="material-symbols-outlined">close</span></button>
         </div>
 
         <!-- Daftar Seksi TUSI yang Sudah Ada -->
-        <div class="p-5 border-b border-neutral-200/70 bg-neutral-50/30">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">Daftar Seksi Terdaftar</h4>
-            <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+        <div class="card-body border-bottom" style="background:var(--md-sys-color-surface-container-lowest);">
+            <h4 class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-3">Daftar Seksi Terdaftar</h4>
+            <div class="space-y-2" style="max-height:160px;overflow-y:auto;padding-right:4px;">
                 <?php foreach ($tusi_list as $st): ?>
-                    <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-neutral-200/80 text-xs">
-                        <div class="font-bold text-neutral-800">
-                            <span class="px-2 py-0.5 bg-primary-50 text-primary-800 rounded font-bold mr-1.5">[<?= e($st['kode']) ?>]</span>
+                    <div class="d-flex align-items-center justify-content-between p-2 card-body" style="background:#fff;border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;font-size:12px;">
+                        <div class="fw-bold" style="color:var(--md-sys-color-on-surface-variant);">
+                            <span class="badge badge-primary" style="margin-right:4px;">[<?= e($st['kode']) ?>]</span>
                             <?= e($st['nama']) ?>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" 
-                                    data-id="<?= $st['id'] ?>" 
-                                    data-kode="<?= e($st['kode']) ?>" 
-                                    data-nama="<?= e($st['nama']) ?>" 
-                                    onclick="handleEditSeksi(this)" 
-                                    class="text-primary-600 hover:text-primary-800 font-bold hover:underline cursor-pointer">
+                        <div class="d-flex align-items-center gap-1">
+                            <button type="button"
+                                    data-id="<?= $st['id'] ?>"
+                                    data-kode="<?= e($st['kode']) ?>"
+                                    data-nama="<?= e($st['nama']) ?>"
+                                    onclick="handleEditSeksi(this)"
+                                            class="fw-bold" style="background:none;border:none;padding:0;color:var(--md-sys-color-primary);text-decoration:underline;cursor:pointer;">
                                 Edit
                             </button>
-                            <span class="text-neutral-300">|</span>
-                            <button type="button" 
-                                    data-action="delete_seksi" 
-                                    data-id="<?= $st['id'] ?>" 
-                                    data-name="[<?= e($st['kode']) ?>] <?= e($st['nama']) ?>" 
-                                    onclick="handleDeleteData(this)" 
-                                    class="text-error-600 hover:text-error-800 font-bold hover:underline cursor-pointer">
+                            <span class="text-muted">|</span>
+                            <button type="button"
+                                    data-action="delete_seksi"
+                                    data-id="<?= $st['id'] ?>"
+                                    data-name="[<?= e($st['kode']) ?>] <?= e($st['nama']) ?>"
+                                    onclick="handleDeleteData(this)"
+                                    class="fw-bold" style="background:none;border:none;padding:0;color:var(--md-sys-color-error);text-decoration:underline;cursor:pointer;">
                                 Hapus
                             </button>
                         </div>
@@ -450,49 +442,43 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
             <input type="hidden" name="action" id="modalSeksiAction" value="create_seksi">
             <input type="hidden" name="id" id="modalSeksiId" value="">
 
-            <div class="p-5 space-y-4">
-                <h4 id="formSeksiHeaderTitle" class="text-xs font-bold uppercase tracking-wider text-neutral-500">Tambah Seksi Baru</h4>
+            <div class="card-body space-y-3">
+                <h4 id="formSeksiHeaderTitle" class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-3">Tambah Seksi Baru</h4>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kode Seksi <span class="text-error-500">*</span></label>
-                    <input type="text" name="kode" id="modalSeksiKode" required placeholder="Contoh: RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 uppercase font-semibold">
+                    <label class="form-label">Kode Seksi <span style="color:var(--md-sys-color-error);">*</span></label>
+                    <input type="text" name="kode" id="modalSeksiKode" required placeholder="Contoh: RLPM" class="form-control text-uppercase fw-semibold">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Nama Seksi <span class="text-error-500">*</span></label>
-                    <input type="text" name="nama" id="modalSeksiNama" required placeholder="Contoh: Seksi RLPM" class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
+                    <label class="form-label">Nama Seksi <span style="color:var(--md-sys-color-error);">*</span></label>
+                    <input type="text" name="nama" id="modalSeksiNama" required placeholder="Contoh: Seksi RLPM" class="form-control fw-medium">
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-2 p-4 border-t border-neutral-100 bg-neutral-50/50">
-                <button type="button" onclick="closeModalSeksi()" class="px-4 py-2 text-sm font-semibold rounded-xl text-neutral-600 hover:bg-neutral-200/70 transition-colors cursor-pointer">
-                    Batal
-                </button>
-                <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
-                    Simpan Seksi
-                </button>
+            <div class="card-footer d-flex align-items-center justify-content-end gap-2" style="background:var(--md-sys-color-surface-container-low);">
+                <button type="button" onclick="closeModalSeksi()" class="btn btn-outline-secondary">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Seksi</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Modal 2: Form Uraian Tugas TUSI (Tambah / Edit) -->
-<div id="modalKegiatan" style="display:none;" class="fixed inset-0 z-[9999] overflow-y-auto bg-neutral-900/60 backdrop-blur-sm items-center justify-center p-4">
-    <div class="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
-        <div class="flex items-center justify-between p-5 border-b border-neutral-100 bg-neutral-50/50">
-            <h3 id="modalKegiatanTitle" class="text-base font-bold text-neutral-900">Tambah Kegiatan TUSI</h3>
-            <button type="button" onclick="closeModalKegiatan()" class="text-neutral-400 hover:text-neutral-600 p-1 rounded-lg hover:bg-neutral-100 cursor-pointer">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+<div id="modalKegiatan" class="fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4" style="display:none;background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);">
+    <div class="card w-full my-4" style="max-width:32rem;">
+        <div class="card-header d-flex align-items-center justify-content-between" style="background:var(--md-sys-color-surface-container-low);">
+            <h3 id="modalKegiatanTitle" class="fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Tambah Kegiatan TUSI</h3>
+            <button type="button" onclick="closeModalKegiatan()" class="btn btn-icon" style="border:none;"><span class="material-symbols-outlined">close</span></button>
         </div>
         <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
             <input type="hidden" name="action" id="modalKegiatanAction" value="create_kegiatan">
             <input type="hidden" name="id" id="modalKegiatanId" value="">
 
-            <div class="p-5 space-y-4">
+            <div class="card-body space-y-3">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Seksi TUSI <span class="text-error-500">*</span></label>
-                    <select name="tusi_id" id="modalKegiatanTusiId" required class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium">
+                    <label class="form-label">Seksi TUSI <span style="color:var(--md-sys-color-error);">*</span></label>
+                    <select name="tusi_id" id="modalKegiatanTusiId" required class="form-select fw-medium">
                         <?php foreach ($tusi_list as $t): ?>
                             <option value="<?= $t['id'] ?>">
                                 [<?= e($t['kode']) ?>] <?= e($t['nama']) ?>
@@ -502,44 +488,40 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Kegiatan / Uraian Tugas <span class="text-error-500">*</span></label>
-                    <textarea name="uraian_tugas" id="modalKegiatanUraian" rows="3" required placeholder="Tuliskan uraian kegiatan TUSI..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
+                    <label class="form-label">Kegiatan / Uraian Tugas <span style="color:var(--md-sys-color-error);">*</span></label>
+                    <textarea name="uraian_tugas" id="modalKegiatanUraian" rows="3" required placeholder="Tuliskan uraian kegiatan TUSI..." class="form-control fw-medium"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-neutral-600 mb-1">Substansi Materi (Opsional)</label>
-                    <textarea name="substansi_materi" id="modalKegiatanSubstansi" rows="2" placeholder="Deskripsi substansi materi (opsional)..." class="w-full px-3.5 py-2.5 rounded-xl text-sm border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"></textarea>
+                    <label class="form-label">Substansi Materi (Opsional)</label>
+                    <textarea name="substansi_materi" id="modalKegiatanSubstansi" rows="2" placeholder="Deskripsi substansi materi (opsional)..." class="form-control fw-medium"></textarea>
                 </div>
 
                 <div class="pt-2">
-                    <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="aktif" id="modalKegiatanAktif" value="1" checked class="w-4 h-4 text-primary-600 rounded border-neutral-300 focus:ring-primary-500">
-                        <span class="text-sm font-semibold text-neutral-700">Status Aktif (Tampil pada pilihan laporan penyuluh)</span>
+                    <label class="d-inline-flex align-items-center gap-2" style="cursor:pointer;">
+                        <input type="checkbox" name="aktif" id="modalKegiatanAktif" value="1" checked style="width:16px;height:16px;accent-color:var(--md-sys-color-primary);">
+                        <span class="text-sm fw-semibold" style="color:var(--md-sys-color-on-surface-variant);">Status Aktif (Tampil pada pilihan laporan penyuluh)</span>
                     </label>
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-2 p-4 border-t border-neutral-100 bg-neutral-50/50">
-                <button type="button" onclick="closeModalKegiatan()" class="px-4 py-2 text-sm font-semibold rounded-xl text-neutral-600 hover:bg-neutral-200/70 transition-colors cursor-pointer">
-                    Batal
-                </button>
-                <button type="submit" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-primary-700 hover:bg-primary-800 shadow-sm transition-colors cursor-pointer">
-                    Simpan Data
-                </button>
+            <div class="card-footer d-flex align-items-center justify-content-end gap-2" style="background:var(--md-sys-color-surface-container-low);">
+                <button type="button" onclick="closeModalKegiatan()" class="btn btn-outline-secondary">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Data</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Modal 3: Konfirmasi Hapus Data -->
-<div id="modalDelete" style="display:none;" class="fixed inset-0 z-[9999] overflow-y-auto bg-neutral-900/60 backdrop-blur-sm items-center justify-center p-4">
-    <div class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-2xl transition-all border border-neutral-200 my-8">
-        <div class="p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+<div id="modalDelete" class="fixed inset-0 z-50 overflow-y-auto items-center justify-center p-4" style="display:none;background:rgba(20,18,40,0.5);backdrop-filter:blur(4px);">
+    <div class="card w-full my-4 text-center" style="max-width:28rem;">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-center mx-auto mb-4" style="width:48px;height:48px;border-radius:50%;background:var(--md-sys-color-error-container);">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-error);">warning</span>
             </div>
-            <h3 class="text-lg font-bold text-neutral-900 mb-1">Konfirmasi Hapus Data</h3>
-            <p id="modalDeleteMessage" class="text-sm text-neutral-600 mb-6 leading-relaxed">
+            <h3 class="text-lg fw-bold mb-1" style="color:var(--md-sys-color-on-surface);">Konfirmasi Hapus Data</h3>
+            <p id="modalDeleteMessage" class="text-sm text-muted mb-4" style="line-height:1.6;">
                 Apakah Anda yakin ingin menghapus data ini?
             </p>
             <form method="POST" action="<?= BASE_URL ?>/index.php?page=master/tusi">
@@ -547,13 +529,9 @@ $kegiatan_tusi_list = $stmt_keg->fetchAll();
                 <input type="hidden" name="action" id="modalDeleteAction" value="">
                 <input type="hidden" name="id" id="modalDeleteId" value="">
 
-                <div class="flex items-center justify-center gap-3">
-                    <button type="button" onclick="closeModalDelete()" class="w-full px-4 py-2.5 text-sm font-semibold rounded-xl text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="submit" class="w-full px-4 py-2.5 text-sm font-bold rounded-xl text-white bg-error-600 hover:bg-error-700 shadow-sm transition-colors cursor-pointer">
-                        Ya, Hapus Data
-                    </button>
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <button type="button" onclick="closeModalDelete()" class="btn btn-outline-secondary flex-fill">Batal</button>
+                    <button type="submit" class="btn btn-danger flex-fill">Ya, Hapus Data</button>
                 </div>
             </form>
         </div>

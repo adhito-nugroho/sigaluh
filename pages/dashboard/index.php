@@ -1,10 +1,9 @@
-<?php
+﻿<?php
 // pages/dashboard/index.php
 global $pdo;
 
 $role = $_SESSION['user_role'] ?? '';
 $user_id = $_SESSION['user_id'] ?? 0;
-$user_nama = $_SESSION['user_nama'] ?? 'Pengguna';
 
 $where_clause = "";
 $params = [];
@@ -13,11 +12,11 @@ if ($role === 'penyuluh') {
     $params[] = $user_id;
 }
 
-// 1. Total Kegiatan Bulan Ini
+// 1. Total Kegiatan
 $sql_total = "SELECT COUNT(*) FROM kegiatan k $where_clause";
 $stmt_total = $pdo->prepare($sql_total);
 $stmt_total->execute($params);
-$total_kegiatan = $stmt_total->fetchColumn();
+$total_kegiatan = (int)$stmt_total->fetchColumn();
 
 // Target Waktu Bulanan (112.5 jam = 6.750 menit)
 $TARGET_MENIT_BULANAN = 6750;
@@ -67,7 +66,7 @@ for ($i = 5; $i >= 0; $i--) {
     $mo = date('m', $timestamp);
     $yr = date('Y', $timestamp);
     $key = "$yr-$mo";
-    
+
     $months_skeleton[$key] = 0;
     $chart_labels[] = get_bulan_indo((int)$mo) . ' ' . $yr;
 }
@@ -89,9 +88,9 @@ foreach ($months_skeleton as $key => $val) {
     $chart_values[] = (int)($chart_data_raw[$key] ?? 0);
 }
 
-// 6. Filter Rekap TUSI
-$f_rek_bln  = $_GET['rek_bln']  ?? date('m');
-$f_rek_thn  = $_GET['rek_thn']  ?? date('Y');
+// 5. Filter Rekap TUSI
+$f_rek_bln = $_GET['rek_bln'] ?? date('m');
+$f_rek_thn = $_GET['rek_thn'] ?? date('Y');
 
 $rek_where    = $role === 'penyuluh' ? "AND k.user_id = $user_id" : '';
 $rek_bln_sql  = $f_rek_bln  ? "AND MONTH(k.tanggal) = " . (int)$f_rek_bln  : '';
@@ -111,101 +110,7 @@ $sql_rekap_tusi = "
 $rekap_tusi = $pdo->query($sql_rekap_tusi)->fetchAll();
 $rekap_grand_total = array_sum(array_column($rekap_tusi, 'total'));
 
-// 5. List 5 Kegiatan Terbaru
-$sql_terbaru = "
-    SELECT k.id, k.tanggal, k.uraian_kegiatan, k.status, t.kode as tusi_kode, u.nama as penyuluh_nama
-    FROM kegiatan k
-    JOIN m_tusi t ON k.tusi_id = t.id
-    JOIN users u ON k.user_id = u.id
-    $where_clause
-    ORDER BY k.created_at DESC LIMIT 5
-";
-$stmt_terbaru = $pdo->prepare($sql_terbaru);
-$stmt_terbaru->execute($params);
-$terbaru = $stmt_terbaru->fetchAll();
-
-// Formal Greeting
-$hour = (int)date('H');
-if ($hour < 12) $greeting = 'Selamat Pagi';
-elseif ($hour < 15) $greeting = 'Selamat Siang';
-elseif ($hour < 18) $greeting = 'Selamat Sore';
-else $greeting = 'Selamat Malam';
-
-function get_status_badge($status)
-{
-    switch ($status) {
-        case 'draft':
-            return '<span class="px-2 py-0.5 text-[11px] font-bold rounded-sm bg-neutral-200 text-neutral-800 border border-neutral-300">Draft</span>';
-        case 'submitted':
-            return '<span class="px-2 py-0.5 text-[11px] font-bold rounded-sm bg-info-100 text-info-700 border border-info-300">Diajukan</span>';
-        case 'direview':
-            return '<span class="px-2 py-0.5 text-[11px] font-bold rounded-sm bg-success-100 text-success-700 border border-success-300">Disetujui</span>';
-        default:
-            return '<span class="px-2 py-0.5 text-[11px] font-bold rounded-sm bg-neutral-100 text-neutral-600 border border-neutral-300">' . e($status) . '</span>';
-    }
-}
-?>
-
-<!-- Header dengan Signature Element (Topographic Contour Pattern) -->
-<div class="relative bg-primary-900 rounded-2xl p-6 mb-6 text-white shadow-md overflow-hidden">
-    <!-- Topographic Contour SVG Pattern Overlay -->
-    <svg class="absolute inset-0 w-full h-full opacity-15 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" preserveAspectRatio="none">
-        <path d="M-50 100 Q 150 20, 350 110 T 750 80 T 1150 140" fill="none" stroke="#fde68a" stroke-width="2.5"/>
-        <path d="M-50 140 Q 180 50, 400 130 T 800 60 T 1200 160" fill="none" stroke="#fde68a" stroke-width="1"/>
-        <path d="M-50 60 Q 200 140, 450 70 T 850 120 T 1250 80" fill="none" stroke="#ffffff" stroke-width="2"/>
-        <path d="M-50 180 Q 220 90, 500 160 T 900 100 T 1300 190" fill="none" stroke="#ffffff" stroke-width="1"/>
-    </svg>
-
-    <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-accent-500/20 border border-accent-400/30 text-accent-300 text-xs font-semibold mb-2">
-                CDK Wilayah Nganjuk
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-display font-black tracking-tight text-white">
-                Dashboard Ringkasan Data Kegiatan
-            </h1>
-            <p class="text-xs sm:text-sm text-primary-200/90 mt-1 font-medium">
-                <?= format_tanggal_indo(date('Y-m-d'), true) ?> &mdash; Monitoring Pelaporan Penyuluhan Kehutanan
-            </p>
-        </div>
-    </div>
-</div>
-
-<?php if ($role === 'penyuluh'): ?>
-<!-- Banner Widget Target Waktu Bulanan Personal Penyuluh (112.5 Jam / 6.750 Menit) -->
-<div class="bg-white rounded-2xl border border-primary-200 p-6 mb-6 shadow-card relative overflow-hidden">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div class="flex-1">
-            <div class="mb-1 text-primary-900">
-                <h3 class="text-base font-extrabold tracking-tight">Target Waktu Penyuluhan Bulanan (<?= get_bulan_indo((int)date('m')) ?> <?= date('Y') ?>)</h3>
-            </div>
-            <p class="text-xs text-neutral-500 font-medium">Target wajib penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
-
-            <div class="mt-4">
-                <div class="flex justify-between items-center text-xs font-bold mb-1.5">
-                    <span class="text-primary-900">Tercapai: <strong><?= number_format($total_durasi_menit, 0, ',', '.') ?> Menit (<?= $total_durasi_jam ?> Jam)</strong></span>
-                    <span class="<?= $pct_target >= 100 ? 'text-success-700 font-black' : 'text-accent-600 font-black' ?>"><?= $pct_target ?>%</span>
-                </div>
-                <div class="w-full h-3 bg-neutral-100 rounded-full overflow-hidden border border-neutral-200 p-0.5">
-                    <div class="h-full <?= $pct_target >= 100 ? 'bg-success-500' : 'bg-primary-600' ?> rounded-full transition-all duration-500" style="width: <?= $pct_target ?>%"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4 border-t lg:border-t-0 lg:border-l border-neutral-200 pt-4 lg:pt-0 lg:pl-6">
-            <div class="text-center sm:text-left">
-                <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Sisa Target Menit</p>
-                <p class="text-2xl font-display font-black <?= $sisa_menit == 0 ? 'text-success-700' : 'text-neutral-900' ?> tracking-tight">
-                    <?= number_format($sisa_menit, 0, ',', '.') ?> <span class="text-xs font-bold text-neutral-500">Menit</span>
-                </p>
-                <p class="text-[11px] text-neutral-500 font-medium mt-0.5">Setara dengan <strong><?= $sisa_jam ?> Jam</strong></p>
-            </div>
-        </div>
-    </div>
-</div>
-<?php else: ?>
-<!-- Executive Summary Target Waktu Bulanan Penyuluh (Admin / Pimpinan View) -->
-<?php
+// 6. Executive Summary Target Waktu (Admin / Pimpinan)
 $current_month_num = date('m');
 $current_year_num = date('Y');
 
@@ -238,267 +143,285 @@ $count_tuntas = (int)($exec_sum['count_tuntas'] ?? 0);
 $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 ?>
-<div class="bg-white rounded-2xl border border-neutral-200/80 shadow-card p-6 mb-6">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b border-neutral-100">
-        <div>
-            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary-100 text-primary-800 text-[11px] font-bold mb-1">
-                Ringkasan Eksekutif Target Waktu (<?= get_bulan_indo((int)$current_month_num) ?> <?= $current_year_num ?>)
-            </div>
-            <h3 class="text-lg font-bold text-neutral-900 tracking-tight">Ketercapaian Aktivitas Harian Penyuluh</h3>
-            <p class="text-xs text-neutral-500 font-medium">Target per penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
+
+<!-- Header sederhana -->
+<div class="mb-4">
+    <div class="d-flex align-items-center gap-3 mb-2">
+        <div class="stat-icon-wrap primary">
+            <span class="material-symbols-outlined">space_dashboard</span>
         </div>
         <div>
-            <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="inline-flex items-center justify-center px-4 py-2 bg-primary-700 hover:bg-primary-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">
-                <i data-lucide="list-checks" class="w-4 h-4 mr-1.5"></i> Buka Monitoring Lengkap (<?= $total_p ?> Penyuluh) &rarr;
-            </a>
+            <h2 class="mb-0 text-2xl font-bold tracking-tight" style="color:var(--md-sys-color-on-surface);">Dashboard Ringkasan Data Kegiatan</h2>
+            <p class="text-muted mb-0" style="font-size:12.5px;">Rekap kegiatan bulan <?= get_bulan_indo((int)$f_rek_bln) ?> <?= (int)$f_rek_thn ?></p>
         </div>
     </div>
+</div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <!-- Rata-rata Ketercapaian -->
-        <div class="bg-neutral-50 p-4 rounded-xl border border-neutral-200/80 flex flex-col justify-between">
-            <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Rata-rata Ketercapaian</p>
-            <div class="mt-2">
-                <p class="text-2xl font-display font-black text-primary-900"><?= number_format($avg_m, 0, ',', '.') ?> <span class="text-xs font-bold text-neutral-500">Mnt</span></p>
-                <p class="text-xs font-medium text-neutral-500 mt-0.5">Setara dengan <strong><?= $avg_j ?> Jam</strong> (<?= $avg_pct ?>%)</p>
+<?php if ($role === 'penyuluh'): ?>
+<!-- Banner Widget Target Waktu Bulanan Personal Penyuluh (112.5 Jam / 6.750 Menit) -->
+<div class="card p-3 mb-4">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="flex-1">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="stat-icon-wrap primary" style="width:32px;height:32px;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">timer</span>
+                </span>
+                <h3 class="text-base font-bold tracking-tight mb-0" style="color:var(--md-sys-color-on-surface);">Target Waktu Penyuluhan Bulanan (<?= get_bulan_indo((int)date('m')) ?> <?= date('Y') ?>)</h3>
+            </div>
+            <p class="text-muted mb-0" style="font-size:12px;">Target wajib penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
+
+            <div class="mt-3">
+                <div class="flex justify-between items-center text-xs font-bold mb-1.5">
+                    <span class="text-muted">Tercapai: <strong style="color:var(--md-sys-color-on-surface);"><?= number_format($total_durasi_menit, 0, ',', '.') ?> Menit (<?= $total_durasi_jam ?> Jam)</strong></span>
+                    <span class="<?= $pct_target >= 100 ? 'text-success fw-black' : 'text-warning fw-black' ?>"><?= $pct_target ?>%</span>
+                </div>
+                <div class="progress" style="height:8px;">
+                    <div class="progress-bar" style="width:<?= $pct_target ?>%;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Target Tuntas (>= 100%) -->
-        <div class="bg-success-50/60 p-4 rounded-xl border border-success-200/80 flex flex-col justify-between">
-            <p class="text-[11px] font-bold text-success-800 uppercase tracking-wider">Memenuhi Target</p>
-            <div class="mt-2">
-                <p class="text-2xl font-display font-black text-success-900"><?= $count_tuntas ?> <span class="text-xs font-bold text-success-700">Penyuluh</span></p>
-                <p class="text-xs font-semibold text-success-700 mt-0.5"><?= $total_p > 0 ? round(($count_tuntas/$total_p)*100, 1) : 0 ?>% dari total penyuluh</p>
-            </div>
-        </div>
-
-        <!-- Dalam Progres (> 0% & < 100%) -->
-        <div class="bg-warning-50/60 p-4 rounded-xl border border-warning-200/80 flex flex-col justify-between">
-            <p class="text-[11px] font-bold text-warning-800 uppercase tracking-wider">Sedang Progres</p>
-            <div class="mt-2">
-                <p class="text-2xl font-display font-black text-warning-900"><?= $count_progres ?> <span class="text-xs font-bold text-warning-700">Penyuluh</span></p>
-                <p class="text-xs font-semibold text-warning-700 mt-0.5"><?= $total_p > 0 ? round(($count_progres/$total_p)*100, 1) : 0 ?>% dari total penyuluh</p>
-            </div>
-        </div>
-
-        <!-- Belum Ada Input (0%) -->
-        <div class="bg-neutral-100/80 p-4 rounded-xl border border-neutral-200 flex flex-col justify-between">
-            <p class="text-[11px] font-bold text-neutral-600 uppercase tracking-wider">Belum Ada Aktivitas</p>
-            <div class="mt-2">
-                <p class="text-2xl font-display font-black text-neutral-800"><?= $count_nol ?> <span class="text-xs font-bold text-neutral-500">Penyuluh</span></p>
-                <p class="text-xs font-medium text-neutral-500 mt-0.5"><?= $total_p > 0 ? round(($count_nol/$total_p)*100, 1) : 0 ?>% dari total penyuluh</p>
+        <div class="flex items-center gap-4 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-6" style="border-color:var(--md-sys-color-outline-variant);">
+            <div class="text-center sm:text-left">
+                <p class="text-[11px] font-bold text-muted uppercase tracking-wider">Sisa Target Menit</p>
+                <p class="tabular-nums text-2xl font-bold <?= $sisa_menit == 0 ? 'text-success' : '' ?>" style="color:<?= $sisa_menit == 0 ? 'var(--md-sys-color-tertiary)' : 'var(--md-sys-color-on-surface)' ?>;">
+                    <?= number_format($sisa_menit, 0, ',', '.') ?> <span class="text-xs font-bold text-muted">Menit</span>
+                </p>
+                <p class="text-[11px] text-muted font-medium mt-0.5">Setara dengan <strong><?= $sisa_jam ?> Jam</strong></p>
             </div>
         </div>
     </div>
 </div>
 <?php endif; ?>
 
-<!-- Stats Cards (Hierarki Dominan Hero vs 3 Compact Cards) -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-    <!-- Hero Card: Total Kegiatan (Dominan - Single Purposeful Gradient) -->
-    <div class="bg-gradient-to-br from-primary-950 to-primary-900 text-white p-6 rounded-2xl shadow-lg border border-primary-800 relative overflow-hidden flex flex-col justify-between">
-        <div>
-            <div class="mb-3">
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-accent-500/20 text-accent-300 border border-accent-500/30">
-                    Metrik Utama
-                </span>
+<!-- Stats Cards (Volume Kegiatan - hierarki dominan) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <!-- Total Kegiatan -->
+    <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="stat-label">Total Kegiatan</div>
+                <div class="stat-value"><?= $total_kegiatan ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Kegiatan</span></div>
+                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Status disetujui</p>
             </div>
-            <p class="text-xs font-semibold text-primary-200/80 uppercase tracking-wider">Total Kegiatan</p>
+            <div class="stat-icon-wrap primary">
+                <span class="material-symbols-outlined">event_available</span>
+            </div>
         </div>
+    </div>
 
-        <div class="mt-4">
-            <p class="text-4xl sm:text-5xl font-display font-black text-white tracking-tight" data-count="<?= $total_kegiatan ?>"><?= $total_kegiatan ?></p>
-            <?php if ($total_kegiatan == 0): ?>
-                <p class="text-[11px] text-primary-300/70 mt-1 font-medium">Belum ada kegiatan tercatat</p>
-            <?php else: ?>
-                <p class="text-[11px] text-accent-300 mt-1 font-medium">Seluruh laporan tercatat</p>
-            <?php endif; ?>
+    <!-- Total Durasi -->
+    <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="stat-label">Total Durasi</div>
+                <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
+                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">= <?= $total_durasi_jam ?> Jam</p>
+            </div>
+            <div class="stat-icon-wrap secondary">
+                <span class="material-symbols-outlined">schedule</span>
+            </div>
         </div>
     </div>
-    
-    <!-- Secondary Card 1: RLPM -->
-    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-        <div>
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">RLPM</p>
+
+    <!-- Tingkat Ketercapaian -->
+    <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="stat-label">Tingkat Ketercapaian</div>
+                <div class="stat-value" style="color:var(--md-sys-color-tertiary);"><?= $pct_target ?>%</div>
+                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">vs target <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> menit</p>
             </div>
-            <?php $val = $breakdown_tusi['RLPM'] ?? 0; ?>
-            <p class="text-3xl font-display font-extrabold text-neutral-900 tracking-tight" data-count="<?= $val ?>"><?= $val ?></p>
-        </div>
-        <div>
-            <?php if ($val == 0): ?>
-                <p class="text-[11px] text-neutral-400 mt-2 font-medium">Belum ada kegiatan tercatat</p>
-            <?php else: ?>
-                <p class="text-[11px] text-primary-700 mt-2 font-semibold">Capaian TUSI RLPM</p>
-            <?php endif; ?>
+            <div class="stat-icon-wrap tertiary">
+                <span class="material-symbols-outlined">speed</span>
+            </div>
         </div>
     </div>
-    
-    <!-- Secondary Card 2: TKUK -->
-    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-        <div>
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">TKUK</p>
+
+    <!-- Capaian Status -->
+    <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="stat-label">Capaian Status</div>
+                <div class="stat-value"><?= (int)($breakdown_status['direview'] ?? 0) ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Disetujui</span></div>
+                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Total <?= $total_kegiatan ?> data kegiatan</p>
             </div>
-            <?php $val = $breakdown_tusi['TKUK'] ?? 0; ?>
-            <p class="text-3xl font-display font-extrabold text-neutral-900 tracking-tight" data-count="<?= $val ?>"><?= $val ?></p>
-        </div>
-        <div>
-            <?php if ($val == 0): ?>
-                <p class="text-[11px] text-neutral-400 mt-2 font-medium">Belum ada kegiatan tercatat</p>
-            <?php else: ?>
-                <p class="text-[11px] text-primary-700 mt-2 font-semibold">Capaian TUSI TKUK</p>
-            <?php endif; ?>
-        </div>
-    </div>
-    
-    <!-- Secondary Card 3: Sub Bagian TU -->
-    <div class="bg-white border-l-4 border-l-primary-600 border border-neutral-200/80 p-5 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-        <div>
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Sub Bagian TU</p>
+            <div class="stat-icon-wrap primary">
+                <span class="material-symbols-outlined">verified</span>
             </div>
-            <?php $val = $breakdown_tusi['TU'] ?? 0; ?>
-            <p class="text-3xl font-display font-extrabold text-neutral-900 tracking-tight" data-count="<?= $val ?>"><?= $val ?></p>
-        </div>
-        <div>
-            <?php if ($val == 0): ?>
-                <p class="text-[11px] text-neutral-400 mt-2 font-medium">Belum ada kegiatan tercatat</p>
-            <?php else: ?>
-                <p class="text-[11px] text-primary-700 mt-2 font-semibold">Capaian TUSI Subag TU</p>
-            <?php endif; ?>
         </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+<!-- Chart + Status -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
     <!-- Chart -->
-    <div class="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-card lg:col-span-2">
-        <div class="mb-4 flex justify-between items-center">
-            <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Intensitas Kegiatan (6 Bulan)</h3>
-            <span class="text-[11px] font-semibold text-neutral-400">Grafik Bulanan</span>
+    <div class="card lg:col-span-2">
+        <div class="card-header">
+            <div class="d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">bar_chart</span>
+                <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Grafik Jumlah Kegiatan Bulanan</span>
+            </div>
         </div>
-        <div class="h-64 w-full">
-            <canvas id="trendChart"></canvas>
+        <div class="card-body">
+            <canvas id="trendChart" height="100"></canvas>
         </div>
     </div>
 
-    <!-- Status Breakdown -->
-    <div class="bg-white p-6 rounded-xl border border-neutral-200/80 shadow-card">
-        <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-5">Status Laporan</h3>
-        
-        <div class="space-y-5">
-            <?php 
-            $status_items = [
-                ['key' => 'direview', 'label' => 'Disetujui', 'color' => 'bg-success-500', 'badge' => 'text-success-700 bg-success-100'],
-                ['key' => 'submitted', 'label' => 'Diajukan', 'color' => 'bg-warning-500', 'badge' => 'text-warning-700 bg-warning-100'],
-                ['key' => 'draft', 'label' => 'Draft', 'color' => 'bg-neutral-400', 'badge' => 'text-neutral-700 bg-neutral-100'],
-            ];
-            foreach ($status_items as $si): 
-                $count = $breakdown_status[$si['key']] ?? 0;
-                $pct = $total_kegiatan > 0 ? round($count / $total_kegiatan * 100) : 0;
-            ?>
-            <div>
-                <div class="flex justify-between items-center text-sm mb-1.5">
-                    <span class="font-semibold text-neutral-800 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full <?= $si['color'] ?>"></span>
-                        <?= $si['label'] ?>
-                    </span>
-                    <span class="font-bold px-2 py-0.5 rounded text-xs <?= $si['badge'] ?>"><?= $count ?></span>
-                </div>
-                <div class="w-full h-2.5 rounded-full overflow-hidden <?= $count > 0 ? 'bg-neutral-100' : 'bg-transparent' ?>">
-                    <div class="h-full <?= $si['color'] ?> rounded-full transition-all duration-300" style="width:<?= $pct ?>%"></div>
-                </div>
+    <!-- Status Panel -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
+                <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Status Kegiatan</span>
             </div>
-            <?php endforeach; ?>
+        </div>
+        <div class="card-body space-y-5">
+            <div>
+                <?php
+                $status_items = [
+                    ['key' => 'direview', 'label' => 'Disetujui', 'color' => 'background:var(--md-sys-color-tertiary);', 'badge' => 'badge-success'],
+                    ['key' => 'submitted', 'label' => 'Diajukan', 'color' => 'background:var(--md-sys-color-secondary);', 'badge' => 'badge-warning'],
+                    ['key' => 'draft',  'label' => 'Draft', 'color' => 'background:var(--md-sys-color-outline);', 'badge' => 'badge-primary'],
+                ];
+                foreach ($status_items as $item):
+                ?>
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="d-inline-block rounded-pill" style="width:10px;height:10px;<?= $item['color'] ?>"></span>
+                        <span class="text-muted" style="font-size:12.5px;"><?= $item['label'] ?></span>
+                    </div>
+                    <span class="badge <?= $item['badge'] ?>"><?= (int)($breakdown_status[$item['key']] ?? 0) ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Rekap Laporan per TUSI -->
-<div class="bg-white rounded-xl border border-neutral-200 shadow-card mb-6 overflow-hidden">
-    <div class="p-4 border-b border-neutral-200 bg-neutral-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h3 class="text-sm font-bold text-neutral-900 uppercase tracking-wider">Rekapitulasi Capaian TUSI</h3>
-        
-        <form method="GET" action="" class="flex items-center gap-2">
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">table_chart</span>
+            <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Rekap Laporan per TUSI</span>
+        </div>
+        <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
             <input type="hidden" name="page" value="dashboard">
-            <select name="rek_bln" onchange="this.form.submit()"
-                class="text-xs font-semibold border border-neutral-300 rounded-lg px-2 py-1.5 bg-white focus:border-primary-600 outline-none">
-                <option value="">Semua Bulan</option>
+            <label class="text-muted mb-0" style="font-size:12px;">Periode:</label>
+            <select name="rek_bln" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
-                <option value="<?= sprintf('%02d', $m) ?>" <?= $f_rek_bln == sprintf('%02d', $m) ? 'selected' : '' ?>>
-                    <?= get_bulan_indo($m) ?>
-                </option>
+                <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_rek_bln ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
                 <?php endfor; ?>
             </select>
-            <select name="rek_thn" onchange="this.form.submit()"
-                class="text-xs font-semibold border border-neutral-300 rounded-lg px-2 py-1.5 bg-white focus:border-primary-600 outline-none">
-                <?php for ($y = date('Y'); $y >= date('Y') - 4; $y--): ?>
-                <option value="<?= $y ?>" <?= $f_rek_thn == $y ? 'selected' : '' ?>><?= $y ?></option>
+            <select name="rek_thn" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
+                <?php for ($y = (int)date('Y'); $y >= 2020; $y--): ?>
+                <option value="<?= $y ?>" <?= $y === (int)$f_rek_thn ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
+            <button type="submit" class="btn btn-primary btn-sm" style="border-radius:var(--md-radius-pill);">
+                <span class="material-symbols-outlined" style="font-size:16px;">filter_alt</span>
+                <span class="ms-1">Terapkan</span>
+            </button>
         </form>
     </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200 text-sm whitespace-nowrap">
-            <thead class="bg-white">
+    <div class="card-body table-responsive">
+        <table class="table table-striped table-hover table-sm align-middle mb-0">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-900 uppercase tracking-wider">TUSI</th>
-                    <th class="px-4 py-3 text-left text-xs font-bold text-neutral-900 uppercase tracking-wider">Uraian Tugas</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-900 uppercase tracking-wider">Diajukan</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-900 uppercase tracking-wider">Disetujui</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-900 uppercase tracking-wider">Draft</th>
-                    <th class="px-4 py-3 text-center text-xs font-bold text-neutral-900 uppercase tracking-wider bg-neutral-50 border-l border-neutral-200">Total</th>
+                    <th class="text-muted">TUSI</th>
+                    <th class="text-muted">Uraian Tugas</th>
+                    <th class="text-muted text-center">Diajukan</th>
+                    <th class="text-muted text-center">Disetujui</th>
+                    <th class="text-muted text-center">Draft</th>
+                    <th class="text-muted text-center">Total</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-neutral-200 bg-white">
+            <tbody>
                 <?php if (empty($rekap_tusi) || $rekap_grand_total == 0): ?>
-                <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-sm text-neutral-500">
-                        Data tidak ditemukan pada periode ini.
-                    </td>
-                </tr>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Data tidak ditemukan pada periode ini.
+                        </td>
+                    </tr>
                 <?php else: ?>
-                <?php foreach ($rekap_tusi as $r): ?>
-                <tr>
-                    <td class="px-4 py-3 whitespace-nowrap font-bold text-neutral-900">
-                        <?= e($r['kode']) ?>
-                    </td>
-                    <td class="px-4 py-3 text-neutral-700">
-                        <?= e($r['nama']) ?>
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                        <?= $r['submitted'] > 0 ? $r['submitted'] : '<span class="text-neutral-300">-</span>' ?>
-                    </td>
-                    <td class="px-4 py-3 text-center font-bold text-success-700">
-                        <?= $r['direview'] > 0 ? $r['direview'] : '<span class="text-neutral-300">-</span>' ?>
-                    </td>
-                    <td class="px-4 py-3 text-center text-neutral-500">
-                        <?= $r['draft'] > 0 ? $r['draft'] : '<span class="text-neutral-300">-</span>' ?>
-                    </td>
-                    <td class="px-4 py-3 text-center font-bold text-neutral-900 bg-neutral-50 border-l border-neutral-200">
-                        <?= $r['total'] ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                <tr class="bg-neutral-100 border-t-2 border-neutral-300 font-bold">
-                    <td class="px-4 py-3" colspan="2">TOTAL KESELURUHAN</td>
-                    <td class="px-4 py-3 text-center"><?= array_sum(array_column($rekap_tusi, 'submitted')) ?></td>
-                    <td class="px-4 py-3 text-center text-success-700"><?= array_sum(array_column($rekap_tusi, 'direview')) ?></td>
-                    <td class="px-4 py-3 text-center text-neutral-600"><?= array_sum(array_column($rekap_tusi, 'draft')) ?></td>
-                    <td class="px-4 py-3 text-center text-neutral-900 border-l border-neutral-300"><?= $rekap_grand_total ?></td>
-                </tr>
+                    <?php foreach ($rekap_tusi as $r): ?>
+                    <tr>
+                        <td class="fw-semibold" style="color:var(--md-sys-color-on-surface);"><?= e($r['kode']) ?></td>
+                        <td><?= e($r['nama']) ?></td>
+                        <td class="text-center"><?= $r['submitted'] > 0 ? (int)$r['submitted'] : '<span class="text-muted">-</span>' ?></td>
+                        <td class="text-center fw-bold" style="color:var(--md-sys-color-tertiary);"><?= $r['direview'] > 0 ? (int)$r['direview'] : '<span class="text-muted">-</span>' ?></td>
+                        <td class="text-center text-muted"><?= $r['draft'] > 0 ? (int)$r['draft'] : '<span class="text-muted">-</span>' ?></td>
+                        <td class="text-center fw-bold" style="color:var(--md-sys-color-on-surface);"><?= (int)$r['total'] ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <tr class="fw-bold" style="background:var(--md-sys-color-surface-container-low);">
+                        <td colspan="2">TOTAL KESELURUHAN</td>
+                        <td class="text-center"><?= array_sum(array_column($rekap_tusi, 'submitted')) ?></td>
+                        <td class="text-center" style="color:var(--md-sys-color-tertiary);"><?= array_sum(array_column($rekap_tusi, 'direview')) ?></td>
+                        <td class="text-center text-muted"><?= array_sum(array_column($rekap_tusi, 'draft')) ?></td>
+                        <td class="text-center" style="color:var(--md-sys-color-on-surface);"><?= $rekap_grand_total ?></td>
+                    </tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
 
+<?php if ($role !== 'penyuluh'): ?>
+<!-- Executive Summary Target Waktu Bulanan Penyuluh (Admin / Pimpinan View) -->
+<div class="card card-detail mb-4" id="exec-summary">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="stat-icon-wrap secondary" style="width:30px;height:30px;">
+                <span class="material-symbols-outlined" style="font-size:16px;">leaderboard</span>
+            </span>
+            <div>
+                <div class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Target Waktu Penyuluh</div>
+                <div class="text-muted" style="font-size:11.5px;">Capaian bulan <?= get_bulan_indo((int)$current_month_num) ?> <?= $current_year_num ?></div>
+            </div>
+        </div>
+        <a href="index.php?page=penyuluh" class="btn btn-outline-secondary btn-sm" style="border-radius:var(--md-radius-pill);">
+            <span class="material-symbols-outlined" style="font-size:16px;">monitoring</span>
+            <span class="ms-1">Buka Monitoring Lengkap</span>
+        </a>
+    </div>
+    <div class="stat-strip">
+        <div class="stat-strip-item">
+            <div class="stat-strip-label">Rata-rata Ketercapaian</div>
+            <div class="stat-strip-value" style="color:var(--md-sys-color-primary);"><?= $avg_pct ?>%</div>
+            <div class="stat-strip-unit"><?= $total_p ?> penyuluh aktif</div>
+        </div>
+        <div class="stat-strip-item">
+            <div class="stat-strip-label">Rata-rata Jam</div>
+            <div class="stat-strip-value"><?= $avg_j ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Jam</span></div>
+            <div class="stat-strip-unit"><?= $avg_m ?> menit per penyuluh</div>
+        </div>
+        <div class="stat-strip-item">
+            <div class="stat-strip-label">Tuntas</div>
+            <div class="stat-strip-value" style="color:var(--md-sys-color-tertiary);"><?= $count_tuntas ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
+            <div class="stat-strip-unit"><?= $total_p > 0 ? round(($count_tuntas/$total_p)*100, 1) : 0 ?>% dari total</div>
+        </div>
+        <div class="stat-strip-item">
+            <div class="stat-strip-label">Sedang Progres</div>
+            <div class="stat-strip-value" style="color:var(--md-sys-color-secondary);"><?= $count_progres ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
+            <div class="stat-strip-unit"><?= $total_p > 0 ? round(($count_progres/$total_p)*100, 1) : 0 ?>% dari total</div>
+        </div>
+        <div class="stat-strip-item">
+            <div class="stat-strip-label">Belum Ada Aktivitas</div>
+            <div class="stat-strip-value" style="color:var(--md-sys-color-error);"><?= $count_nol ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
+            <div class="stat-strip-unit"><?= $total_p > 0 ? round(($count_nol/$total_p)*100, 1) : 0 ?>% dari total</div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('trendChart').getContext('2d');
+        const canvas = document.getElementById('trendChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
 
         const labels = <?= json_encode($chart_labels) ?>;
         const data = <?= json_encode($chart_values) ?>;
@@ -510,11 +433,11 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 datasets: [{
                     label: 'Jumlah Laporan',
                     data: data,
-                    backgroundColor: '#346953',
-                    hoverBackgroundColor: '#f59e0b',
+                    backgroundColor: 'rgba(84, 178, 132, 0.8)',
+                    hoverBackgroundColor: 'rgba(74, 144, 226, 0.8)',
                     borderRadius: 6,
                     borderWidth: 0,
-                    barPercentage: 0.5,
+                    barThickness: 14,
                 }]
             },
             options: {
@@ -522,30 +445,14 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#112019',
-                        titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '700' },
-                        bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
-                        padding: 10,
-                        cornerRadius: 8,
-                    },
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        suggestedMax: Math.max(...data) < 5 ? 5 : undefined,
-                        ticks: {
-                            precision: 0,
-                            font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
-                            color: '#707e78',
-                        },
-                        grid: { color: '#edf1ef' },
+                        ticks: { precision: 0 },
+                        grid: { color: 'rgba(0,0,0,0.06)' },
                     },
                     x: {
-                        ticks: {
-                            font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
-                            color: '#707e78',
-                        },
                         grid: { display: false },
                     }
                 }

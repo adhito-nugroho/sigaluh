@@ -89,232 +89,230 @@ if ($role !== 'penyuluh') {
 
 function get_status_badge($status) {
     switch ($status) {
-        case 'draft': return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-neutral-100 text-neutral-600 border border-neutral-200/80 inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>Draft</span>';
-        case 'submitted': return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-info-100 text-info-700 border border-info-200/60 inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-info-500"></span>Diajukan</span>';
-        case 'direview': return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-success-100 text-success-700 border border-success-200/60 inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>Disetujui</span>';
-        default: return '<span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-neutral-100 text-neutral-600 border border-neutral-200/80">'.e($status).'</span>';
+        case 'draft': return '<span class="badge badge-neutral"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--md-sys-color-outline);"></span>Draft</span>';
+        case 'submitted': return '<span class="badge badge-warning"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--md-sys-color-secondary);"></span>Diajukan</span>';
+        case 'direview': return '<span class="badge badge-success"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--md-sys-color-tertiary);"></span>Disetujui</span>';
+        default: return '<span class="badge badge-neutral">'.e($status).'</span>';
     }
 }
 ?>
 
 <?php if (!empty($_GET['success']) && $_GET['success'] === 'deleted'): ?>
-<div class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 text-sm font-medium px-4 py-3 rounded-xl">
-    <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+<div class="alert alert-success mb-4">
+    <span class="material-symbols-outlined">check_circle</span>
     Kegiatan berhasil dihapus.
 </div>
 <?php endif; ?>
 
 <?php if (!empty($_GET['error'])): ?>
-<div class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-xl">
-    <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+<div class="alert alert-danger mb-4">
+    <span class="material-symbols-outlined">error</span>
     <?= $_GET['error'] === 'not_found' ? 'Kegiatan tidak ditemukan.' : 'Terjadi kesalahan.' ?>
 </div>
 <?php endif; ?>
 
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="text-2xl font-extrabold text-neutral-900 tracking-tight">Pelaksanaan Kegiatan</h1>
-        <p class="text-sm text-neutral-500 mt-1 font-medium">Kelola data kegiatan penyuluh kehutanan.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Pelaksanaan Kegiatan</h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;">Kelola data kegiatan penyuluh kehutanan.</p>
     </div>
     <div>
         <?php if ($role === 'penyuluh'): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form" class="inline-flex items-center justify-center px-5 py-2.5 text-sm font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 active:scale-[0.98] transition-all">
-            <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Tambah Kegiatan
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form" class="btn btn-primary">
+            <span class="material-symbols-outlined">add</span> Tambah Kegiatan
         </a>
         <?php endif; ?>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card p-5 mb-6">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-3 items-end">
-        <input type="hidden" name="page" value="kegiatan">
-        
-        <div class="w-full sm:w-auto flex-1 min-w-[180px]">
-            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Pencarian</label>
-            <div class="relative">
-                <div class="absolute left-3 top-1/2 -translate-y-1/2"><i data-lucide="search" class="w-4 h-4 text-neutral-400"></i></div>
-                <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari uraian..." 
-                    class="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all bg-neutral-50/50 focus:bg-white">
+<div class="card mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-3 items-end">
+            <input type="hidden" name="page" value="kegiatan">
+
+            <div class="w-full sm:w-auto flex-1 min-w-[180px]">
+                <label class="form-label">Pencarian</label>
+                <input type="text" name="q" value="<?= e($f_q) ?>" placeholder="Cari uraian..." class="form-control form-control-sm">
             </div>
-        </div>
 
-        <div class="w-full sm:w-auto">
-            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Bulan</label>
-            <select name="bulan" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
-                <option value="">Semua</option>
-                <?php for($i=1; $i<=12; $i++): ?>
-                    <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
-                        <?= get_bulan_indo($i) ?>
-                    </option>
-                <?php endfor; ?>
-            </select>
-        </div>
+            <div class="w-full sm:w-auto">
+                <label class="form-label">Bulan</label>
+                <select name="bulan" class="form-select form-select-sm">
+                    <option value="">Semua</option>
+                    <?php for($i=1; $i<=12; $i++): ?>
+                        <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
+                            <?= get_bulan_indo($i) ?>
+                        </option>
+                    <?php endfor; ?>
+                </select>
+            </div>
 
-        <div class="w-full sm:w-auto">
-            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Tahun</label>
-            <select name="tahun" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
-                <option value="">Semua</option>
-                <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
-                    <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
-                <?php endfor; ?>
-            </select>
-        </div>
+            <div class="w-full sm:w-auto">
+                <label class="form-label">Tahun</label>
+                <select name="tahun" class="form-select form-select-sm">
+                    <option value="">Semua</option>
+                    <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
+                        <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
 
-        <div class="w-full sm:w-auto">
-            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">TUSI</label>
-            <select name="tusi_id" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
-                <option value="">Semua</option>
-                <?php foreach($tusi_list as $t): ?>
-                    <option value="<?= $t['id'] ?>" <?= $f_tusi == $t['id'] ? 'selected' : '' ?>><?= e($t['kode']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+            <div class="w-full sm:w-auto">
+                <label class="form-label">TUSI</label>
+                <select name="tusi_id" class="form-select form-select-sm">
+                    <option value="">Semua</option>
+                    <?php foreach($tusi_list as $t): ?>
+                        <option value="<?= $t['id'] ?>" <?= $f_tusi == $t['id'] ? 'selected' : '' ?>><?= e($t['kode']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-        <?php if ($role !== 'penyuluh'): ?>
-        <div class="w-full sm:w-auto">
-            <label class="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Penyuluh</label>
-            <select name="penyuluh_id" class="w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none bg-white transition-all">
-                <option value="">Semua Penyuluh</option>
-                <?php foreach($penyuluh_list as $p): ?>
-                    <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <?php endif; ?>
-
-        <div class="flex items-center gap-2">
-            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-5 rounded-lg text-sm transition-all shadow-sm active:scale-[0.98]">
-                <i data-lucide="filter" class="w-4 h-4 inline mr-1"></i> Filter
-            </button>
-            
-            <?php if (!empty($_GET['q']) || !empty($_GET['bulan']) || !empty($_GET['tahun']) || !empty($_GET['tusi_id']) || !empty($_GET['status']) || !empty($_GET['penyuluh_id'])): ?>
-            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="flex items-center justify-center text-neutral-500 hover:text-rose-600 text-sm py-2.5 px-3 transition-colors rounded-lg hover:bg-rose-50 border border-neutral-200">
-                <i data-lucide="x" class="w-4 h-4 mr-1"></i> Reset
-            </a>
+            <?php if ($role !== 'penyuluh'): ?>
+            <div class="w-full sm:w-auto">
+                <label class="form-label">Penyuluh</label>
+                <select name="penyuluh_id" class="form-select form-select-sm">
+                    <option value="">Semua Penyuluh</option>
+                    <?php foreach($penyuluh_list as $p): ?>
+                        <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>><?= e($p['nama']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <?php endif; ?>
-        </div>
-    </form>
+
+            <div class="flex items-center gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <span class="material-symbols-outlined">filter_alt</span> Filter
+                </button>
+
+                <?php if (!empty($_GET['q']) || !empty($_GET['bulan']) || !empty($_GET['tahun']) || !empty($_GET['tusi_id']) || !empty($_GET['status']) || !empty($_GET['penyuluh_id'])): ?>
+                <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-outline-secondary btn-sm">
+                    <span class="material-symbols-outlined">close</span> Reset
+                </a>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Table -->
-<div class="bg-white rounded-xl border border-neutral-200/60 shadow-card overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-100">
-            <thead class="bg-neutral-50/80">
-                <tr>
-                    <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Tanggal</th>
-                    <?php if ($role !== 'penyuluh'): ?>
-                    <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Penyuluh</th>
-                    <?php endif; ?>
-                    <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">TUSI</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Aktivitas Harian</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider w-1/3">Ringkasan Kegiatan</th>
-                    <th scope="col" class="px-6 py-3.5 text-left text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-3.5 text-right text-[11px] font-bold text-neutral-500 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-neutral-100">
-                <?php if (empty($kegiatan_list)): ?>
-                <tr>
-                    <td colspan="<?= $role !== 'penyuluh' ? 7 : 6 ?>" class="px-6 py-12 text-center">
-                        <div class="flex flex-col items-center">
-                            <div class="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mb-3">
-                                <i data-lucide="inbox" class="w-7 h-7 text-neutral-300"></i>
-                            </div>
-                            <p class="text-sm font-medium text-neutral-500">Data tidak ditemukan.</p>
-                            <p class="text-xs text-neutral-400 mt-0.5">Coba ubah filter pencarian Anda.</p>
-                        </div>
-                    </td>
-                </tr>
-                <?php else: ?>
-                    <?php foreach ($kegiatan_list as $row): ?>
-                    <tr class="hover:bg-neutral-50/60 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
-                        
+<div class="card mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
                         <?php if ($role !== 'penyuluh'): ?>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center text-primary-700 text-xs font-bold border border-primary-100/60">
-                                    <?= strtoupper(substr($row['penyuluh_nama'], 0, 1)) ?>
-                                </div>
-                                <span class="text-sm text-neutral-800 font-medium"><?= e($row['penyuluh_nama']) ?></span>
-                            </div>
-                        </td>
+                        <th>Penyuluh</th>
                         <?php endif; ?>
-                        
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <?php $tc = $row['tusi_kode'] === 'RLPM' ? 'emerald' : ($row['tusi_kode'] === 'TKUK' ? 'amber' : 'violet'); ?>
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-<?= $tc ?>-50 text-<?= $tc ?>-700 border border-<?= $tc ?>-200/60">
-                                <?= e($row['tusi_kode']) ?>
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-xs font-semibold text-neutral-800">
-                            <div><?= e($row['nama_aktivitas'] ?: '-') ?></div>
-                            <?php if ($row['durasi_menit'] > 0): ?>
-                                <div class="text-[10px] text-primary-700 font-bold mt-0.5"><?= $row['durasi_menit'] ?> Menit (<?= $row['volume'] ?? 1 ?> <?= e($row['act_satuan'] ?: 'Satuan') ?>)</div>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-neutral-600">
-                            <div class="truncate w-48 sm:w-64 md:w-80" title="<?= e($row['uraian_kegiatan']) ?>">
-                                <?= e($row['uraian_kegiatan']) ?>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <?= get_status_badge($row['status']) ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <a href="<?= BASE_URL ?>/index.php?page=kegiatan/detail&id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-neutral-50 hover:bg-primary-50 text-neutral-500 hover:text-primary-600 inline-flex items-center justify-center border border-neutral-200/60 transition-all" title="Detail">
-                                    <i data-lucide="eye" class="w-4 h-4"></i>
-                                </a>
-                                
-                                <?php if ($role === 'penyuluh' && ($row['status'] === 'draft' || $row['status'] === 'submitted')): ?>
-                                <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form&id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-warning-50 hover:bg-warning-100 text-warning-600 hover:text-warning-700 inline-flex items-center justify-center border border-warning-200/60 transition-all" title="Edit">
-                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                </a>
-                                <?php endif; ?>
-
-                                <?php if ($role !== 'penyuluh' && $row['status'] === 'submitted'): ?>
-                                <a href="<?= BASE_URL ?>/index.php?page=kegiatan/detail&id=<?= $row['id'] ?>" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 inline-flex items-center justify-center border border-emerald-200/60 transition-all" title="Review">
-                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
-                                </a>
-                                <?php endif; ?>
-
-                                <?php if ($role === 'admin'): ?>
-                                <button type="button"
-                                    data-id="<?= $row['id'] ?>"
-                                    data-uraian="<?= htmlspecialchars($row['uraian_kegiatan'], ENT_QUOTES, 'UTF-8') ?>"
-                                    onclick="confirmDelete(this)"
-                                    class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 inline-flex items-center justify-center border border-red-200/60 transition-all"
-                                    title="Hapus">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                                <?php endif; ?>
+                        <th>TUSI</th>
+                        <th>Aktivitas Harian</th>
+                        <th style="width:33%;">Ringkasan Kegiatan</th>
+                        <th>Status</th>
+                        <th class="text-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($kegiatan_list)): ?>
+                    <tr>
+                        <td colspan="<?= $role !== 'penyuluh' ? 7 : 6 ?>" class="text-center py-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-14 h-14 rounded-2xl mb-3 d-flex align-items-center justify-content-center" style="background:var(--md-sys-color-surface-container);">
+                                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--md-sys-color-outline);">inbox</span>
+                                </div>
+                                <p class="text-sm fw-medium text-muted">Data tidak ditemukan.</p>
+                                <p class="text-xs text-muted mt-0.5">Coba ubah filter pencarian Anda.</p>
                             </div>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php else: ?>
+                        <?php foreach ($kegiatan_list as $row): ?>
+                        <tr>
+                            <td class="whitespace-nowrap fw-medium tabular-nums"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
+
+                            <?php if ($role !== 'penyuluh'): ?>
+                            <td class="whitespace-nowrap">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="w-7 h-7 rounded-lg d-flex align-items-center justify-content-center text-xs fw-bold" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
+                                        <?= strtoupper(substr($row['penyuluh_nama'], 0, 1)) ?>
+                                    </div>
+                                    <span class="text-sm fw-medium"><?= e($row['penyuluh_nama']) ?></span>
+                                </div>
+                            </td>
+                            <?php endif; ?>
+
+                            <td class="whitespace-nowrap">
+                                <?php $tc = $row['tusi_kode'] === 'RLPM' ? 'tertiary' : ($row['tusi_kode'] === 'TKUK' ? 'secondary' : 'primary'); ?>
+                                <span class="badge badge-<?= $tc ?>"><?= e($row['tusi_kode']) ?></span>
+                            </td>
+                            <td class="text-xs fw-semibold">
+                                <div><?= e($row['nama_aktivitas'] ?: '-') ?></div>
+                                <?php if ($row['durasi_menit'] > 0): ?>
+                                    <div class="text-[10px] fw-bold mt-0.5 text-primary"><?= $row['durasi_menit'] ?> Menit (<?= $row['volume'] ?? 1 ?> <?= e($row['act_satuan'] ?: 'Satuan') ?>)</div>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-sm text-muted">
+                                <div class="text-truncate" style="max-width:80%;" title="<?= e($row['uraian_kegiatan']) ?>">
+                                    <?= e($row['uraian_kegiatan']) ?>
+                                </div>
+                            </td>
+                            <td class="whitespace-nowrap">
+                                <?= get_status_badge($row['status']) ?>
+                            </td>
+                            <td class="whitespace-nowrap text-end">
+                                <div class="d-flex align-items-center justify-content-end gap-1">
+                                    <a href="<?= BASE_URL ?>/index.php?page=kegiatan/detail&id=<?= $row['id'] ?>" class="btn-icon" title="Detail">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </a>
+
+                                    <?php if ($role === 'penyuluh' && ($row['status'] === 'draft' || $row['status'] === 'submitted')): ?>
+                                    <a href="<?= BASE_URL ?>/index.php?page=kegiatan/form&id=<?= $row['id'] ?>" class="btn-icon" title="Edit">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </a>
+                                    <?php endif; ?>
+
+                                    <?php if ($role !== 'penyuluh' && $row['status'] === 'submitted'): ?>
+                                    <a href="<?= BASE_URL ?>/index.php?page=kegiatan/detail&id=<?= $row['id'] ?>" class="btn-icon btn-icon-success" title="Review">
+                                        <span class="material-symbols-outlined">check_circle</span>
+                                    </a>
+                                    <?php endif; ?>
+
+                                    <?php if ($role === 'admin'): ?>
+                                    <button type="button"
+                                        data-id="<?= $row['id'] ?>"
+                                        data-uraian="<?= htmlspecialchars($row['uraian_kegiatan'], ENT_QUOTES, 'UTF-8') ?>"
+                                        onclick="confirmDelete(this)"
+                                        class="btn-icon btn-icon-danger"
+                                        title="Hapus">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
-    
+
     <!-- Pagination -->
     <?php if ($total_pages > 1): ?>
-    <div class="px-6 py-4 border-t border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-        <div class="text-sm text-neutral-500">
-            Menampilkan <span class="font-bold text-neutral-700"><?= $offset + 1 ?></span> hingga <span class="font-bold text-neutral-700"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="font-bold text-neutral-700"><?= $total_rows ?></span> data
+    <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="text-muted" style="font-size:12.5px;">
+            Menampilkan <span class="fw-bold"><?= $offset + 1 ?></span> hingga <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
         </div>
-        <div class="flex items-center gap-1">
-            <?php 
+        <div class="d-flex align-items-center gap-1">
+            <?php
             $query_params = $_GET;
-            for ($i = 1; $i <= $total_pages; $i++): 
+            for ($i = 1; $i <= $total_pages; $i++):
                 $query_params['p'] = $i;
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="w-9 h-9 flex items-center justify-center rounded-xl text-sm font-semibold transition-all <?= $is_active ? 'bg-primary-600 text-white shadow-sm shadow-primary-500/20' : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50' ?>">
+                <a href="<?= $link ?>" class="btn-icon <?= $is_active ? '' : 'd-none' ?>" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
@@ -326,31 +324,25 @@ function get_status_badge($status) {
 <!-- Modal Konfirmasi Hapus (hanya admin) -->
 <?php if ($role === 'admin'): ?>
 <div id="modal-hapus" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+    <div class="card w-full max-w-sm p-4" style="border-radius:16px;">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full d-flex align-items-center justify-content-center flex-shrink-0" style="background:var(--md-sys-color-error-container);">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-error);">warning</span>
             </div>
             <div>
-                <h3 class="text-base font-bold text-neutral-900">Hapus Kegiatan</h3>
-                <p class="text-xs text-neutral-500 mt-0.5">Tindakan ini tidak dapat dibatalkan.</p>
+                <h3 class="text-base fw-bold" style="color:var(--md-sys-color-on-surface);">Hapus Kegiatan</h3>
+                <p class="text-xs text-muted mt-0.5">Tindakan ini tidak dapat dibatalkan.</p>
             </div>
         </div>
-        <p class="text-sm text-neutral-600 mb-1">Yakin ingin menghapus kegiatan:</p>
-        <p id="modal-uraian" class="text-sm font-semibold text-neutral-900 bg-neutral-50 rounded-lg px-3 py-2 mb-5 border border-neutral-200 line-clamp-2"></p>
+        <p class="text-sm text-muted mb-1">Yakin ingin menghapus kegiatan:</p>
+        <p id="modal-uraian" class="text-sm fw-semibold mb-4 px-3 py-2 border rounded-lg line-clamp-2" style="background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);"></p>
         <div class="flex gap-2">
-            <button type="button" onclick="tutupModal()"
-                class="flex-1 py-2 px-4 text-sm font-semibold rounded-xl border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors">
-                Batal
-            </button>
+            <button type="button" onclick="tutupModal()" class="btn btn-outline-secondary flex-1">Batal</button>
             <form method="POST" action="<?= BASE_URL ?>/index.php?page=kegiatan/process" class="flex-1">
                 <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" id="modal-id" value="">
-                <button type="submit"
-                    class="w-full py-2 px-4 text-sm font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors active:scale-[0.98]">
-                    Hapus
-                </button>
+                <button type="submit" class="btn btn-danger w-100">Hapus</button>
             </form>
         </div>
     </div>
