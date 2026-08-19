@@ -83,11 +83,18 @@ foreach ($laporan_data as $row) {
 
 $bulan_teks = $f_bulan ? get_bulan_indo((int)$f_bulan) : 'Semua Bulan';
 
-// Data Pimpinan untuk Tanda Tangan (dari Pengaturan Admin)
+// Data Pimpinan untuk Tanda Tangan (Hanya tampil jika semua kegiatan sudah 'direview' dan setting aktif)
 $penandatangan_nama    = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
 $penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
 $penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
-$tampilkan_ttd_pimpin  = get_app_setting('tampilkan_ttd_pimpinan', '1') === '1';
+$all_direview = !empty($laporan_data);
+foreach ($laporan_data as $r_cek) {
+    if (($r_cek['status'] ?? '') !== 'direview') {
+        $all_direview = false;
+        break;
+    }
+}
+$tampilkan_ttd_pimpin  = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && $all_direview;
 
 if ($f_bulan && $f_tahun) {
     $last_day = date('t', strtotime("$f_tahun-$f_bulan-01"));

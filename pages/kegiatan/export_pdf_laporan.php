@@ -70,11 +70,11 @@ foreach ($lampiran_raw as $lamp) {
 $logo_path = __DIR__ . '/../../assets/images/logo.png';
 $logo_base64 = file_exists($logo_path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo_path)) : '';
 
-// Data Pimpinan untuk Tanda Tangan
+// Data Pimpinan untuk Tanda Tangan (Hanya tampil jika status sudah 'direview' / disetujui)
 $penandatangan_nama    = get_app_setting('penandatangan_nama', 'PIMPINAN CDK WILAYAH NGANJUK');
 $penandatangan_nip     = get_app_setting('penandatangan_nip', '-');
 $penandatangan_jabatan = get_app_setting('penandatangan_jabatan', 'Kepala Cabang Dinas Kehutanan Wilayah Nganjuk');
-$tampilkan_ttd_pimpin  = get_app_setting('tampilkan_ttd_pimpinan', '1') === '1';
+$tampilkan_ttd_pimpin  = (get_app_setting('tampilkan_ttd_pimpinan', '1') === '1') && ($keg['status'] === 'direview');
 
 $tgl_cetak = format_tanggal_indo(date('Y-m-d'));
 $tgl_kegiatan_indo = format_tanggal_indo($keg['tanggal'], true);
