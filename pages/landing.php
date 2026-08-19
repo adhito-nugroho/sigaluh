@@ -92,24 +92,22 @@ if (function_exists('generate_csrf_token')) {
         .feature-card {
             display: flex;
             align-items: flex-start;
-            gap: 16px;
-            padding: 16px 20px;
+            gap: 14px;
+            padding: 14px 18px;
             border-radius: 16px;
-            background: var(--md-sys-color-surface-container-low);
+            background: var(--md-sys-color-surface-container-lowest);
             border: 1px solid var(--md-sys-color-outline-variant);
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
         .feature-card:hover {
             transform: translateY(-2px);
-            background: var(--md-sys-color-surface-container);
-            border-color: var(--md-sys-color-primary);
-            box-shadow: 0 4px 16px rgba(57, 73, 171, 0.08);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
         }
 
         .feature-icon-box {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -118,11 +116,11 @@ if (function_exists('generate_csrf_token')) {
         }
 
         .login-card-elevated {
-            background: var(--md-sys-color-surface-container-lowest);
-            border: 1px solid var(--md-sys-color-outline-variant);
-            border-radius: 24px;
-            padding: 36px 32px;
-            box-shadow: 0 12px 36px -6px rgba(27, 27, 33, 0.08), 0 4px 16px -2px rgba(27, 27, 33, 0.04);
+            background: #ffffff;
+            border: 1px solid rgba(203, 213, 225, 0.85);
+            border-radius: 20px;
+            padding: 32px 28px;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.12), 0 8px 20px -4px rgba(15, 23, 42, 0.06);
         }
 
         .input-group-md {
@@ -143,11 +141,11 @@ if (function_exists('generate_csrf_token')) {
 
         .input-group-md .form-control {
             padding-left: 44px;
-            height: 48px;
+            height: 46px;
             font-size: 14px;
             border-radius: 12px;
             border: 1px solid var(--md-sys-color-outline-variant);
-            background: var(--md-sys-color-surface-container-lowest);
+            background: #ffffff;
             color: var(--md-sys-color-on-surface);
             transition: all 0.2s ease;
         }
@@ -155,7 +153,7 @@ if (function_exists('generate_csrf_token')) {
         .input-group-md .form-control:focus {
             border-color: var(--md-sys-color-primary);
             box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
-            background: var(--md-sys-color-surface-container-lowest);
+            background: #ffffff;
         }
 
         .toggle-password-btn {
@@ -178,9 +176,9 @@ if (function_exists('generate_csrf_token')) {
         }
 
         .btn-submit-md {
-            height: 48px;
+            height: 46px;
             border-radius: 12px;
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -207,9 +205,12 @@ if (function_exists('generate_csrf_token')) {
 </head>
 <body class="flex flex-col min-h-screen">
 
+    <!-- 1. TOP BORDER: Thin forest green accent bar -->
+    <div class="h-1 w-full bg-emerald-700 flex-none"></div>
+
     <!-- TOP APP BAR / HEADER -->
-    <header class="w-full border-b" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+    <header class="w-full border-b flex-none" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="p-1 rounded-xl bg-white shadow-sm flex items-center justify-center border" style="border-color:var(--md-sys-color-outline-variant);">
                     <img src="<?php echo $logo_path; ?>" alt="Logo SI GALUH" class="h-9 w-auto object-contain" onerror="this.style.display='none'">
@@ -224,24 +225,26 @@ if (function_exists('generate_csrf_token')) {
                 </div>
             </div>
             
+            <!-- 5. KONSISTENSI RADIUS BADGE: rounded-full -->
             <div class="hidden sm:flex items-center gap-2">
-                <span class="badge badge-primary">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold" style="background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container);">
                     <span class="material-symbols-outlined text-sm">verified</span> SI GALUH v2.0
                 </span>
             </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 flex items-center py-8 lg:py-16">
+    <!-- 2. WHITESPACE HERO SECTION: Compact vertical spacing (py-4 lg:py-8) -->
+    <main class="flex-1 flex items-center py-4 lg:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
                 <!-- LEFT COLUMN: HERO & FEATURES -->
-                <div class="lg:col-span-7 space-y-6">
+                <div class="lg:col-span-7 space-y-4">
                     
-                    <div class="space-y-3">
-                        <div class="landing-hero-badge">
+                    <div class="space-y-2.5">
+                        <!-- 5. KONSISTENSI RADIUS BADGE: rounded-full -->
+                        <div class="landing-hero-badge rounded-full">
                             <span class="material-symbols-outlined text-sm">nature_people</span> Portal Penyuluh Kehutanan
                         </div>
 
@@ -255,11 +258,12 @@ if (function_exists('generate_csrf_token')) {
                         </p>
                     </div>
 
-                    <!-- FEATURE HIGHLIGHTS -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                    <!-- 3. UNIFIKASI WARNA 4 CARD FITUR (Consistent Semantic Palettes) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         
-                        <div class="feature-card">
-                            <div class="feature-icon-box" style="background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container);">
+                        <!-- Card 1: Hijau Tua (Emerald) → Validasi & Approval -->
+                        <div class="feature-card hover:border-emerald-600">
+                            <div class="feature-icon-box bg-emerald-100 text-emerald-800">
                                 <span class="material-symbols-outlined">assignment_turned_in</span>
                             </div>
                             <div>
@@ -268,9 +272,10 @@ if (function_exists('generate_csrf_token')) {
                             </div>
                         </div>
 
-                        <div class="feature-card">
-                            <div class="feature-icon-box" style="background:var(--md-sys-color-tertiary-container); color:var(--md-sys-color-on-tertiary-container);">
-                                <span class="material-symbols-outlined">pie_chart</span>
+                        <!-- Card 2: Hijau Muda / Teal → Data & Rekap Kinerja (Icon: trending_up) -->
+                        <div class="feature-card hover:border-teal-600">
+                            <div class="feature-icon-box bg-teal-100 text-teal-800">
+                                <span class="material-symbols-outlined">trending_up</span>
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold" style="color:var(--md-sys-color-on-surface);">Format E-Kinerja BKD</h3>
@@ -278,8 +283,9 @@ if (function_exists('generate_csrf_token')) {
                             </div>
                         </div>
 
-                        <div class="feature-card">
-                            <div class="feature-icon-box" style="background:var(--md-sys-color-secondary-container); color:var(--md-sys-color-on-secondary-container);">
+                        <!-- Card 3: Amber / Kuning Tanah → Database & Pendataan Kelompok -->
+                        <div class="feature-card hover:border-amber-600">
+                            <div class="feature-icon-box bg-amber-100 text-amber-800">
                                 <span class="material-symbols-outlined">groups</span>
                             </div>
                             <div>
@@ -288,8 +294,9 @@ if (function_exists('generate_csrf_token')) {
                             </div>
                         </div>
 
-                        <div class="feature-card">
-                            <div class="feature-icon-box" style="background:var(--md-sys-color-primary-container); color:var(--md-sys-color-primary);">
+                        <!-- Card 4: Slate / Abu Gelap → Dokumen & Cetak Laporan -->
+                        <div class="feature-card hover:border-slate-500">
+                            <div class="feature-icon-box bg-slate-100 text-slate-700">
                                 <span class="material-symbols-outlined">picture_as_pdf</span>
                             </div>
                             <div>
@@ -302,33 +309,33 @@ if (function_exists('generate_csrf_token')) {
 
                 </div>
 
-                <!-- RIGHT COLUMN: MATERIAL DESIGN LOGIN CARD -->
+                <!-- 6. SHADOW / CONTRAST CARD LOGIN: RIGHT COLUMN -->
                 <div class="lg:col-span-5 flex justify-center lg:justify-end">
                     <div class="login-card-elevated w-full max-w-md">
 
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container);">
-                                <span class="material-symbols-outlined" style="font-size:26px;">lock</span>
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container);">
+                                <span class="material-symbols-outlined" style="font-size:24px;">lock</span>
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold" style="color:var(--md-sys-color-on-surface);">Masuk ke Sistem</h3>
+                                <h3 class="text-lg font-bold" style="color:var(--md-sys-color-on-surface);">Masuk ke Sistem</h3>
                                 <p class="text-xs" style="color:var(--md-sys-color-on-surface-variant);">Gunakan username dan password akun Anda</p>
                             </div>
                         </div>
 
                         <?php if ($has_error): ?>
-                        <div class="alert alert-danger mb-5 d-flex align-items-center gap-2 p-3 rounded-xl">
+                        <div class="alert alert-danger mb-4 d-flex align-items-center gap-2 p-3 rounded-xl">
                             <span class="material-symbols-outlined" style="font-size:20px;">error</span>
                             <span class="text-xs fw-medium"><?php echo $error_msg; ?></span>
                         </div>
                         <?php endif; ?>
 
-                        <form action="<?php echo $form_action; ?>" method="POST" class="space-y-4">
+                        <form action="<?php echo $form_action; ?>" method="POST" class="space-y-3.5">
                             <input type="hidden" name="csrf_token" value="<?php echo $csrf; ?>">
 
                             <!-- USERNAME FIELD -->
                             <div>
-                                <label for="username" class="form-label block text-xs fw-bold uppercase tracking-wider mb-1.5" style="color:var(--md-sys-color-on-surface-variant);">
+                                <label for="username" class="form-label block text-xs fw-bold uppercase tracking-wider mb-1" style="color:var(--md-sys-color-on-surface-variant);">
                                     Username
                                 </label>
                                 <div class="input-group-md">
@@ -347,7 +354,7 @@ if (function_exists('generate_csrf_token')) {
 
                             <!-- PASSWORD FIELD -->
                             <div>
-                                <label for="password" class="form-label block text-xs fw-bold uppercase tracking-wider mb-1.5" style="color:var(--md-sys-color-on-surface-variant);">
+                                <label for="password" class="form-label block text-xs fw-bold uppercase tracking-wider mb-1" style="color:var(--md-sys-color-on-surface-variant);">
                                     Password
                                 </label>
                                 <div class="input-group-md">
@@ -369,7 +376,7 @@ if (function_exists('generate_csrf_token')) {
                             </div>
 
                             <!-- SUBMIT BUTTON -->
-                            <div class="pt-2">
+                            <div class="pt-1.5">
                                 <button type="submit" class="btn-submit-md w-full">
                                     <span class="material-symbols-outlined">login</span>
                                     <span>Masuk Aplikasi</span>
@@ -377,7 +384,7 @@ if (function_exists('generate_csrf_token')) {
                             </div>
                         </form>
 
-                        <div class="mt-6 pt-4 border-t text-center" style="border-color:var(--md-sys-color-outline-variant);">
+                        <div class="mt-5 pt-3.5 border-t text-center" style="border-color:var(--md-sys-color-outline-variant);">
                             <p class="text-xs" style="color:var(--md-sys-color-on-surface-variant);">
                                 Lupa password? Hubungi <span class="fw-semibold" style="color:var(--md-sys-color-primary);">Administrator TU CDK Nganjuk</span>
                             </p>
@@ -391,7 +398,7 @@ if (function_exists('generate_csrf_token')) {
     </main>
 
     <!-- FOOTER -->
-    <footer class="w-full py-4 border-t" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
+    <footer class="w-full py-3.5 border-t flex-none" style="background:var(--md-sys-color-surface-container-low); border-color:var(--md-sys-color-outline-variant);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs" style="color:var(--md-sys-color-on-surface-variant);">
             <p>&copy; <?php echo $current_year; ?> Cabang Dinas Kehutanan Wilayah Nganjuk.</p>
             <p>Dinas Kehutanan Provinsi Jawa Timur.</p>
