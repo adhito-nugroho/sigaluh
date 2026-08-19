@@ -15,3 +15,24 @@
 
 # Larang directory listing
 Options -Indexes
+
+# ================================================================
+# CACHING & EXPIRES HEADERS (Static Assets Performance Optimization)
+# ================================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # 1 Year Cache + Immutable for versioned static assets
+    <FilesMatch "\.(css|js|woff2|png|jpg|jpeg|webp|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>

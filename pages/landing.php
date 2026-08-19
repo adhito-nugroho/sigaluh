@@ -37,6 +37,11 @@ if (function_exists('generate_csrf_token')) {
     <title>SI GALUH — Portal Masuk</title>
     <link rel="icon" type="image/png" href="<?php echo $logo_path; ?>">
 
+    <!-- Preload Critical Fonts for Fast LCP -->
+    <link rel="preload" href="<?php echo $base_url; ?>/assets/fonts/roboto-flex-6.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<?php echo $base_url; ?>/assets/fonts/roboto-flex-18.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<?php echo $base_url; ?>/assets/fonts/material-symbols-1.woff2" as="font" type="font/woff2" crossorigin>
+
     <!-- Self-hosted Fonts: Roboto Flex, Roboto, Roboto Mono, Material Symbols Outlined -->
     <link rel="stylesheet" href="<?php echo $base_url; ?>/assets/fonts.css">
 

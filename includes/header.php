@@ -19,6 +19,11 @@ $appLogoOk = is_file($appLogoPath);
     <link rel="icon" type="image/x-icon" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/favicon.ico">
     <?php endif; ?>
 
+    <!-- Preload Critical Fonts for Fast LCP -->
+    <link rel="preload" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/fonts/roboto-flex-6.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/fonts/roboto-flex-18.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/fonts/material-symbols-1.woff2" as="font" type="font/woff2" crossorigin>
+
     <!-- Self-hosted Fonts: Roboto Flex, Roboto Mono, Roboto, Material Symbols Outlined -->
     <link rel="stylesheet" href="<?php echo defined('BASE_URL') ? BASE_URL : ''; ?>/assets/fonts.css?v=<?= file_exists(__DIR__ . '/../assets/fonts.css') ? filemtime(__DIR__ . '/../assets/fonts.css') : '1' ?>">
 
