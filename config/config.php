@@ -235,6 +235,106 @@ function compress_and_save_image(string $source_tmp, string $dest_path, int $qua
     unset($src, $dst);
 
     return $result;
-
 }
+
+/**
+ * Format string ke Title Case (huruf besar di awal kata), dengan mempertahankan akronim kehutanan/kedinasan.
+ */
+function format_title_case($text) {
+    $text = trim($text ?? '');
+    if ($text === '') return '';
+    
+    // Normalisasi spasi dan ganti tanda hubung terisolasi jika ada
+    $text = preg_replace('/\s+/', ' ', $text);
+    
+    // List akronim/singkatan umum yang tetap huruf besar
+    $acronyms = [
+        'KTH', 'KBD', 'KBR', 'RHL', 'LMDH', 'PS', 'SVLK', 'TSL', 'KTA', 'HHBK', 
+        'KCA', 'CDK', 'UPT', 'BPDAS', 'SK', 'NIP', 'SDM', 'SOP', 'KKP', 'KPH', 
+        'BKD', 'HRMS', 'ASN', 'PNS', 'PPPK', 'KPS', 'KUPS', 'RKU', 'RKT', 'RUK', 
+        'BUMDES', 'GAPOKTAN', 'POKTAN', 'KTHN', 'KK', 'HA', 'RT', 'RW', 'DISHUT'
+    ];
+    
+    $words = explode(' ', $text);
+    $result = [];
+    foreach ($words as $w) {
+        $clean = trim($w, " \t\n\r\0\x0B.,()[]/\\-");
+        $upper = strtoupper($clean);
+        
+        if (in_array($upper, $acronyms)) {
+            // Ganti bagian kata dengan akronim UPPERCASE
+            $result[] = str_replace($clean, $upper, $w);
+        } else {
+            // Gunakan mb_convert_case untuk Title Case per kata
+            $result[] = mb_convert_case(mb_strtolower($w, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+        }
+    }
+    
+    return implode(' ', $result);
+}
+
+/**
+ * Helper untuk menyusun teks Objek Kerja / Topik untuk Laporan Aktivitas Harian (E-Kinerja / HRMS).
+ * Menghilangkan tanda '-', huruf kapital awal kata (Title Case), dan menggunakan koma (,) sebelum lokasi.
+ */
+function format_objek_kerja_laporan($row) {
+    $substansi = trim($row['substansi_materi'] ?? '');
+    $kth = trim($row['kth_nama'] ?? ($row['kth_nama_manual'] ?? ''));
+    $desa = trim($row['desa_nama'] ?? '');
+    $kec = trim($row['kecamatan_nama'] ?? '');
+    
+    // Bagian konten utama (Substansi materi dan KTH)
+    $main_parts = [];
+    if (!empty($substansi)) {
+        $main_parts[] = format_title_case($substansi);
+    }
+    if (!empty($kth)) {
+        $main_parts[] = format_title_case($kth);
+    }
+    
+    // Jika substansi & kth kosong, cek fallback
+    if (empty($main_parts)) {
+        $fallback = '';
+        if (!empty($row['detail_kegiatan'])) {
+            $fallback = $row['detail_kegiatan'];
+        } elseif (!empty($row['act_objek_kerja'])) {
+            $fallback = $row['act_objek_kerja'];
+        } elseif (!empty($row['uraian_kegiatan'])) {
+            $fallback = $row['uraian_kegiatan'];
+        }
+        if (!empty($fallback)) {
+            $main_parts[] = format_title_case($fallback);
+        }
+    }
+    
+    // Gabungkan bagian utama
+    $main_text = implode(' ', $main_parts);
+    // Hilangkan tanda '-' yang berdiri sendiri atau di antara kata jika ada
+    $main_text = preg_replace('/\s*-\s*/', ' ', $main_text);
+    $main_text = trim(preg_replace('/\s+/', ' ', $main_text));
+    
+    // Bagian Lokasi (Desa & Kecamatan)
+    $loc_parts = [];
+    if (!empty($desa)) {
+        $loc_parts[] = 'Desa ' . format_title_case($desa);
+    }
+    if (!empty($kec)) {
+        $loc_parts[] = 'Kec. ' . format_title_case($kec);
+    }
+    
+    // Gabungkan lokasi dengan koma
+    $loc_text = implode(', ', $loc_parts);
+    
+    // Jika ada konten utama dan lokasi, pisahkan dengan koma sebelum lokasi
+    if (!empty($main_text) && !empty($loc_text)) {
+        return $main_text . ', ' . $loc_text;
+    } elseif (!empty($main_text)) {
+        return $main_text;
+    } elseif (!empty($loc_text)) {
+        return $loc_text;
+    }
+    
+    return '-';
+}
+
 

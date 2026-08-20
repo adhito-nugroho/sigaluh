@@ -286,31 +286,7 @@ ob_start();
                     $vol = (int)$row['vol_final'];
                     $tot_wpt = $wpt * $vol;
 
-                    $parts_obj = [];
-                    if (!empty($row['substansi_materi'])) {
-                        $parts_obj[] = trim($row['substansi_materi']);
-                    }
-                    if (!empty($row['kth_nama'])) {
-                        $parts_obj[] = trim($row['kth_nama']);
-                    } elseif (!empty($row['kth_nama_manual'])) {
-                        $parts_obj[] = trim($row['kth_nama_manual']);
-                    }
-                    if (!empty($row['desa_nama'])) {
-                        $parts_obj[] = 'DESA ' . trim($row['desa_nama']);
-                    }
-                    if (!empty($row['kecamatan_nama'])) {
-                        $parts_obj[] = 'KEC. ' . trim($row['kecamatan_nama']);
-                    }
-                    if (empty($parts_obj)) {
-                        if (!empty($row['detail_kegiatan'])) {
-                            $parts_obj[] = trim($row['detail_kegiatan']);
-                        } elseif (!empty($row['act_objek_kerja'])) {
-                            $parts_obj[] = trim($row['act_objek_kerja']);
-                        } else {
-                            $parts_obj[] = trim($row['uraian_kegiatan']);
-                        }
-                    }
-                    $objek_kerja = strtoupper(implode(' - ', array_filter($parts_obj)));
+                    $objek_kerja = format_objek_kerja_laporan($row);
                 ?>
                 <tr>
                     <td class="text-center"><?= $no++ ?></td>

@@ -275,7 +275,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
             </div>
             <div class="card p-2.5" style="box-shadow:none;">
                 <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">6. Objek Kerja / Topik (<code style="color:var(--md-sys-color-primary);">objek_kerja</code>):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Narasi objek kerja / sasaran / substansi materi (otomatis huruf besar/kapital).</p>
+                <p class="text-muted text-sm mt-0.5 mb-0">Narasi objek kerja / sasaran / substansi materi (format Title Case/kapital awal kata, koma sebelum lokasi).</p>
             </div>
         </div>
         <p class="text-muted fst-italic text-sm mt-2 mb-0">&#128161; Tips: Anda dapat mengklik tombol <span class="fw-semibold" style="color:var(--md-sys-color-on-surface);">"Salin Baris"</span> atau tombol copy pada tiap kolom untuk mempercepat pengisian ke formulir web HRMS.</p>
@@ -369,32 +369,8 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
                         $vol = (int)$row['vol_final'];
                         $tot_wpt = $wpt * $vol;
                         
-                        // Kolom 6: Objek Kerja / Topik (Otomatis UPPERCASE sesuai standar form BKD)
-                        $parts_obj = [];
-                        if (!empty($row['substansi_materi'])) {
-                            $parts_obj[] = trim($row['substansi_materi']);
-                        }
-                        if (!empty($row['kth_nama'])) {
-                            $parts_obj[] = trim($row['kth_nama']);
-                        } elseif (!empty($row['kth_nama_manual'])) {
-                            $parts_obj[] = trim($row['kth_nama_manual']);
-                        }
-                        if (!empty($row['desa_nama'])) {
-                            $parts_obj[] = 'DESA ' . trim($row['desa_nama']);
-                        }
-                        if (!empty($row['kecamatan_nama'])) {
-                            $parts_obj[] = 'KEC. ' . trim($row['kecamatan_nama']);
-                        }
-                        if (empty($parts_obj)) {
-                            if (!empty($row['detail_kegiatan'])) {
-                                $parts_obj[] = trim($row['detail_kegiatan']);
-                            } elseif (!empty($row['act_objek_kerja'])) {
-                                $parts_obj[] = trim($row['act_objek_kerja']);
-                            } else {
-                                $parts_obj[] = trim($row['uraian_kegiatan']);
-                            }
-                        }
-                        $objek_kerja = strtoupper(implode(' - ', array_filter($parts_obj)));
+                        // Kolom 6: Objek Kerja / Topik (Title Case, tanpa '-', koma sebelum lokasi)
+                        $objek_kerja = format_objek_kerja_laporan($row);
                     ?>
                     <tr class="hover:bg-primary-50/40 transition-colors group">
                         <td class="py-3 px-3 text-center align-top font-semibold text-neutral-500 border-r border-neutral-200">
