@@ -106,6 +106,15 @@ if ($ttd_file && file_exists($ttd_path)) {
     $penandatangan_ttd_base64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($ttd_path));
 }
 
+// Gambar TTD Penyuluh (PNG transparan)
+$penyuluh_ttd_file = $penyuluh_aktif['tanda_tangan'] ?? '';
+$penyuluh_ttd_path = $penyuluh_ttd_file ? __DIR__ . '/../../uploads/ttd/' . $penyuluh_ttd_file : '';
+$penyuluh_ttd_base64 = '';
+if ($penyuluh_ttd_file && file_exists($penyuluh_ttd_path)) {
+    $mime_p = mime_content_type($penyuluh_ttd_path) ?: 'image/png';
+    $penyuluh_ttd_base64 = 'data:' . $mime_p . ';base64,' . base64_encode(file_get_contents($penyuluh_ttd_path));
+}
+
 if ($f_bulan && $f_tahun) {
     $last_day = date('t', strtotime("$f_tahun-$f_bulan-01"));
     $tgl_tanda_tangan = "$last_day " . get_bulan_indo((int)$f_bulan) . " $f_tahun";
@@ -242,7 +251,13 @@ ob_start();
                 <p style="margin: 3px 0 0 0; font-size: 11px; font-weight: bold;">
                     <?= e($penyuluh_aktif['jabatan'] ?? 'Penyuluh Kehutanan') ?>
                 </p>
-                <div style="height: 52px;"></div>
+                <?php if (!empty($penyuluh_ttd_base64)): ?>
+                    <div style="height: 52px; text-align: center; margin: 2px 0;">
+                        <img src="<?= $penyuluh_ttd_base64 ?>" style="max-height: 50px; max-width: 140px;" alt="TTD Penyuluh">
+                    </div>
+                <?php else: ?>
+                    <div style="height: 52px;"></div>
+                <?php endif; ?>
                 <p style="margin: 0; font-size: 11px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
                     <?= e($penyuluh_aktif['nama'] ?? '') ?>
                 </p>
