@@ -132,6 +132,45 @@ try {
                 }
             }
         }
+    // Handle Upload / Hapus Tanda Tangan
+    $target_dir = __DIR__ . '/../../uploads/ttd';
+    if (!file_exists($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+
+    if (!empty($_POST['hapus_tanda_tangan']) && $user_id) {
+        $stmt_cur = $pdo->prepare("SELECT tanda_tangan FROM users WHERE id = ?");
+        $stmt_cur->execute([$user_id]);
+        $old_ttd = $stmt_cur->fetchColumn();
+        if ($old_ttd && file_exists($target_dir . '/' . $old_ttd)) {
+            @unlink($target_dir . '/' . $old_ttd);
+        }
+        $pdo->prepare("UPDATE users SET tanda_tangan = NULL WHERE id = ?")->execute([$user_id]);
+    }
+
+    if (isset($_FILES['tanda_tangan']) && $_FILES['tanda_tangan']['error'] === UPLOAD_ERR_OK && $user_id) {
+        $file_tmp = $_FILES['tanda_tangan']['tmp_name'];
+        $file_name = $_FILES['tanda_tangan']['name'];
+        $file_size = $_FILES['tanda_tangan']['size'];
+
+        $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file_tmp);
+        finfo_close($finfo);
+
+        if ($ext === 'png' && $mime === 'image/png' && $file_size <= 2 * 1024 * 1024) {
+            $stmt_cur = $pdo->prepare("SELECT tanda_tangan FROM users WHERE id = ?");
+            $stmt_cur->execute([$user_id]);
+            $old_ttd = $stmt_cur->fetchColumn();
+            if ($old_ttd && file_exists($target_dir . '/' . $old_ttd)) {
+                @unlink($target_dir . '/' . $old_ttd);
+            }
+
+            $new_filename = 'ttd_user_' . $user_id . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.png';
+            if (move_uploaded_file($file_tmp, $target_dir . '/' . $new_filename)) {
+                $pdo->prepare("UPDATE users SET tanda_tangan = ? WHERE id = ?")->execute([$new_filename, $user_id]);
+            }
+        }
     }
 
     $from = $_POST['from'] ?? '';

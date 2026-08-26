@@ -153,7 +153,7 @@ $init_user_json = json_encode([
 </div>
 
 <div class="card" style="max-width:896px;" x-data="userManager('<?= $init_role_kode ?>', <?= htmlspecialchars($init_user_json, ENT_QUOTES, 'UTF-8') ?>)">
-    <form action="<?= BASE_URL ?>/index.php?page=users/process" method="POST" class="card-body space-y-4">
+    <form action="<?= BASE_URL ?>/index.php?page=users/process" method="POST" enctype="multipart/form-data" class="card-body space-y-4">
         <input type="hidden" name="csrf_token" value="<?= e(generate_csrf_token()) ?>">
         <input type="hidden" name="action" value="<?= $is_edit ? 'update' : 'create' ?>">
         <input type="hidden" name="selected_penyuluh_id" :value="selectedPenyuluhId">
@@ -238,6 +238,25 @@ $init_user_json = json_encode([
                 <div>
                     <label class="form-label">Password <span class="text-muted fw-normal" style="font-size:11px;text-transform:none;">(kosongkan jika tidak diubah)</span></label>
                     <input type="password" name="password" <?= $is_edit ? '' : 'required' ?> minlength="6" placeholder="••••••••" class="form-control">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="form-label">Tanda Tangan Digital (PNG)</label>
+                    <?php if ($is_edit && !empty($user_data['tanda_tangan']) && file_exists(__DIR__ . '/../../uploads/ttd/' . $user_data['tanda_tangan'])): ?>
+                        <div class="d-flex align-items-center gap-3 p-2.5 mb-2 rounded-lg border bg-white" style="border-color:var(--md-sys-color-outline-variant); max-width:420px;">
+                            <img src="<?= BASE_URL ?>/uploads/ttd/<?= e($user_data['tanda_tangan']) ?>?v=<?= time() ?>" style="max-height:48px; max-width:120px; object-fit:contain;" alt="TTD">
+                            <div class="text-xs">
+                                <span class="badge badge-success mb-1">Sudah Diupload</span>
+                                <div>
+                                    <label class="text-danger d-inline-flex align-items-center gap-1 cursor-pointer" style="font-size:11px;">
+                                        <input type="checkbox" name="hapus_tanda_tangan" value="1"> Hapus tanda tangan saat simpan
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <input type="file" name="tanda_tangan" accept="image/png" class="form-control">
+                    <p class="text-muted mt-1 mb-0" style="font-size:11px;">Format file: PNG (disarankan transparan), Maks. 2MB. Tanda tangan akan otomatis dicetak pada laporan.</p>
                 </div>
             </div>
         </div>
