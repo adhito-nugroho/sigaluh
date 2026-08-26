@@ -100,6 +100,10 @@ function get_active_class($page_name, $current_page) {
         <div style="font-weight:600;color:var(--md-sys-color-on-surface);"><?= e($_SESSION['user_nama'] ?? '') ?></div>
         <div style="font-size:10px;color:var(--md-sys-color-on-surface-variant);">NIP. <?= e($_SESSION['user_nip'] ?? '-') ?></div>
         <div class="d-flex gap-2 mt-2">
+            <a href="<?= BASE_URL ?>/index.php?page=profile/signature" class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1" title="Tanda Tangan Digital">
+                <span class="material-symbols-outlined" style="font-size:16px;">draw</span>
+                <span>TTD</span>
+            </a>
             <a href="<?= BASE_URL ?>/index.php?page=profile/password" class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1" title="Ganti Password">
                 <span class="material-symbols-outlined" style="font-size:16px;">key</span>
                 <span>Sandi</span>
