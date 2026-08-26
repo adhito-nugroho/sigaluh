@@ -86,6 +86,18 @@ if ($ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $ttd_file)) {
     $ttd_url = BASE_URL . '/uploads/ttd/' . $ttd_file;
 }
 
+// Gambar TTD Penyuluh (PNG transparan)
+$penyuluh_ttd_file = $penyuluh_aktif['tanda_tangan'] ?? '';
+$penyuluh_ttd_url = '';
+$penyuluh_has_ttd = false;
+if ($penyuluh_ttd_file && file_exists(__DIR__ . '/../../uploads/ttd/' . $penyuluh_ttd_file)) {
+    $penyuluh_ttd_url = BASE_URL . '/uploads/ttd/' . $penyuluh_ttd_file . '?v=' . time();
+    $penyuluh_has_ttd = true;
+}
+$link_upload_ttd = ($role === 'penyuluh' || ($penyuluh_aktif && $penyuluh_aktif['id'] == $user_id))
+    ? BASE_URL . '/index.php?page=profile/signature'
+    : BASE_URL . '/index.php?page=penyuluh/form&id=' . ($penyuluh_aktif['id'] ?? 0);
+
 if ($f_bulan && $f_tahun) {
     $last_day = date('t', strtotime("$f_tahun-$f_bulan-01"));
     $tgl_tanda_tangan = "$last_day " . get_bulan_indo((int)$f_bulan) . " $f_tahun";
@@ -110,7 +122,7 @@ if ($f_bulan && $f_tahun) {
                 <span class="material-symbols-outlined">table_chart</span> Download Excel
             </button>
         </form>
-        <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank">
+        <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank" onsubmit="return handleDownloadPdf(event, <?= $penyuluh_has_ttd ? 'true' : 'false' ?>, '<?= addslashes(e($penyuluh_aktif['nama'] ?? '')) ?>', '<?= $link_upload_ttd ?>')">
             <input type="hidden" name="page" value="laporan/export_pdf">
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
@@ -121,6 +133,25 @@ if ($f_bulan && $f_tahun) {
         </form>
     </div>
 </div>
+
+<?php if ($penyuluh_aktif && !$penyuluh_has_ttd): ?>
+<!-- Banner Peringatan Tanda Tangan Belum Di-set -->
+<div class="alert alert-warning mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 shadow-sm" style="border-radius:12px;border:1px solid #f59e0b;background:#fffbeb;">
+    <div class="d-flex align-items-center gap-2.5">
+        <span class="material-symbols-outlined text-warning flex-shrink-0" style="font-size:28px;">warning</span>
+        <div>
+            <div class="fw-bold text-neutral-900" style="font-size:13.5px;">Tanda Tangan Digital Belum Diatur</div>
+            <div class="text-xs text-neutral-600 mt-0.5">
+                Penyuluh <b><?= e($penyuluh_aktif['nama']) ?></b> belum mengunggah berkas tanda tangan PNG. Dokumen PDF akan digenerate tanpa tanda tangan otomatis.
+            </div>
+        </div>
+    </div>
+    <a href="<?= $link_upload_ttd ?>" class="btn btn-warning btn-sm d-inline-flex align-items-center gap-1.5 fw-bold" style="color:#78350f;background:#fde68a;border:1px solid #f59e0b;">
+        <span class="material-symbols-outlined" style="font-size:16px;">draw</span>
+        <span>Atur Tanda Tangan Sekarang</span>
+    </a>
+</div>
+<?php endif; ?>
 
 <!-- Filter -->
 <div class="card mb-4">
@@ -295,7 +326,13 @@ if ($f_bulan && $f_tahun) {
                     <p style="margin: 3px 0 0 0; font-size: 13px; font-weight: bold;">
                         <?= e($penyuluh_aktif['jabatan'] ?? 'Penyuluh Kehutanan') ?>
                     </p>
-                    <div style="height: 75px;"></div>
+                    <?php if ($penyuluh_has_ttd && !empty($penyuluh_ttd_url)): ?>
+                        <div style="height: 65px; display: flex; align-items: center; justify-content: center; margin: 5px 0;">
+                            <img src="<?= $penyuluh_ttd_url ?>" style="max-height: 60px; max-width: 150px; object-fit: contain;" alt="TTD Penyuluh">
+                        </div>
+                    <?php else: ?>
+                        <div style="height: 75px;"></div>
+                    <?php endif; ?>
                     <p style="margin: 0; font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
                         <?= e($penyuluh_aktif['nama'] ?? '') ?>
                     </p>
@@ -350,3 +387,66 @@ if ($f_bulan && $f_tahun) {
         <?php endif; ?>
     <?php endif; ?>
 </div>
+
+<!-- Modal Dialog Peringatan Tanda Tangan Belum Di-set -->
+<div id="modalTtdAlert" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" style="display:none;" onclick="if(event.target === this) closeTtdModal()">
+    <div class="card shadow-xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-4 border-b d-flex align-items-center justify-content-between" style="background:#fffbeb;border-color:#fef3c7;">
+            <div class="d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-warning" style="font-size:24px;">warning</span>
+                <h5 class="mb-0 fw-bold text-neutral-900" style="font-size:15px;">Tanda Tangan Belum Diatur</h5>
+            </div>
+            <button type="button" class="btn-close" onclick="closeTtdModal()"></button>
+        </div>
+        <div class="p-4 text-sm text-neutral-700">
+            <p class="mb-2">
+                Penyuluh <b id="ttdModalNama">-</b> belum memiliki file tanda tangan digital yang diunggah.
+            </p>
+            <p class="mb-0 text-xs text-neutral-500">
+                Dokumen PDF yang diunduh tidak akan memiliki tanda tangan otomatis (kolom tanda tangan akan kosong). Anda dapat tetap mengunduh atau mengatur tanda tangan terlebih dahulu.
+            </p>
+        </div>
+        <div class="p-3 border-t bg-neutral-50 d-flex justify-content-end gap-2">
+            <a href="#" id="ttdModalBtnUpload" class="btn btn-warning btn-sm d-inline-flex align-items-center gap-1 fw-semibold" style="color:#78350f;background:#fde68a;border:1px solid #f59e0b;">
+                <span class="material-symbols-outlined" style="font-size:16px;">draw</span>
+                <span>Atur TTD Sekarang</span>
+            </a>
+            <button type="button" id="ttdModalBtnContinue" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size:16px;">file_download</span>
+                <span>Tetap Download PDF</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function handleDownloadPdf(event, hasTtd, namaPenyuluh, linkUpload) {
+    if (hasTtd) {
+        return true;
+    }
+    event.preventDefault();
+    const form = event.currentTarget;
+    
+    document.getElementById('ttdModalNama').textContent = namaPenyuluh || 'Penyuluh';
+    document.getElementById('ttdModalBtnUpload').href = linkUpload;
+    document.getElementById('ttdModalBtnContinue').onclick = function() {
+        closeTtdModal();
+        form.submit();
+    };
+    
+    const modalEl = document.getElementById('modalTtdAlert');
+    if (modalEl) {
+        modalEl.style.display = 'flex';
+    } else {
+        if (confirm('Perhatian: Tanda tangan digital untuk ' + namaPenyuluh + ' belum diatur.\n\nLaporan akan dicetak tanpa tanda tangan. Tetap lanjutkan download PDF?')) {
+            form.submit();
+        }
+    }
+    return false;
+}
+
+function closeTtdModal() {
+    const modalEl = document.getElementById('modalTtdAlert');
+    if (modalEl) modalEl.style.display = 'none';
+}
+</script>
