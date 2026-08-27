@@ -74,6 +74,10 @@ function get_active_class($page_name, $current_page) {
             <span class="material-symbols-outlined">manage_accounts</span>
             <span>Kelola Pengguna</span>
         </a>
+        <a href="<?= BASE_URL ?>/index.php?page=logs" class="nav-link <?= get_active_class('logs', $current_page) ?>">
+            <span class="material-symbols-outlined">history</span>
+            <span>Log Aktivitas</span>
+        </a>
         <?php endif; ?>
 
         <?php if (has_role('admin')): ?>
