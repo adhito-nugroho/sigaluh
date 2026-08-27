@@ -1,6 +1,6 @@
 <?php
 // Script untuk membuat tabel activity_logs
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../../config/database.php';
 
 try {
     $sql = "
