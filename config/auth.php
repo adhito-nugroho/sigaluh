@@ -1,6 +1,7 @@
 <?php
 // config/auth.php
 require_once 'database.php';
+require_once __DIR__ . '/../includes/activity_logger.php';
 
 /**
  * Cek apakah user sudah login

@@ -84,5 +84,7 @@ if (isset($_FILES['penandatangan_ttd_file']) && $_FILES['penandatangan_ttd_file'
     }
 }
 
+log_activity('update', 'settings', 'Memperbarui pengaturan pejabat penandatangan laporan');
+
 header('Location: ' . BASE_URL . '/index.php?page=settings/app&saved=1');
 exit;

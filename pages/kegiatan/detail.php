@@ -58,6 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role !== 'penyuluh') {
     
     $updateStmt = $pdo->prepare("UPDATE kegiatan SET status = 'direview', catatan_pimpinan = ?, direview_oleh = ?, direview_at = CURRENT_TIMESTAMP WHERE id = ?");
     $updateStmt->execute([$catatan, $user_id, $id]);
+
+    log_activity('update', 'kegiatan', "Menyetujui/me-review kegiatan ID #{$id} (" . ($keg['penyuluh_nama'] ?? '') . " - {$keg['tanggal']})", [
+        'status' => $keg['status']
+    ], [
+        'status'  => 'direview',
+        'catatan' => $catatan
+    ]);
     
     header('Location: ' . BASE_URL . '/index.php?page=kegiatan/detail&id=' . $id);
     exit;

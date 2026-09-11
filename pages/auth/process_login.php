@@ -81,6 +81,9 @@ try {
         $updateStmt = $pdo->prepare("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?");
         $updateStmt->execute([$user['id']]);
 
+        // Catat ke log aktivitas
+        log_activity('login', 'auth', 'User login ke sistem: ' . $user['nama'] . ' (' . $user['nip'] . ')');
+
         // Redirect ke dashboard
         header('Location: ' . BASE_URL . '/index.php?page=dashboard');
         exit;

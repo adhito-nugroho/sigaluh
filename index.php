@@ -21,6 +21,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 require_once 'config/config.php';
 require_once 'config/database.php';
 require_once 'config/auth.php';
+require_once 'includes/activity_logger.php';
 
 // Ambil parameter halaman
 $page = $_GET['page'] ?? '';

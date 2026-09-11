@@ -27,14 +27,17 @@ if ($action === 'delete') {
     }
 
     // Pastikan record ada sebelum dihapus
-    $stmt_check = $pdo->prepare("SELECT id FROM kegiatan WHERE id = ?");
+    $stmt_check = $pdo->prepare("SELECT k.*, u.nama as penyuluh_nama FROM kegiatan k JOIN users u ON k.user_id = u.id WHERE k.id = ?");
     $stmt_check->execute([$id]);
-    if (!$stmt_check->fetch()) {
+    $keg_lama = $stmt_check->fetch();
+    if (!$keg_lama) {
         header('Location: ' . BASE_URL . '/index.php?page=kegiatan&error=not_found');
         exit;
     }
 
     $pdo->prepare("DELETE FROM kegiatan WHERE id = ?")->execute([$id]);
+
+    log_activity('delete', 'kegiatan', "Menghapus kegiatan ID #{$id} ({$keg_lama['penyuluh_nama']} - {$keg_lama['tanggal']})", $keg_lama, null);
 
     header('Location: ' . BASE_URL . '/index.php?page=kegiatan&success=deleted');
     exit;
@@ -115,6 +118,15 @@ try {
             $pelaksanaan_kegiatan, $kesimpulan_saran, $permasalahan_kendala, $solusi, $status,
             $id, $user_id
         ]);
+
+        log_activity('update', 'kegiatan', "Memperbarui kegiatan tanggal {$tanggal} (ID #{$id})", [
+            'status' => $keg['status'] ?? '',
+        ], [
+            'id' => $id,
+            'tanggal' => $tanggal,
+            'status' => $status,
+            'uraian' => mb_strimwidth($uraian_kegiatan, 0, 100, '...')
+        ]);
         
     } else {
         // Create mode
@@ -135,6 +147,13 @@ try {
             $pelaksanaan_kegiatan, $kesimpulan_saran, $permasalahan_kendala, $solusi, $status
         ]);
         $id = $pdo->lastInsertId();
+
+        log_activity('create', 'kegiatan', "Menambah kegiatan baru tanggal {$tanggal} (ID #{$id})", null, [
+            'id' => $id,
+            'tanggal' => $tanggal,
+            'status' => $status,
+            'uraian' => mb_strimwidth($uraian_kegiatan, 0, 100, '...')
+        ]);
     }
 
     // ── HAPUS LAMPIRAN YANG DITANDAI ─────────────────────────────────────────

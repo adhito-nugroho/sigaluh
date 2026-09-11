@@ -28,6 +28,8 @@ try {
         $status_aktif = (int)$_POST['status_aktif'];
         $stmt = $pdo->prepare("UPDATE users SET status_aktif = ? WHERE id = ?");
         $stmt->execute([$status_aktif, $id]);
+        $status_txt = $status_aktif ? 'mengaktifkan' : 'menonaktifkan';
+        log_activity('update', 'users', "Admin {$status_txt} akun pengguna ID #{$id}");
         header('Location: ' . BASE_URL . '/index.php?page=users');
         exit;
     }
@@ -178,6 +180,20 @@ try {
     $redirect_page = ($from === 'penyuluh') ? 'penyuluh' : 'users';
 
     $pdo->commit();
+
+    if ($action === 'create') {
+        log_activity('create', 'users', "Menambahkan pengguna baru: {$nama} ({$nip})", null, [
+            'id' => $user_id,
+            'nama' => $nama,
+            'nip' => $nip
+        ]);
+    } else {
+        log_activity('update', 'users', "Mengubah data pengguna: {$nama} ({$nip})", null, [
+            'id' => $user_id,
+            'nama' => $nama,
+            'nip' => $nip
+        ]);
+    }
 
     header('Location: ' . BASE_URL . '/index.php?page=' . $redirect_page);
     exit;

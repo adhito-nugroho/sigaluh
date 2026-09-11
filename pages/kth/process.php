@@ -55,7 +55,7 @@ try {
     // ── DELETE KTH ────────────────────────────────────────────────────────
     if ($action === 'delete' && $id) {
         // Ambil data KTH untuk verifikasi otorisasi
-        $stmt_kth = $pdo->prepare("SELECT id, kecamatan_id, desa_id FROM m_kth WHERE id = ?");
+        $stmt_kth = $pdo->prepare("SELECT id, nama, kecamatan_id, desa_id FROM m_kth WHERE id = ?");
         $stmt_kth->execute([$id]);
         $existing_kth = $stmt_kth->fetch();
 
@@ -74,6 +74,9 @@ try {
 
         $stmt = $pdo->prepare("DELETE FROM m_kth WHERE id = ?");
         $stmt->execute([$id]);
+
+        log_activity('delete', 'kth', "Menghapus data KTH: " . ($existing_kth['nama'] ?? "ID #{$id}"), $existing_kth, null);
+
         header('Location: ' . BASE_URL . '/index.php?page=kth&success=deleted');
         exit;
     }
@@ -135,6 +138,12 @@ try {
             $nama, $no_sk, $tanggal_sk, $kelas_kelompok, $ketua, $jumlah_anggota, $luas_lahan_ha,
             $provinsi_id, $kabupaten_id, $kecamatan_id, $desa_id, $kontak, $keterangan
         ]);
+        $new_kth_id = $pdo->lastInsertId();
+        log_activity('create', 'kth', "Menambahkan KTH baru: {$nama} (ID #{$new_kth_id})", null, [
+            'id' => $new_kth_id,
+            'nama' => $nama,
+            'ketua' => $ketua
+        ]);
     } elseif ($action === 'update' && $id) {
         $sql = "UPDATE m_kth SET 
             nama = ?, no_sk = ?, tanggal_sk = ?, kelas_kelompok = ?, ketua = ?, 
@@ -145,6 +154,11 @@ try {
         $stmt->execute([
             $nama, $no_sk, $tanggal_sk, $kelas_kelompok, $ketua, $jumlah_anggota, $luas_lahan_ha,
             $provinsi_id, $kabupaten_id, $kecamatan_id, $desa_id, $kontak, $keterangan, $id
+        ]);
+        log_activity('update', 'kth', "Mengubah data KTH: {$nama} (ID #{$id})", null, [
+            'id' => $id,
+            'nama' => $nama,
+            'ketua' => $ketua
         ]);
     }
 

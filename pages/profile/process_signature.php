@@ -77,6 +77,8 @@ try {
             $stmt_upd = $pdo->prepare("UPDATE users SET tanda_tangan = ? WHERE id = ?");
             $stmt_upd->execute([$new_filename, $user_id]);
 
+            log_activity('update', 'profile', 'Pengguna memperbarui tanda tangan digital');
+
             header('Location: ' . BASE_URL . '/index.php?page=profile/signature&saved=1');
             exit;
         } else {
@@ -91,6 +93,8 @@ try {
 
         $stmt_del = $pdo->prepare("UPDATE users SET tanda_tangan = NULL WHERE id = ?");
         $stmt_del->execute([$user_id]);
+
+        log_activity('delete', 'profile', 'Pengguna menghapus tanda tangan digital');
 
         header('Location: ' . BASE_URL . '/index.php?page=profile/signature&deleted=1');
         exit;
