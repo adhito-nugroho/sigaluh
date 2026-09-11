@@ -50,9 +50,8 @@ try {
         }
 
         // Validasi MIME type
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $file_tmp);
-        finfo_close($finfo);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file_tmp);
 
         if ($mime !== 'image/png') {
             header('Location: ' . BASE_URL . '/index.php?page=profile/signature&error=' . urlencode('Tipe berkas tidak valid. Harap unggah file gambar PNG.'));

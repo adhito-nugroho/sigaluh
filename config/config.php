@@ -102,6 +102,10 @@ function format_tanggal_indo($date_str, $with_day = false) {
 
 /**
  * Ambil satu nilai app_settings dari database (dengan in-memory caching)
+ * 
+ * @param string $key
+ * @param mixed $default
+ * @return mixed
  */
 function get_app_setting($key, $default = '') {
     global $pdo;

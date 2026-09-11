@@ -132,6 +132,8 @@ try {
                 }
             }
         }
+    }
+
     // Handle Upload / Hapus Tanda Tangan
     $target_dir = __DIR__ . '/../../uploads/ttd';
     if (!file_exists($target_dir)) {
@@ -154,9 +156,8 @@ try {
         $file_size = $_FILES['tanda_tangan']['size'];
 
         $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $file_tmp);
-        finfo_close($finfo);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file_tmp);
 
         if ($ext === 'png' && $mime === 'image/png' && $file_size <= 2 * 1024 * 1024) {
             $stmt_cur = $pdo->prepare("SELECT tanda_tangan FROM users WHERE id = ?");
