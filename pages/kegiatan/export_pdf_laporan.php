@@ -24,6 +24,7 @@ if ($role === 'penyuluh') {
 $sql = "
     SELECT k.*,
            u.nama as penyuluh_nama, u.nip as penyuluh_nip, u.jabatan as penyuluh_jabatan, u.pangkat_golongan as penyuluh_pangkat,
+           u.tanda_tangan as penyuluh_tanda_tangan,
            t.kode as tusi_kode, t.nama as tusi_nama,
            prov.nama as provinsi_nama, kab.nama as kabupaten_nama, 
            kec.nama as kecamatan_nama, desa.nama as desa_nama,
@@ -84,6 +85,15 @@ $penandatangan_ttd_base64 = '';
 if ($ttd_file && file_exists($ttd_path)) {
     $mime = mime_content_type($ttd_path) ?: 'image/png';
     $penandatangan_ttd_base64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($ttd_path));
+}
+
+// Gambar TTD Penyuluh (PNG transparan)
+$penyuluh_ttd_file = $keg['penyuluh_tanda_tangan'] ?? '';
+$penyuluh_ttd_path = $penyuluh_ttd_file ? __DIR__ . '/../../uploads/ttd/' . $penyuluh_ttd_file : '';
+$penyuluh_ttd_base64 = '';
+if ($penyuluh_ttd_file && file_exists($penyuluh_ttd_path)) {
+    $mime_p = mime_content_type($penyuluh_ttd_path) ?: 'image/png';
+    $penyuluh_ttd_base64 = 'data:' . $mime_p . ';base64,' . base64_encode(file_get_contents($penyuluh_ttd_path));
 }
 
 $tgl_cetak = format_tanggal_indo(date('Y-m-d'));
@@ -637,7 +647,13 @@ ob_start();
             <td>
                 <div class="sign-title">Nganjuk, <?= $tgl_cetak ?></div>
                 <div class="sign-jabatan">Yang Melaporkan / Penyuluh,</div>
-                <div class="sign-space"></div>
+                <?php if (!empty($penyuluh_ttd_base64)): ?>
+                    <div class="sign-img-wrap">
+                        <img src="<?= $penyuluh_ttd_base64 ?>" class="sign-img" alt="TTD Penyuluh">
+                    </div>
+                <?php else: ?>
+                    <div class="sign-space"></div>
+                <?php endif; ?>
                 <div class="sign-name"><?= e($keg['penyuluh_nama']) ?></div>
                 <div class="sign-nip">NIP. <?= e($keg['penyuluh_nip'] ?: '-') ?></div>
             </td>

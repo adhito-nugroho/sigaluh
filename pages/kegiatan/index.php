@@ -266,7 +266,7 @@ function get_status_badge($status) {
                                         <span class="material-symbols-outlined">visibility</span>
                                     </a>
 
-                                    <a href="<?= BASE_URL ?>/index.php?page=kegiatan/export_pdf_laporan&id=<?= $row['id'] ?>" class="btn-icon" title="Cetak Laporan (PDF)">
+                                    <a href="<?= BASE_URL ?>/index.php?page=kegiatan/export_pdf_laporan&id=<?= $row['id'] ?>" target="_blank" rel="noopener noreferrer" class="btn-icon" title="Cetak Laporan (PDF)">
                                         <span class="material-symbols-outlined">print</span>
                                     </a>
 
