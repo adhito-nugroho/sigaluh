@@ -8,11 +8,24 @@ $user_id = $_SESSION['user_id'] ?? 0;
 $f_bulan = $_GET['bulan'] ?? date('m');
 $f_tahun = $_GET['tahun'] ?? date('Y');
 $f_penyuluh = ($role === 'penyuluh') ? $user_id : ($_GET['penyuluh_id'] ?? '');
+$f_tusi = $_GET['tusi_id'] ?? '';
 
 // Ambil list penyuluh untuk filter
 $penyuluh_list = [];
 if ($role !== 'penyuluh') {
     $penyuluh_list = $pdo->query("SELECT id, nama FROM users WHERE role_id = (SELECT id FROM m_roles WHERE kode = 'penyuluh') ORDER BY nama ASC")->fetchAll();
+}
+
+// Ambil list TUSI untuk filter
+$tusi_list = $pdo->query("SELECT id, kode, nama FROM m_tusi ORDER BY id ASC")->fetchAll();
+$selected_tusi_nama = '';
+if (!empty($f_tusi)) {
+    foreach ($tusi_list as $t) {
+        if ($t['id'] == $f_tusi) {
+            $selected_tusi_nama = $t['kode'] . ' - ' . $t['nama'];
+            break;
+        }
+    }
 }
 
 // Data Laporan (Hanya yang statusnya 'direview' atau semua? Sesuai request, biarkan filter status opsional, tapi default ambil semua untuk penyuluh tsb)
@@ -30,6 +43,10 @@ if (!empty($f_tahun)) {
 if (!empty($f_penyuluh)) {
     $where_clauses[] = "k.user_id = ?";
     $params[] = $f_penyuluh;
+}
+if (!empty($f_tusi)) {
+    $where_clauses[] = "k.tusi_id = ?";
+    $params[] = $f_tusi;
 }
 
 $where_sql = count($where_clauses) > 0 ? "WHERE " . implode(" AND ", $where_clauses) : "";
@@ -118,6 +135,7 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
+            <input type="hidden" name="tusi_id" value="<?= e($f_tusi) ?>">
             <button type="submit" class="btn btn-success">
                 <span class="material-symbols-outlined">table_chart</span> Download Excel
             </button>
@@ -127,6 +145,7 @@ if ($f_bulan && $f_tahun) {
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
             <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
+            <input type="hidden" name="tusi_id" value="<?= e($f_tusi) ?>">
             <button type="submit" class="btn btn-danger">
                 <span class="material-symbols-outlined">picture_as_pdf</span> Download PDF
             </button>
@@ -172,6 +191,18 @@ if ($f_bulan && $f_tahun) {
         <?php endif; ?>
 
         <div class="w-full sm:w-auto">
+            <label for="filter_tusi_id" class="form-label">TUSI</label>
+            <select id="filter_tusi_id" name="tusi_id" aria-label="Filter TUSI Laporan" class="form-select" style="min-width:180px;">
+                <option value="">-- Semua TUSI --</option>
+                <?php foreach($tusi_list as $t): ?>
+                    <option value="<?= $t['id'] ?>" <?= $f_tusi == $t['id'] ? 'selected' : '' ?>>
+                        <?= e($t['kode']) ?> - <?= e($t['nama']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="w-full sm:w-auto">
             <label for="filter_bulan" class="form-label">Bulan</label>
             <select id="filter_bulan" name="bulan" aria-label="Filter Bulan Laporan" class="form-select">
                 <option value="">Semua</option>
@@ -214,7 +245,10 @@ if ($f_bulan && $f_tahun) {
         <div class="text-center mb-8 border-b-2 border-gray-900 pb-4">
             <h2 class="text-xl font-bold uppercase">LAPORAN REALISASI RENJA PENYULUH KEHUTANAN</h2>
             <h3 class="text-lg font-semibold uppercase">CABANG DINAS KEHUTANAN WILAYAH NGANJUK</h3>
-            <p class="text-sm mt-1">Bulan: <?= $f_bulan ? get_bulan_indo((int)$f_bulan) : 'Semua Bulan' ?> Tahun <?= e($f_tahun) ?></p>
+            <p class="text-sm mt-1">
+                Bulan: <?= $f_bulan ? get_bulan_indo((int)$f_bulan) : 'Semua Bulan' ?> Tahun <?= e($f_tahun) ?>
+                <?= !empty($selected_tusi_nama) ? ' &bull; TUSI: ' . e($selected_tusi_nama) : '' ?>
+            </p>
         </div>
 
         <div class="mb-4 text-sm">

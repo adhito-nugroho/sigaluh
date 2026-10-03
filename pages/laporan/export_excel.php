@@ -8,6 +8,7 @@ $user_id = $_SESSION['user_id'] ?? 0;
 $f_bulan = $_GET['bulan'] ?? '';
 $f_tahun = $_GET['tahun'] ?? date('Y');
 $f_penyuluh = ($role === 'penyuluh') ? $user_id : ($_GET['penyuluh_id'] ?? '');
+$f_tusi = $_GET['tusi_id'] ?? '';
 
 if (empty($f_penyuluh)) {
     die("Penyuluh belum dipilih.");
@@ -22,6 +23,14 @@ if (!$penyuluh_aktif) {
     die("Data penyuluh tidak ditemukan.");
 }
 
+// Ambil data TUSI jika difilter
+$selected_tusi = null;
+if (!empty($f_tusi)) {
+    $stmt_t = $pdo->prepare("SELECT kode, nama FROM m_tusi WHERE id = ?");
+    $stmt_t->execute([$f_tusi]);
+    $selected_tusi = $stmt_t->fetch();
+}
+
 // Ambil data laporan
 $where_clauses = ["k.user_id = ?"];
 $params = [$f_penyuluh];
@@ -33,6 +42,10 @@ if (!empty($f_bulan)) {
 if (!empty($f_tahun)) {
     $where_clauses[] = "YEAR(k.tanggal) = ?";
     $params[] = $f_tahun;
+}
+if (!empty($f_tusi)) {
+    $where_clauses[] = "k.tusi_id = ?";
+    $params[] = $f_tusi;
 }
 
 $where_sql = count($where_clauses) > 0 ? "WHERE " . implode(" AND ", $where_clauses) : "";
@@ -48,7 +61,8 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $laporan_data = $stmt->fetchAll();
 
-$nama_file = "Laporan_Renja_" . preg_replace('/[^a-zA-Z0-9]/', '_', $penyuluh_aktif['nama']) . "_" . $f_tahun . ($f_bulan ? "_$f_bulan" : "") . ".xls";
+$tusi_suffix = $selected_tusi ? "_TUSI_" . preg_replace('/[^a-zA-Z0-9]/', '_', $selected_tusi['kode']) : "";
+$nama_file = "Laporan_Renja_" . preg_replace('/[^a-zA-Z0-9]/', '_', $penyuluh_aktif['nama']) . "_" . $f_tahun . ($f_bulan ? "_$f_bulan" : "") . $tusi_suffix . ".xls";
 
 // Set header untuk download Excel
 header("Content-Type: application/vnd.ms-excel");
@@ -100,7 +114,7 @@ if ($f_bulan && $f_tahun) {
             <td colspan="9" class="text-center bold no-border" style="font-size: 12pt;">CABANG DINAS KEHUTANAN WILAYAH NGANJUK</td>
         </tr>
         <tr>
-            <td colspan="9" class="text-center no-border">Bulan: <?= $bulan_teks ?> Tahun <?= e($f_tahun) ?></td>
+            <td colspan="9" class="text-center no-border">Bulan: <?= $bulan_teks ?> Tahun <?= e($f_tahun) ?><?= $selected_tusi ? ' &bull; TUSI: ' . e($selected_tusi['kode'] . ' - ' . $selected_tusi['nama']) : '' ?></td>
         </tr>
         <tr><td colspan="9" class="no-border"></td></tr>
         
