@@ -131,17 +131,86 @@ ob_start();
     <meta charset="utf-8">
     <title>Laporan Renja</title>
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; font-size: 9pt; }
+        @page {
+            margin: 8mm 10mm 10mm 10mm;
+        }
+        body { 
+            font-family: Helvetica, Arial, sans-serif; 
+            font-size: 7.5pt; 
+            line-height: 1.25;
+            color: #111;
+        }
         .text-center { text-align: center; }
         .bold { font-weight: bold; }
-        .header { margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .header h2, .header h3 { margin: 0; padding: 2px; }
-        .meta-info { margin-bottom: 15px; }
-        .meta-info table { width: 100%; }
-        .meta-info td { padding: 2px 0; }
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .data-table th, .data-table td { border: 1px solid #000; padding: 4px; vertical-align: top; }
-        .data-table th { background-color: #f0f0f0; }
+
+        .header { 
+            margin-bottom: 6px; 
+            border-bottom: 1.5px solid #000; 
+            padding-bottom: 4px; 
+            text-align: center;
+        }
+        .header h2 { 
+            margin: 0; 
+            font-size: 11pt; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+        .header h3 { 
+            margin: 1px 0 0 0; 
+            font-size: 9.5pt; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+        .header p { 
+            margin: 2px 0 0 0; 
+            font-size: 8pt; 
+            line-height: 1.2;
+        }
+
+        .meta-info { 
+            margin-bottom: 6px; 
+            font-size: 8pt;
+        }
+        .meta-info table { 
+            width: auto; 
+            border-collapse: collapse;
+        }
+        .meta-info td { 
+            padding: 1px 0; 
+            vertical-align: top;
+        }
+
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 4px; 
+            font-size: 7.5pt;
+            line-height: 1.25;
+        }
+        .data-table th, .data-table td { 
+            border: 1px solid #333; 
+            padding: 2.5px 3.5px; 
+            vertical-align: top; 
+            word-wrap: break-word;
+        }
+        .data-table th { 
+            background-color: #f3f4f6; 
+            font-weight: bold;
+            text-align: center;
+        }
+        .data-table th.sub-col {
+            background-color: #fafafa;
+            font-weight: normal;
+            font-size: 7pt;
+            color: #555;
+            padding: 2px;
+        }
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+        tr { page-break-inside: avoid; }
     </style>
 </head>
 <body>
@@ -154,7 +223,7 @@ ob_start();
     <div class="meta-info">
         <table>
             <tr>
-                <td width="150" class="bold">Nama Penyuluh</td>
+                <td width="130" class="bold">Nama Penyuluh</td>
                 <td width="10">:</td>
                 <td><?= e($penyuluh_aktif['nama']) ?></td>
             </tr>
@@ -180,17 +249,25 @@ ob_start();
         <thead>
             <tr>
                 <th width="3%">NO</th>
-                <th width="8%">WAKTU</th>
-                <th width="15%">TUSI YANG DILAKSANAKAN</th>
+                <th width="7%">WAKTU</th>
+                <th width="12%">TUSI YANG DILAKSANAKAN</th>
                 <th width="15%">URAIAN TUGAS / AKTIVITAS</th>
-                <th width="13%">SUBSTANSI MATERI</th>
-                <th width="10%">SASARAN</th>
-                <th width="12%">PENJELASAN HASIL</th>
-                <th width="12%">KENDALA / PERMASALAHAN</th>
-                <th width="12%">SOLUSI</th>
+                <th width="11%">SUBSTANSI MATERI</th>
+                <th width="9%">SASARAN</th>
+                <th width="16%">PENJELASAN HASIL</th>
+                <th width="13%">KENDALA / PERMASALAHAN</th>
+                <th width="14%">SOLUSI</th>
             </tr>
-            <tr>
-                <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+            <tr class="sub-col">
+                <th class="sub-col">1</th>
+                <th class="sub-col">2</th>
+                <th class="sub-col">3</th>
+                <th class="sub-col">4</th>
+                <th class="sub-col">5</th>
+                <th class="sub-col">6</th>
+                <th class="sub-col">7</th>
+                <th class="sub-col">8</th>
+                <th class="sub-col">9</th>
             </tr>
         </thead>
         <tbody>
@@ -217,7 +294,7 @@ ob_start();
     </table>
 
     <!-- Table Tanda Tangan Official -->
-    <table style="width: 100%; border: none; margin-top: 40px; font-family: sans-serif; page-break-inside: avoid;">
+    <table style="width: 100%; border: none; margin-top: 25px; font-family: sans-serif; page-break-inside: avoid; font-size: 8.5pt;">
         <tr>
             <?php if ($tampilkan_ttd_pimpin): ?>
             <td style="width: 45%; text-align: center; vertical-align: top; border: none; padding: 0;">
@@ -315,6 +392,11 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'landscape');
 
 $dompdf->render();
+
+// Nomor halaman di pojok kanan bawah
+$canvas = $dompdf->getCanvas();
+$font = $dompdf->getFontMetrics()->get_font('Helvetica', 'normal');
+$canvas->page_text(735, 575, 'Hal. {PAGE_NUM} dari {PAGE_COUNT}', $font, 7, [0.4, 0.4, 0.4]);
 
 $nama_file = "Laporan_Renja_" . preg_replace('/[^a-zA-Z0-9]/', '_', $penyuluh_aktif['nama']) . "_" . $f_tahun . ($f_bulan ? "_$f_bulan" : "") . ".pdf";
 
