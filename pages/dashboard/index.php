@@ -5,29 +5,60 @@ global $pdo;
 $role = $_SESSION['user_role'] ?? '';
 $user_id = $_SESSION['user_id'] ?? 0;
 
-$where_clause = "";
-$params = [];
-if ($role === 'penyuluh') {
-    $where_clause = "WHERE k.user_id = ?";
-    $params[] = $user_id;
-}
+// Filter Periode Bulan & Tahun (Mendukung bulan berjalan maupun bulan-bulan sebelumnya)
+$f_bulan = $_GET['bulan'] ?? $_GET['rek_bln'] ?? date('m');
+$f_tahun = $_GET['tahun'] ?? $_GET['rek_thn'] ?? date('Y');
 
-// 1. Total Kegiatan
-$sql_total = "SELECT COUNT(*) FROM kegiatan k $where_clause";
+$f_bulan_num = (int)$f_bulan;
+if ($f_bulan_num < 1 || $f_bulan_num > 12) {
+    $f_bulan_num = (int)date('m');
+}
+$f_bulan = sprintf('%02d', $f_bulan_num);
+
+$f_tahun_num = (int)$f_tahun;
+if ($f_tahun_num < 2020 || $f_tahun_num > (int)date('Y') + 2) {
+    $f_tahun_num = (int)date('Y');
+}
+$f_tahun = (string)$f_tahun_num;
+
+$selected_month_str = sprintf('%04d-%02d', $f_tahun_num, $f_bulan_num);
+$is_current_month   = ($selected_month_str === date('Y-m'));
+$nama_bulan_terpilih = get_bulan_indo($f_bulan_num) . ' ' . $f_tahun_num;
+
+// Navigasi cepat bulan sebelumnya & berikutnya
+$current_ts = strtotime("{$f_tahun}-{$f_bulan}-01");
+$prev_ts = strtotime("-1 month", $current_ts);
+$prev_bulan = date('m', $prev_ts);
+$prev_tahun = date('Y', $prev_ts);
+
+$next_ts = strtotime("+1 month", $current_ts);
+$next_bulan = date('m', $next_ts);
+$next_tahun = date('Y', $next_ts);
+
+// Filter kondisi query per bulan terpilih
+$month_where = $role === 'penyuluh' 
+    ? "WHERE k.user_id = ? AND DATE_FORMAT(k.tanggal, '%Y-%m') = ?" 
+    : "WHERE DATE_FORMAT(k.tanggal, '%Y-%m') = ?";
+$month_params = $role === 'penyuluh' ? [$user_id, $selected_month_str] : [$selected_month_str];
+
+// 1. Total Kegiatan pada Bulan Terpilih
+$sql_total = "SELECT COUNT(*) FROM kegiatan k $month_where";
 $stmt_total = $pdo->prepare($sql_total);
-$stmt_total->execute($params);
+$stmt_total->execute($month_params);
 $total_kegiatan = (int)$stmt_total->fetchColumn();
+
+// Total Kegiatan Sepanjang Masa (All-Time)
+$all_time_where = ($role === 'penyuluh') ? "WHERE user_id = ?" : "";
+$all_time_params = ($role === 'penyuluh') ? [$user_id] : [];
+$stmt_all_time = $pdo->prepare("SELECT COUNT(*) FROM kegiatan $all_time_where");
+$stmt_all_time->execute($all_time_params);
+$total_kegiatan_all_time = (int)$stmt_all_time->fetchColumn();
 
 // Target Waktu Bulanan (112.5 jam = 6.750 menit)
 $TARGET_MENIT_BULANAN = 6750;
-$current_month_str = date('Y-m');
-
-$target_where = $role === 'penyuluh' ? "WHERE k.user_id = ? AND DATE_FORMAT(k.tanggal, '%Y-%m') = ?" : "WHERE DATE_FORMAT(k.tanggal, '%Y-%m') = ?";
-$target_params = $role === 'penyuluh' ? [$user_id, $current_month_str] : [$current_month_str];
-
-$sql_durasi = "SELECT SUM(durasi_menit) FROM kegiatan k $target_where";
+$sql_durasi = "SELECT SUM(durasi_menit) FROM kegiatan k $month_where";
 $stmt_durasi = $pdo->prepare($sql_durasi);
-$stmt_durasi->execute($target_params);
+$stmt_durasi->execute($month_params);
 $total_durasi_menit = (int)$stmt_durasi->fetchColumn();
 
 $total_durasi_jam = round($total_durasi_menit / 60, 1);
@@ -35,35 +66,35 @@ $pct_target = min(100, round(($total_durasi_menit / $TARGET_MENIT_BULANAN) * 100
 $sisa_menit = max(0, $TARGET_MENIT_BULANAN - $total_durasi_menit);
 $sisa_jam = round($sisa_menit / 60, 1);
 
-// 2. Breakdown per TUSI
+// 2. Breakdown per TUSI pada Bulan Terpilih
 $sql_tusi = "
     SELECT t.kode as tusi_kode, COUNT(k.id) as jumlah 
     FROM m_tusi t 
-    LEFT JOIN kegiatan k ON t.id = k.tusi_id " . ($role === 'penyuluh' ? "AND k.user_id = ?" : "") . "
+    LEFT JOIN kegiatan k ON t.id = k.tusi_id AND DATE_FORMAT(k.tanggal, '%Y-%m') = ? " . ($role === 'penyuluh' ? "AND k.user_id = ?" : "") . "
     GROUP BY t.kode
 ";
 $stmt_tusi = $pdo->prepare($sql_tusi);
-$stmt_tusi->execute($role === 'penyuluh' ? [$user_id] : []);
+$stmt_tusi->execute($role === 'penyuluh' ? [$selected_month_str, $user_id] : [$selected_month_str]);
 $breakdown_tusi = $stmt_tusi->fetchAll(PDO::FETCH_KEY_PAIR);
 
-// 3. Breakdown Status
+// 3. Breakdown Status pada Bulan Terpilih
 $sql_status = "
     SELECT status, COUNT(id) as jumlah 
     FROM kegiatan k 
-    $where_clause 
+    $month_where 
     GROUP BY status
 ";
 $stmt_status = $pdo->prepare($sql_status);
-$stmt_status->execute($params);
+$stmt_status->execute($month_params);
 $breakdown_status = $stmt_status->fetchAll(PDO::FETCH_KEY_PAIR);
 
-// 4. Data untuk Grafik (6 Bulan Terakhir)
+// 4. Data untuk Grafik (6 Bulan Terakhir Berakhir di Bulan Terpilih)
 $chart_labels = [];
 $chart_values = [];
 $months_skeleton = [];
 
 for ($i = 5; $i >= 0; $i--) {
-    $timestamp = strtotime("first day of -$i month");
+    $timestamp = strtotime("-$i month", $current_ts);
     $mo = date('m', $timestamp);
     $yr = date('Y', $timestamp);
     $key = "$yr-$mo";
@@ -72,13 +103,18 @@ for ($i = 5; $i >= 0; $i--) {
     $chart_labels[] = get_bulan_indo((int)$mo) . ' ' . $yr;
 }
 
-$chart_where_clause = $where_clause ? $where_clause . " AND" : "WHERE";
-$chart_params = $params;
+$start_date = date('Y-m-01', strtotime("-5 month", $current_ts));
+$end_date   = date('Y-m-t', $current_ts);
+
+$chart_where = $role === 'penyuluh' 
+    ? "WHERE k.user_id = ? AND k.tanggal BETWEEN ? AND ?" 
+    : "WHERE k.tanggal BETWEEN ? AND ?";
+$chart_params = $role === 'penyuluh' ? [$user_id, $start_date, $end_date] : [$start_date, $end_date];
 
 $sql_chart = "
     SELECT DATE_FORMAT(tanggal, '%Y-%m') as bulan, COUNT(*) as jumlah 
     FROM kegiatan k 
-    $chart_where_clause tanggal >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 5 MONTH), '%Y-%m-01')
+    $chart_where
     GROUP BY DATE_FORMAT(tanggal, '%Y-%m')
 ";
 $stmt_chart = $pdo->prepare($sql_chart);
@@ -89,27 +125,19 @@ foreach ($months_skeleton as $key => $val) {
     $chart_values[] = (int)($chart_data_raw[$key] ?? 0);
 }
 
-// 5. Filter Rekap TUSI
-$f_rek_bln = $_GET['rek_bln'] ?? date('m');
-$f_rek_thn = $_GET['rek_thn'] ?? date('Y');
-
-$rek_clauses = [];
-$rek_params  = [];
+// 5. Rekap Laporan per TUSI (Bulan Terpilih)
+$rek_clauses = [
+    "MONTH(k.tanggal) = ?",
+    "YEAR(k.tanggal) = ?"
+];
+$rek_params  = [$f_bulan_num, $f_tahun_num];
 
 if ($role === 'penyuluh') {
     $rek_clauses[] = "k.user_id = ?";
     $rek_params[]  = $user_id;
 }
-if (!empty($f_rek_bln)) {
-    $rek_clauses[] = "MONTH(k.tanggal) = ?";
-    $rek_params[]  = (int)$f_rek_bln;
-}
-if (!empty($f_rek_thn)) {
-    $rek_clauses[] = "YEAR(k.tanggal) = ?";
-    $rek_params[]  = (int)$f_rek_thn;
-}
 
-$rek_join_cond = !empty($rek_clauses) ? "AND " . implode(" AND ", $rek_clauses) : "";
+$rek_join_cond = "AND " . implode(" AND ", $rek_clauses);
 
 $sql_rekap_tusi = "
     SELECT t.kode, t.nama,
@@ -127,10 +155,7 @@ $stmt_rekap->execute($rek_params);
 $rekap_tusi = $stmt_rekap->fetchAll();
 $rekap_grand_total = array_sum(array_column($rekap_tusi, 'total'));
 
-// 6. Executive Summary Target Waktu (Admin / Pimpinan)
-$current_month_num = date('m');
-$current_year_num = date('Y');
-
+// 6. Executive Summary Target Waktu (Admin / Pimpinan) pada Bulan Terpilih
 $sql_summary = "
     SELECT 
         COUNT(u.id) as total_penyuluh,
@@ -149,7 +174,7 @@ $sql_summary = "
     WHERE r.kode = 'penyuluh'
 ";
 $stmt_sum = $pdo->prepare($sql_summary);
-$stmt_sum->execute([$current_month_num, $current_year_num]);
+$stmt_sum->execute([$f_bulan_num, $f_tahun_num]);
 $exec_sum = $stmt_sum->fetch();
 
 $total_p = (int)($exec_sum['total_penyuluh'] ?? 0);
@@ -161,15 +186,80 @@ $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 ?>
 
-<!-- Header sederhana -->
-<div class="mb-4">
-    <div class="d-flex align-items-center gap-3 mb-2">
-        <div class="stat-icon-wrap primary">
-            <span class="material-symbols-outlined">space_dashboard</span>
+<!-- Header & Filter Periode Utama Dashboard -->
+<div class="card p-3 mb-4">
+    <div class="d-flex flex-column lg:flex-row lg:items-center justify-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon-wrap primary" style="width:42px;height:42px;flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:24px;">space_dashboard</span>
+            </div>
+            <div>
+                <h2 class="mb-0 text-xl font-bold tracking-tight" style="color:var(--md-sys-color-on-surface);">Dashboard Ringkasan Data Kegiatan</h2>
+                <div class="d-flex align-items-center gap-2 mt-0.5 flex-wrap">
+                    <span class="text-muted" style="font-size:12.5px;">Periode Rekap: <strong style="color:var(--md-sys-color-on-surface);"><?= $nama_bulan_terpilih ?></strong></span>
+                    <?php if ($is_current_month): ?>
+                        <span class="badge badge-success text-[10px] px-2 py-0.5">Bulan Berjalan</span>
+                    <?php else: ?>
+                        <span class="badge badge-warning text-[10px] px-2 py-0.5">Bulan Sebelumnya</span>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-        <div>
-            <h2 class="mb-0 text-2xl font-bold tracking-tight" style="color:var(--md-sys-color-on-surface);">Dashboard Ringkasan Data Kegiatan</h2>
-            <p class="text-muted mb-0" style="font-size:12.5px;">Rekap kegiatan bulan <?= get_bulan_indo((int)$f_rek_bln) ?> <?= (int)$f_rek_thn ?></p>
+
+        <!-- Filter Periode Form & Quick Nav -->
+        <div class="d-flex align-items-center gap-1.5 flex-wrap">
+            <!-- Navigasi Cepat Bulan Lalu -->
+            <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>" 
+               class="btn btn-outline-secondary btn-sm" 
+               title="Pindah ke <?= get_bulan_indo((int)$prev_bulan) ?> <?= $prev_tahun ?>" 
+               style="border-radius:var(--md-radius-pill);padding:6px 12px;">
+                <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                <span class="d-none sm:d-inline">Bulan Lalu</span>
+            </a>
+
+            <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-1.5 flex-wrap m-0">
+                <input type="hidden" name="page" value="dashboard">
+                <select name="bulan" aria-label="Pilih Bulan" class="form-select form-select-sm" style="width:auto;min-width:130px;border-radius:var(--md-radius-pill);">
+                    <?php for ($m = 1; $m <= 12; $m++): ?>
+                        <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>>
+                            <?= get_bulan_indo($m) ?>
+                        </option>
+                    <?php endfor; ?>
+                </select>
+
+                <select name="tahun" aria-label="Pilih Tahun" class="form-select form-select-sm" style="width:auto;min-width:85px;border-radius:var(--md-radius-pill);">
+                    <?php 
+                    $cur_y = (int)date('Y');
+                    for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
+                        <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
+                    <?php endfor; ?>
+                </select>
+
+                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:var(--md-radius-pill);">
+                    <span class="material-symbols-outlined" style="font-size:16px;">filter_alt</span>
+                    <span class="ms-1">Pilih</span>
+                </button>
+            </form>
+
+            <!-- Navigasi Cepat Bulan Depan -->
+            <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $next_bulan ?>&tahun=<?= $next_tahun ?>" 
+               class="btn btn-outline-secondary btn-sm" 
+               title="Pindah ke <?= get_bulan_indo((int)$next_bulan) ?> <?= $next_tahun ?>" 
+               style="border-radius:var(--md-radius-pill);padding:6px 12px;">
+                <span class="d-none sm:d-inline">Bulan Depan</span>
+                <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+            </a>
+
+            <?php if (!$is_current_month): ?>
+            <!-- Tombol Kembali ke Bulan Ini -->
+            <a href="<?= BASE_URL ?>/index.php?page=dashboard" 
+               class="btn btn-outline-primary btn-sm" 
+               title="Kembali ke Bulan Berjalan (<?= get_bulan_indo((int)date('m')) ?> <?= date('Y') ?>)"
+               style="border-radius:var(--md-radius-pill);padding:6px 12px;">
+                <span class="material-symbols-outlined" style="font-size:16px;">today</span>
+                <span class="ms-1">Bulan Ini</span>
+            </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -179,11 +269,14 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 <div class="card p-3 mb-4">
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div class="flex-1">
-            <div class="d-flex align-items-center gap-2 mb-1">
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                 <span class="stat-icon-wrap primary" style="width:32px;height:32px;">
                     <span class="material-symbols-outlined" style="font-size:18px;">timer</span>
                 </span>
-                <h3 class="text-base font-bold tracking-tight mb-0" style="color:var(--md-sys-color-on-surface);">Target Waktu Penyuluhan Bulanan (<?= get_bulan_indo((int)date('m')) ?> <?= date('Y') ?>)</h3>
+                <h3 class="text-base font-bold tracking-tight mb-0" style="color:var(--md-sys-color-on-surface);">Target Waktu Penyuluhan (<?= $nama_bulan_terpilih ?>)</h3>
+                <?php if (!$is_current_month): ?>
+                    <span class="badge badge-warning text-[10px]">Periode Lampau</span>
+                <?php endif; ?>
             </div>
             <p class="text-muted mb-0" style="font-size:12px;">Target wajib penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
 
@@ -211,7 +304,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 </div>
 <?php endif; ?>
 
-<!-- Stats Cards (Volume Kegiatan - hierarki dominan) -->
+<!-- Stats Cards (Volume Kegiatan Periode Terpilih) -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
     <!-- Total Kegiatan -->
     <div class="card p-3">
@@ -219,7 +312,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
             <div>
                 <div class="stat-label">Total Kegiatan</div>
                 <div class="stat-value"><?= $total_kegiatan ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Kegiatan</span></div>
-                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Status disetujui</p>
+                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Bulan <?= $nama_bulan_terpilih ?></p>
             </div>
             <div class="stat-icon-wrap primary">
                 <span class="material-symbols-outlined">event_available</span>
@@ -255,13 +348,13 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
         </div>
     </div>
 
-    <!-- Capaian Status -->
+    <!-- Capaian Status Disetujui -->
     <div class="card p-3">
         <div class="d-flex align-items-center justify-content-between">
             <div>
                 <div class="stat-label">Capaian Status</div>
                 <div class="stat-value"><?= (int)($breakdown_status['direview'] ?? 0) ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Disetujui</span></div>
-                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Total <?= $total_kegiatan ?> data kegiatan</p>
+                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Dari <?= $total_kegiatan ?> kegiatan bulan ini</p>
             </div>
             <div class="stat-icon-wrap primary">
                 <span class="material-symbols-outlined">verified</span>
@@ -270,14 +363,17 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     </div>
 </div>
 
-<!-- Chart + Status -->
+<!-- Chart + Status Panel -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-    <!-- Chart -->
+    <!-- Chart Tren 6 Bulan -->
     <div class="card lg:col-span-2">
         <div class="card-header">
-            <div class="d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">bar_chart</span>
-                <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Grafik Jumlah Kegiatan Bulanan</span>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">bar_chart</span>
+                    <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Grafik Jumlah Kegiatan Bulanan</span>
+                </div>
+                <span class="text-xs text-muted">Hingga <?= $nama_bulan_terpilih ?></span>
             </div>
         </div>
         <div class="card-body">
@@ -285,12 +381,15 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
         </div>
     </div>
 
-    <!-- Status Panel -->
+    <!-- Status Panel Bulan Terpilih -->
     <div class="card">
         <div class="card-header">
-            <div class="d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
-                <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Status Kegiatan</span>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
+                    <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Status Kegiatan</span>
+                </div>
+                <span class="text-xs text-muted"><?= $nama_bulan_terpilih ?></span>
             </div>
         </div>
         <div class="card-body space-y-5">
@@ -299,7 +398,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 $status_items = [
                     ['key' => 'direview', 'label' => 'Disetujui', 'color' => 'background:var(--md-sys-color-tertiary);', 'badge' => 'badge-success'],
                     ['key' => 'submitted', 'label' => 'Diajukan', 'color' => 'background:var(--md-sys-color-secondary);', 'badge' => 'badge-warning'],
-                    ['key' => 'draft',  'label' => 'Draft', 'color' => 'background:var(--md-sys-color-outline);', 'badge' => 'badge-primary'],
+                    ['key' => 'draft',     'label' => 'Draft',     'color' => 'background:var(--md-sys-color-outline);',   'badge' => 'badge-primary'],
                 ];
                 foreach ($status_items as $item):
                 ?>
@@ -312,6 +411,17 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 </div>
                 <?php endforeach; ?>
             </div>
+
+            <div class="pt-2 border-top" style="border-color:var(--md-sys-color-outline-variant);">
+                <div class="d-flex justify-content-between align-items-center text-xs text-muted">
+                    <span>Total Kegiatan Periode Ini:</span>
+                    <strong style="color:var(--md-sys-color-on-surface);"><?= $total_kegiatan ?></strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center text-xs text-muted mt-1">
+                    <span>Total Sepanjang Masa:</span>
+                    <span><?= $total_kegiatan_all_time ?></span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -322,18 +432,21 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
         <div class="d-flex align-items-center gap-2">
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">table_chart</span>
             <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Rekap Laporan per TUSI</span>
+            <span class="text-xs text-muted">(<?= $nama_bulan_terpilih ?>)</span>
         </div>
-        <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+        <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-2 flex-wrap m-0">
             <input type="hidden" name="page" value="dashboard">
             <label class="text-muted mb-0" style="font-size:12px;">Periode:</label>
-            <select name="rek_bln" aria-label="Pilih Bulan Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
+            <select name="bulan" aria-label="Pilih Bulan Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
                 <?php for ($m = 1; $m <= 12; $m++): ?>
-                <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_rek_bln ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
+                <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
                 <?php endfor; ?>
             </select>
-            <select name="rek_thn" aria-label="Pilih Tahun Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
-                <?php for ($y = (int)date('Y'); $y >= 2020; $y--): ?>
-                <option value="<?= $y ?>" <?= $y === (int)$f_rek_thn ? 'selected' : '' ?>><?= $y ?></option>
+            <select name="tahun" aria-label="Pilih Tahun Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
+                <?php 
+                $cur_y = (int)date('Y');
+                for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
+                <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
             <button type="submit" class="btn btn-primary btn-sm" style="border-radius:var(--md-radius-pill);">
@@ -358,7 +471,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 <?php if (empty($rekap_tusi) || $rekap_grand_total == 0): ?>
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
-                            Data tidak ditemukan pada periode ini.
+                            Data tidak ditemukan pada periode <?= $nama_bulan_terpilih ?>.
                         </td>
                     </tr>
                 <?php else: ?>
@@ -395,7 +508,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
             </span>
             <div>
                 <div class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Target Waktu Penyuluh</div>
-                <div class="text-muted" style="font-size:11.5px;">Capaian bulan <?= get_bulan_indo((int)$current_month_num) ?> <?= $current_year_num ?></div>
+                <div class="text-muted" style="font-size:11.5px;">Capaian periode <strong><?= $nama_bulan_terpilih ?></strong></div>
             </div>
         </div>
         <a href="index.php?page=penyuluh" class="btn btn-outline-secondary btn-sm" style="border-radius:var(--md-radius-pill);">
