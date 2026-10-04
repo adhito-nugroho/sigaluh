@@ -362,28 +362,7 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
         <div class="d-flex align-items-center gap-2">
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">table_chart</span>
             <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Rekap Laporan per TUSI</span>
-            <span class="text-xs text-muted">(<?= $nama_bulan_terpilih ?>)</span>
         </div>
-        <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-2 flex-wrap m-0">
-            <input type="hidden" name="page" value="dashboard">
-            <label class="text-muted mb-0" style="font-size:12px;">Periode:</label>
-            <select name="bulan" aria-label="Pilih Bulan Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
-                <?php for ($m = 1; $m <= 12; $m++): ?>
-                <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
-                <?php endfor; ?>
-            </select>
-            <select name="tahun" aria-label="Pilih Tahun Rekap" class="form-select form-select-sm" style="width:auto;border-radius:var(--md-radius-pill);">
-                <?php 
-                $cur_y = (int)date('Y');
-                for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
-                <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
-                <?php endfor; ?>
-            </select>
-            <button type="submit" class="btn btn-primary btn-sm" style="border-radius:var(--md-radius-pill);">
-                <span class="material-symbols-outlined" style="font-size:16px;">filter_alt</span>
-                <span class="ms-1">Terapkan</span>
-            </button>
-        </form>
     </div>
     <div class="card-body table-responsive">
         <table class="table table-striped table-hover table-sm align-middle mb-0">
