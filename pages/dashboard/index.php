@@ -203,8 +203,8 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
 
 <!-- Sapaan + periode + aksi (satu kartu) -->
 <div class="card px-3 py-2 mb-4" style="padding:10px 16px;">
-    <div class="d-flex flex-column md:flex-row md:items-center justify-between gap-2 flex-wrap">
-        <h2 class="mb-0 flex-shrink-0" style="font-size:16px;font-weight:700;color:var(--md-sys-color-on-surface);">Halo, <?= e($nama_depan) ?></h2>
+    <div class="flex flex-col gap-3 md:flex-row md:items-center justify-between flex-wrap">
+        <h2 class="mb-0 flex-shrink-0" style="font-size:16px;font-weight:700;color:var(--md-sys-color-on-surface);">Halo, <?= e(ucwords(strtolower($nama_depan))) ?></h2>
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>"
@@ -236,8 +236,8 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <?php endif; ?>
         </div>
 
-        <div class="w-full md:w-auto flex-shrink-0 d-grid d-md-block">
-            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary w-full md:w-auto justify-center" style="padding:8px 20px;font-size:13px;">
+        <div class="w-full sm:w-auto flex-shrink-0">
+            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary w-full sm:w-auto justify-center" style="padding:8px 20px;font-size:13px;">
                 <span class="material-symbols-outlined" style="font-size:18px;">add</span>
                 Catat Kegiatan
             </a>
@@ -341,10 +341,6 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 </div>
             </div>
             <?php endforeach; ?>
-            <div class="d-flex justify-content-between align-items-center pt-3" style="font-size:12.5px;">
-                <span class="text-muted">Total sepanjang masa</span>
-                <span class="fw-bold"><?= $total_kegiatan_all_time ?> kegiatan</span>
-            </div>
         </div>
     </div>
 </div>
@@ -370,9 +366,8 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">table_chart</span>
-            <span class="fw-semibold" style="font-size:13.5px;">Rekap per TUSI • <?= e($nama_bulan_terpilih) ?></span>
+            <span class="fw-semibold" style="font-size:13.5px;">Rekap per TUSI</span>
         </div>
-        <span class="badge badge-primary"><?= $rekap_grand_total ?> kegiatan</span>
     </div>
     <div class="card-body table-responsive" style="padding:0;">
         <table class="table table-hover table-sm align-middle mb-0">
