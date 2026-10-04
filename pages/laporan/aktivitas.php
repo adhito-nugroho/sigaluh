@@ -127,77 +127,78 @@ $total_jam = round($total_wpt_menit / 60, 1);
 $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_kerja) : 0;
 ?>
 
-<!-- Header Page -->
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-    <div>
-        <span class="badge badge-primary mb-1">Bahan Input E-Kinerja BKD Jatim</span>
-        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Laporan Aktivitas Harian</h2>
-        <p class="text-muted mb-0" style="font-size:12.5px;">Rekapitulasi log aktivitas harian berstandar form HRMS e-Kinerja Provinsi Jawa Timur.</p>
-    </div>
-
-    <div class="d-flex flex-wrap align-items-center gap-2">
-        <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank">
-            <input type="hidden" name="page" value="laporan/export_excel_aktivitas">
-            <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
-            <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
-            <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="btn btn-success">
-                <span class="material-symbols-outlined">table_chart</span> Download Excel
-            </button>
-        </form>
-        <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank" onsubmit="return handleDownloadPdf(event, <?= $penyuluh_has_ttd ? 'true' : 'false' ?>, '<?= addslashes(e($penyuluh_aktif['nama'] ?? '')) ?>', '<?= $link_upload_ttd ?>')">
-            <input type="hidden" name="page" value="laporan/export_pdf_aktivitas">
-            <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
-            <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
-            <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
-            <button type="submit" class="btn btn-danger">
-                <span class="material-symbols-outlined">picture_as_pdf</span> Download PDF
-            </button>
-        </form>
-    </div>
-</div>
-
-<?php if ($penyuluh_aktif && !$penyuluh_has_ttd): ?>
-<!-- Banner Peringatan Tanda Tangan Belum Di-set -->
-<div class="alert alert-warning mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 shadow-sm" style="border-radius:12px;border:1px solid #f59e0b;background:#fffbeb;">
-    <div class="d-flex align-items-center gap-2.5">
-        <span class="material-symbols-outlined text-warning flex-shrink-0" style="font-size:28px;">warning</span>
+<div x-data="{ showGuide: false }">
+    <!-- Header Page -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
         <div>
-            <div class="fw-bold text-neutral-900" style="font-size:13.5px;">Tanda Tangan Digital Belum Diatur</div>
-            <div class="text-xs text-neutral-600 mt-0.5">
-                Penyuluh <b><?= e($penyuluh_aktif['nama']) ?></b> belum mengunggah berkas tanda tangan PNG. Dokumen PDF akan digenerate tanpa tanda tangan otomatis.
+            <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Laporan Aktivitas Harian</h2>
+            <div class="d-flex align-items-center gap-2 flex-wrap text-muted" style="font-size:12.5px;">
+                <span>Log aktivitas harian untuk bahan input e-Kinerja.</span>
+                <span>&bull;</span>
+                <button type="button" @click="showGuide = !showGuide" class="btn btn-link p-0 text-decoration-none d-inline-flex align-items-center gap-1" style="font-size:12px;color:var(--md-sys-color-primary);">
+                    <span class="material-symbols-outlined" style="font-size:16px;">menu_book</span>
+                    <span x-text="showGuide ? 'Tutup panduan pemetaan' : 'Panduan pemetaan isian'"></span>
+                </button>
             </div>
         </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank">
+                <input type="hidden" name="page" value="laporan/export_excel_aktivitas">
+                <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
+                <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
+                <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
+                <button type="submit" class="btn btn-success">
+                    <span class="material-symbols-outlined">table_chart</span> Download Excel
+                </button>
+            </form>
+            <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank" onsubmit="return handleDownloadPdf(event, <?= $penyuluh_has_ttd ? 'true' : 'false' ?>, '<?= addslashes(e($penyuluh_aktif['nama'] ?? '')) ?>', '<?= $link_upload_ttd ?>')">
+                <input type="hidden" name="page" value="laporan/export_pdf_aktivitas">
+                <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
+                <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
+                <input type="hidden" name="penyuluh_id" value="<?= e($f_penyuluh) ?>">
+                <button type="submit" class="btn btn-danger">
+                    <span class="material-symbols-outlined">picture_as_pdf</span> Download PDF
+                </button>
+            </form>
+        </div>
     </div>
-    <a href="<?= $link_upload_ttd ?>" class="btn btn-warning btn-sm d-inline-flex align-items-center gap-1.5 fw-bold" style="color:#78350f;background:#fde68a;border:1px solid #f59e0b;">
-        <span class="material-symbols-outlined" style="font-size:16px;">draw</span>
-        <span>Atur Tanda Tangan Sekarang</span>
-    </a>
-</div>
-<?php endif; ?>
 
-<!-- Filter Section -->
-<div class="card mb-4">
-    <div class="card-body p-3">
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="flex flex-wrap gap-3 items-end">
-        <input type="hidden" name="page" value="laporan/aktivitas">
+    <?php if ($penyuluh_aktif && !$penyuluh_has_ttd): ?>
+    <!-- Banner Peringatan Tanda Tangan Belum Di-set -->
+    <div class="alert alert-warning mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 shadow-sm" style="border-radius:12px;border:1px solid #f59e0b;background:#fffbeb;">
+        <div class="d-flex align-items-center gap-2.5">
+            <span class="material-symbols-outlined text-warning flex-shrink-0" style="font-size:28px;">warning</span>
+            <div>
+                <div class="fw-bold text-neutral-900" style="font-size:13.5px;">Tanda Tangan Digital Belum Diatur</div>
+                <div class="text-xs text-neutral-600 mt-0.5">
+                    Penyuluh <b><?= e($penyuluh_aktif['nama']) ?></b> belum mengunggah berkas tanda tangan PNG. Dokumen PDF akan digenerate tanpa tanda tangan otomatis.
+                </div>
+            </div>
+        </div>
+        <a href="<?= $link_upload_ttd ?>" class="btn btn-warning btn-sm d-inline-flex align-items-center gap-1.5 fw-bold" style="color:#78350f;background:#fde68a;border:1px solid #f59e0b;">
+            <span class="material-symbols-outlined" style="font-size:16px;">draw</span>
+            <span>Atur Tanda Tangan Sekarang</span>
+        </a>
+    </div>
+    <?php endif; ?>
 
-        <?php if ($role !== 'penyuluh'): ?>
-        <div class="w-full sm:w-auto flex-1" style="min-width:220px;">
-            <label for="filter_akt_penyuluh" class="form-label">Pilih Penyuluh</label>
-            <select id="filter_akt_penyuluh" name="penyuluh_id" aria-label="Filter Penyuluh" class="form-select">
+    <!-- Filter Section (Satu Baris Kompak) -->
+    <div class="card p-2.5 px-3 mb-4">
+        <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-2 flex-wrap m-0">
+            <input type="hidden" name="page" value="laporan/aktivitas">
+
+            <?php if ($role !== 'penyuluh'): ?>
+            <select id="filter_akt_penyuluh" name="penyuluh_id" aria-label="Pilih Penyuluh" class="form-select form-select-sm" style="width:auto;min-width:220px;border-radius:var(--md-radius-pill);">
                 <?php foreach($penyuluh_list as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $f_penyuluh == $p['id'] ? 'selected' : '' ?>>
                         <?= e($p['nama']) ?> (NIP. <?= e($p['nip']) ?>)
                     </option>
                 <?php endforeach; ?>
             </select>
-        </div>
-        <?php endif; ?>
+            <?php endif; ?>
 
-        <div class="w-full sm:w-auto" style="min-width:150px;">
-            <label for="filter_akt_bulan" class="form-label">Bulan</label>
-            <select id="filter_akt_bulan" name="bulan" aria-label="Filter Bulan Laporan Aktivitas" class="form-select">
+            <select id="filter_akt_bulan" name="bulan" aria-label="Pilih Bulan Laporan Aktivitas" class="form-select form-select-sm" style="width:auto;min-width:130px;border-radius:var(--md-radius-pill);">
                 <option value="">Semua Bulan</option>
                 <?php for($i=1; $i<=12; $i++): ?>
                     <option value="<?= str_pad($i, 2, '0', STR_PAD_LEFT) ?>" <?= $f_bulan == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' ?>>
@@ -205,111 +206,96 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
                     </option>
                 <?php endfor; ?>
             </select>
-        </div>
 
-        <div class="w-full sm:w-auto" style="min-width:120px;">
-            <label for="filter_akt_tahun" class="form-label">Tahun</label>
-            <select id="filter_akt_tahun" name="tahun" aria-label="Filter Tahun Laporan Aktivitas" class="form-select">
+            <select id="filter_akt_tahun" name="tahun" aria-label="Pilih Tahun Laporan Aktivitas" class="form-select form-select-sm" style="width:auto;min-width:90px;border-radius:var(--md-radius-pill);">
                 <option value="">Semua Tahun</option>
                 <?php $year_now = date('Y'); for($y=$year_now; $y>=$year_now-5; $y--): ?>
                     <option value="<?= $y ?>" <?= $f_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
-        </div>
 
-        <div class="w-full sm:w-auto">
-            <button type="submit" class="btn btn-primary">
-                <span class="material-symbols-outlined">filter_alt</span> Tampilkan Data
+            <button type="submit" class="btn btn-primary btn-sm" style="border-radius:var(--md-radius-pill);">
+                <span class="material-symbols-outlined" style="font-size:16px;">filter_alt</span>
+                <span class="ms-1">Pilih</span>
             </button>
-        </div>
-    </form>
-    </div>
-</div>
-
-<!-- Summary Metric Cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-    <div class="stat-card d-flex align-items-center gap-3 p-4">
-        <div class="stat-icon-wrap primary">
-            <span class="material-symbols-outlined">checklist</span>
-        </div>
-        <div>
-            <p class="stat-label mb-0">Total Entri</p>
-            <h3 class="stat-value mb-0"><?= number_format($total_kegiatan) ?> <span class="text-xs fw-normal text-muted">Aktivitas</span></h3>
-        </div>
+        </form>
     </div>
 
-    <div class="stat-card d-flex align-items-center gap-3 p-4">
-        <div class="stat-icon-wrap secondary">
-            <span class="material-symbols-outlined">timer</span>
+    <!-- Summary Metric Cards (3 Kartu) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div class="stat-card d-flex align-items-center gap-3 p-3">
+            <div class="stat-icon-wrap primary">
+                <span class="material-symbols-outlined">checklist</span>
+            </div>
+            <div>
+                <p class="stat-label mb-0">Total Entri</p>
+                <h3 class="stat-value mb-0"><?= number_format($total_kegiatan, 0, ',', '.') ?> <span class="text-xs fw-normal text-muted">Aktivitas</span></h3>
+            </div>
         </div>
-        <div>
-            <p class="stat-label mb-0">Total WPT (Menit)</p>
-            <h3 class="stat-value mb-0"><?= number_format($total_wpt_menit) ?> <span class="text-xs fw-normal text-muted">Menit</span></h3>
+
+        <div class="stat-card d-flex align-items-center gap-3 p-3">
+            <div class="stat-icon-wrap secondary">
+                <span class="material-symbols-outlined">timer</span>
+            </div>
+            <div>
+                <p class="stat-label mb-0">Total WPT (Menit)</p>
+                <h3 class="stat-value mb-0"><?= number_format($total_wpt_menit, 0, ',', '.') ?> <span class="text-xs fw-normal text-muted">Menit</span></h3>
+            </div>
+        </div>
+
+        <div class="stat-card d-flex align-items-center gap-3 p-3">
+            <div class="stat-icon-wrap error">
+                <span class="material-symbols-outlined">event_available</span>
+            </div>
+            <div>
+                <p class="stat-label mb-0">Hari Efektif</p>
+                <h3 class="stat-value mb-0"><?= $total_hari_kerja ?> <span class="text-xs fw-normal text-muted">Hari</span></h3>
+                <?php if ($total_hari_kerja > 0): ?>
+                    <p class="text-[11px] text-muted mb-0 mt-0.5">rata-rata <?= number_format($rata_menit_hari, 0, ',', '.') ?> mnt/hari</p>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
-    <div class="stat-card d-flex align-items-center gap-3 p-4">
-        <div class="stat-icon-wrap tertiary">
-            <span class="material-symbols-outlined">schedule</span>
-        </div>
-        <div>
-            <p class="stat-label mb-0">Total Jam Kerja</p>
-            <h3 class="stat-value mb-0"><?= $total_jam ?> <span class="text-xs fw-normal text-muted">Jam</span></h3>
-        </div>
-    </div>
-
-    <div class="stat-card d-flex align-items-center gap-3 p-4">
-        <div class="stat-icon-wrap error">
-            <span class="material-symbols-outlined">event_available</span>
-        </div>
-        <div>
-            <p class="stat-label mb-0">Hari Efektif</p>
-            <h3 class="stat-value mb-0"><?= $total_hari_kerja ?> <span class="text-xs fw-normal text-muted">Hari (avg <?= $rata_menit_hari ?> mnt/hr)</span></h3>
-        </div>
-    </div>
-</div>
-
-<!-- Petunjuk Pemetaan Form HRMS BKD Jatim -->
-<div class="card mb-4" style="border-color:var(--md-sys-color-secondary-container);" x-data="{ showGuide: false }">
-    <div class="card-body p-3 d-flex align-items-center justify-content-between cursor-pointer" @click="showGuide = !showGuide">
-        <div class="fw-bold text-sm d-flex align-items-center gap-2" style="color:var(--md-sys-color-on-secondary-container);">
-            <span class="material-symbols-outlined" style="color:var(--md-sys-color-secondary);">menu_book</span>
-            Panduan Pemetaan Isian Form E-Kinerja Master BKD Jawa Timur
-        </div>
-        <button type="button" class="btn btn-sm text-xs fw-semibold" style="background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);">
-            <span x-text="showGuide ? 'Sembunyikan' : 'Lihat Panduan'"></span>
-            <span class="material-symbols-outlined align-middle" style="font-size:16px;transition:transform 0.2s;" :class="{'rotate-180': showGuide}">expand_more</span>
-        </button>
-    </div>
-    <div x-show="showGuide" x-collapse class="card-body pt-0" style="border-top:1px solid var(--md-sys-color-secondary-container);">
-        <p class="fw-semibold text-sm" style="color:var(--md-sys-color-on-secondary-container);">Format tabel di bawah ini telah disesuaikan 100% dengan kolom isian formulir <b>"Tambah Aktivitas" (Aktivitas Harian) HRMS BKD Jatim</b>:</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
-            <div class="card p-2.5" style="box-shadow:none;">
-                <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">1. Tanggal Aktivitas (<code style="color:var(--md-sys-color-primary);">tgl_kegiatan</code>):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Tanggal pelaksanaan kegiatan (format: DD/MM/YYYY atau YYYY-MM-DD).</p>
+    <!-- Petunjuk Pemetaan Form HRMS BKD Jatim (Collapsible) -->
+    <div x-show="showGuide" x-collapse class="card mb-4" style="border-color:var(--md-sys-color-secondary-container);display:none;">
+        <div class="card-header p-3 d-flex align-items-center justify-content-between" style="background:var(--md-sys-color-secondary-container);">
+            <div class="fw-bold text-sm d-flex align-items-center gap-2" style="color:var(--md-sys-color-on-secondary-container);">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-secondary);">menu_book</span>
+                Panduan Pemetaan Isian Form E-Kinerja Master BKD Jawa Timur
             </div>
-            <div class="card p-2.5" style="box-shadow:none;">
-                <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">2. Kegiatan Tugas Jabatan (<code style="color:var(--md-sys-color-primary);">detail_kegiatan</code>):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Unsur Utama / Fungsional penyuluh (diambil dari nama TUSI / uraian tugas jabatan).</p>
-            </div>
-            <div class="card p-2.5" style="box-shadow:none;">
-                <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">3. Detail Aktivitas (<code style="color:var(--md-sys-color-primary);">rk</code> / Look Up):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Standar nama aktivitas harian yang dipilih dari popup lookup master BKD.</p>
-            </div>
-            <div class="card p-2.5" style="box-shadow:none;">
-                <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">4. Satuan &amp; WPT (<code style="color:var(--md-sys-color-primary);">satuan</code> &amp; <code style="color:var(--md-sys-color-primary);">wpt</code>):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Satuan standar (Laporan, Kegiatan, Data, dll) dan alokasi waktu per satuan dalam menit.</p>
-            </div>
-            <div class="card p-2.5" style="box-shadow:none;">
-                <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">5. Volume (<code style="color:var(--md-sys-color-primary);">volume</code>):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Jumlah output/volume capaian kegiatan (angka bulat).</p>
-            </div>
-            <div class="card p-2.5" style="box-shadow:none;">
-                <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">6. Objek Kerja / Topik (<code style="color:var(--md-sys-color-primary);">objek_kerja</code>):</span>
-                <p class="text-muted text-sm mt-0.5 mb-0">Narasi objek kerja / sasaran / substansi materi (format Title Case/kapital awal kata, koma sebelum lokasi).</p>
-            </div>
+            <button type="button" @click="showGuide = false" class="btn-close" aria-label="Tutup"></button>
         </div>
-        <p class="text-muted fst-italic text-sm mt-2 mb-0">&#128161; Tips: Anda dapat mengklik tombol <span class="fw-semibold" style="color:var(--md-sys-color-on-surface);">"Salin Baris"</span> atau tombol copy pada tiap kolom untuk mempercepat pengisian ke formulir web HRMS.</p>
+        <div class="card-body p-3">
+            <p class="fw-semibold text-sm" style="color:var(--md-sys-color-on-secondary-container);">Format tabel di bawah ini telah disesuaikan 100% dengan kolom isian formulir <b>"Tambah Aktivitas" (Aktivitas Harian) HRMS BKD Jatim</b>:</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
+                <div class="card p-2.5" style="box-shadow:none;">
+                    <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">1. Tanggal Aktivitas (<code style="color:var(--md-sys-color-primary);">tgl_kegiatan</code>):</span>
+                    <p class="text-muted text-sm mt-0.5 mb-0">Tanggal pelaksanaan kegiatan (format: DD/MM/YYYY atau YYYY-MM-DD).</p>
+                </div>
+                <div class="card p-2.5" style="box-shadow:none;">
+                    <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">2. Kegiatan Tugas Jabatan (<code style="color:var(--md-sys-color-primary);">detail_kegiatan</code>):</span>
+                    <p class="text-muted text-sm mt-0.5 mb-0">Unsur Utama / Fungsional penyuluh (diambil dari nama TUSI / uraian tugas jabatan).</p>
+                </div>
+                <div class="card p-2.5" style="box-shadow:none;">
+                    <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">3. Detail Aktivitas (<code style="color:var(--md-sys-color-primary);">rk</code> / Look Up):</span>
+                    <p class="text-muted text-sm mt-0.5 mb-0">Standar nama aktivitas harian yang dipilih dari popup lookup master BKD.</p>
+                </div>
+                <div class="card p-2.5" style="box-shadow:none;">
+                    <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">4. Satuan &amp; WPT (<code style="color:var(--md-sys-color-primary);">satuan</code> &amp; <code style="color:var(--md-sys-color-primary);">wpt</code>):</span>
+                    <p class="text-muted text-sm mt-0.5 mb-0">Satuan standar (Laporan, Kegiatan, Data, dll) dan alokasi waktu per satuan dalam menit.</p>
+                </div>
+                <div class="card p-2.5" style="box-shadow:none;">
+                    <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">5. Volume (<code style="color:var(--md-sys-color-primary);">volume</code>):</span>
+                    <p class="text-muted text-sm mt-0.5 mb-0">Jumlah output/volume capaian kegiatan (angka bulat).</p>
+                </div>
+                <div class="card p-2.5" style="box-shadow:none;">
+                    <span class="fw-bold text-sm" style="color:var(--md-sys-color-secondary);">6. Objek Kerja / Topik (<code style="color:var(--md-sys-color-primary);">objek_kerja</code>):</span>
+                    <p class="text-muted text-sm mt-0.5 mb-0">Narasi objek kerja / sasaran / substansi materi (format Title Case/kapital awal kata, koma sebelum lokasi).</p>
+                </div>
+            </div>
+            <p class="text-muted fst-italic text-sm mt-2 mb-0">&#128161; Tips: Anda dapat mengklik tombol <span class="fw-semibold" style="color:var(--md-sys-color-on-surface);">"Salin Baris"</span> atau tombol copy pada tiap kolom untuk mempercepat pengisian ke formulir web HRMS.</p>
+        </div>
     </div>
 </div>
 
@@ -344,30 +330,30 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
     <!-- Responsive Table -->
     <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse font-sans">
-            <thead>
+            <thead class="sticky top-[64px] z-10 bg-neutral-100 shadow-sm">
                 <tr class="bg-neutral-100 text-neutral-800 border-b border-neutral-200 font-bold uppercase tracking-wider">
-                    <th class="py-3 px-3 text-center w-10 border-r border-neutral-200">No</th>
-                    <th class="py-3 px-3 text-center min-w-[100px] border-r border-neutral-200">Tanggal</th>
-                    <th class="py-3 px-3 min-w-[200px] border-r border-neutral-200">Kegiatan Tugas Jabatan (Unsur Utama)</th>
-                    <th class="py-3 px-3 min-w-[180px] border-r border-neutral-200">Detail Aktivitas (BKD)</th>
-                    <th class="py-3 px-2 text-center w-20 border-r border-neutral-200">Satuan</th>
-                    <th class="py-3 px-2 text-center w-16 border-r border-neutral-200">WPT (Mnt)</th>
-                    <th class="py-3 px-2 text-center w-16 border-r border-neutral-200">Vol</th>
-                    <th class="py-3 px-2 text-center w-20 border-r border-neutral-200">Total WPT</th>
-                    <th class="py-3 px-3 min-w-[220px] border-r border-neutral-200">Objek Kerja / Topik</th>
-                    <th class="py-3 px-2 text-center w-24">Aksi</th>
+                    <th class="py-3 px-3 text-center w-10 border-r border-neutral-200 bg-neutral-100">No</th>
+                    <th class="py-3 px-3 text-center min-w-[100px] border-r border-neutral-200 bg-neutral-100">Tanggal</th>
+                    <th class="py-3 px-3 min-w-[200px] border-r border-neutral-200 bg-neutral-100">Kegiatan Tugas Jabatan (Unsur Utama)</th>
+                    <th class="py-3 px-3 min-w-[180px] border-r border-neutral-200 bg-neutral-100">Detail Aktivitas (BKD)</th>
+                    <th class="py-3 px-2 text-center w-20 border-r border-neutral-200 bg-neutral-100">Satuan</th>
+                    <th class="py-3 px-2 text-center w-16 border-r border-neutral-200 bg-neutral-100">WPT (Mnt)</th>
+                    <th class="py-3 px-2 text-center w-16 border-r border-neutral-200 bg-neutral-100">Vol</th>
+                    <th class="py-3 px-2 text-center w-20 border-r border-neutral-200 bg-neutral-100">Total WPT</th>
+                    <th class="py-3 px-3 min-w-[220px] border-r border-neutral-200 bg-neutral-100">Objek Kerja / Topik</th>
+                    <th class="py-3 px-2 text-center w-24 bg-neutral-100">Aksi</th>
                 </tr>
-                <tr class="bg-neutral-50/70 text-neutral-400 text-[10px] text-center border-b border-neutral-200 font-medium">
-                    <th class="py-1 px-1 border-r border-neutral-200">1</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">2</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">3</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">4</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">5</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">6</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">7</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">8</th>
-                    <th class="py-1 px-1 border-r border-neutral-200">9</th>
-                    <th class="py-1 px-1">Salin</th>
+                <tr class="bg-neutral-50/60 text-neutral-400 text-[9px] text-center border-b border-neutral-200/60 font-normal leading-none">
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">1</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">2</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">3</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">4</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">5</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">6</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">7</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">8</th>
+                    <th class="py-1 px-1 border-r border-neutral-200/50 bg-neutral-50">9</th>
+                    <th class="py-1 px-1 bg-neutral-50">Salin</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-neutral-200/70">
@@ -412,13 +398,13 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
                                 <?= $tgl_formatted ?>
                             </span>
                         </td>
-                        <td class="py-3 px-3 align-top text-neutral-800 leading-relaxed border-r border-neutral-200">
+                        <td class="py-3 px-3 align-top text-neutral-800 leading-normal border-r border-neutral-200 text-[12.5px]">
                             <div class="font-medium"><?= nl2br(e($tugas_jabatan)) ?></div>
                             <span class="inline-block mt-1 text-[10px] text-primary-700 bg-primary-50 px-1.5 py-0.5 rounded font-mono font-semibold">
                                 TUSI: <?= e($row['tusi_kode']) ?>
                             </span>
                         </td>
-                        <td class="py-3 px-3 align-top font-semibold text-neutral-900 border-r border-neutral-200">
+                        <td class="py-3 px-3 align-top font-semibold text-neutral-900 border-r border-neutral-200 text-[12.5px] leading-normal">
                             <div class="flex items-start justify-between gap-1">
                                 <span><?= e($detail_aktivitas) ?></span>
                                 <button type="button" onclick="copyText('<?= addslashes(e($detail_aktivitas)) ?>', 'Detail Aktivitas')" class="btn-icon" style="border:none;opacity:0;" onmouseenter="this.style.opacity='1'" title="Salin nilai">
@@ -431,18 +417,18 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
                                 <?= e($satuan) ?>
                             </span>
                         </td>
-                        <td class="py-3 px-2 text-center align-top whitespace-nowrap font-bold text-neutral-800 border-r border-neutral-200">
-                            <?= $wpt ?>
+                        <td class="py-3 px-2 text-center align-top whitespace-nowrap font-mono font-bold text-neutral-800 border-r border-neutral-200">
+                            <?= number_format($wpt, 0, ',', '.') ?>
                         </td>
-                        <td class="py-3 px-2 text-center align-top whitespace-nowrap font-bold text-neutral-800 border-r border-neutral-200">
-                            <?= $vol ?>
+                        <td class="py-3 px-2 text-center align-top whitespace-nowrap font-mono font-bold text-neutral-800 border-r border-neutral-200">
+                            <?= number_format($vol, 0, ',', '.') ?>
                         </td>
-                        <td class="py-3 px-2 text-center align-top whitespace-nowrap font-extrabold text-primary-700 bg-primary-50/20 border-r border-neutral-200">
-                            <?= $tot_wpt ?>
+                        <td class="py-3 px-2 text-center align-top whitespace-nowrap font-mono font-extrabold text-primary-700 bg-primary-50/20 border-r border-neutral-200">
+                            <?= number_format($tot_wpt, 0, ',', '.') ?>
                         </td>
                         <td class="py-3 px-3 align-top text-neutral-800 leading-relaxed border-r border-neutral-200">
                             <div class="flex items-start justify-between gap-1">
-                                <span class="font-mono text-[11px] font-semibold text-neutral-800"><?= e($objek_kerja) ?></span>
+                                <span class="text-xs font-medium text-neutral-800 leading-relaxed"><?= e($objek_kerja) ?></span>
                                 <button type="button" onclick="copyText('<?= addslashes(e($objek_kerja)) ?>', 'Objek Kerja')" class="btn-icon flex-shrink-0" style="border:none;opacity:0;" onmouseenter="this.style.opacity='1'" title="Salin nilai">
                                     <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>
                                 </button>
@@ -458,7 +444,7 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
                                     data-wpt="<?= $wpt ?>"
                                     data-vol="<?= $vol ?>"
                                     data-objek="<?= htmlspecialchars($objek_kerja, ENT_QUOTES) ?>"
-                                    class="btn btn-outline-secondary btn-sm"
+                                    class="btn btn-outline-secondary btn-sm py-1 px-2.5 text-xs d-inline-flex align-items-center gap-1"
                                     title="Salin semua data baris ini untuk form BKD">
                                 <span class="material-symbols-outlined" style="font-size:14px;color:var(--md-sys-color-primary);">content_copy</span> Salin
                             </button>
@@ -476,14 +462,14 @@ $rata_menit_hari = $total_hari_kerja > 0 ? round($total_wpt_menit / $total_hari_
                     <td class="py-3 px-2 text-center text-xs border-r border-neutral-200">
                         -
                     </td>
-                    <td class="py-3 px-2 text-center text-xs border-r border-neutral-200">
-                        <?= array_sum(array_column($laporan_data, 'vol_final')) ?>
+                    <td class="py-3 px-2 text-center text-xs font-mono border-r border-neutral-200">
+                        <?= number_format(array_sum(array_column($laporan_data, 'vol_final')), 0, ',', '.') ?>
                     </td>
-                    <td class="py-3 px-2 text-center text-sm text-primary-800 bg-primary-100/50 border-r border-neutral-200">
-                        <?= number_format($total_wpt_menit) ?> mnt
+                    <td class="py-3 px-2 text-center text-sm font-mono text-primary-800 bg-primary-100/50 border-r border-neutral-200">
+                        <?= number_format($total_wpt_menit, 0, ',', '.') ?> mnt
                     </td>
                     <td colspan="2" class="py-3 px-3 text-xs text-neutral-600 font-semibold">
-                        &asymp; <?= $total_jam ?> Jam Kerja (<?= $total_hari_kerja ?> Hari Kerja Efektif)
+                        &asymp; <?= number_format($total_jam, 1, ',', '.') ?> Jam Kerja (<?= $total_hari_kerja ?> Hari Kerja Efektif)
                     </td>
                 </tr>
             </tfoot>
