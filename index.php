@@ -128,6 +128,13 @@ if ($needs_layout) {
     $sep = '<span class="material-symbols-outlined topbar-crumb-sep d-none d-sm-inline">chevron_right</span>';
     $crumbs_html = implode($sep, $crumb_items);
 
+    // Tanggal chip format Indonesia (contoh: 04 Okt 2026)
+    $bln_singkat_list = [
+        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun',
+        7 => 'Jul', 8 => 'Agu', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
+    ];
+    $tgl_chip_indo = date('d') . ' ' . ($bln_singkat_list[(int)date('n')] ?? date('M')) . ' ' . date('Y');
+
     echo '
     <header id="topbar">
         <div class="d-flex align-items-center gap-2 sm:gap-3 min-w-0">
@@ -145,13 +152,12 @@ if ($needs_layout) {
 
         <div class="d-flex align-items-center gap-2 sm:gap-3 flex-shrink-0">
             <span class="badge d-none d-md-inline-flex" style="background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);font-weight:500;padding:6px 12px;">
-                <span class="material-symbols-outlined me-1" style="font-size:14px;">calendar_today</span>' . date('d M Y') . '
+                <span class="material-symbols-outlined me-1" style="font-size:14px;">calendar_today</span>' . $tgl_chip_indo . '
             </span>
-            <div class="topbar-user">
+            <div class="topbar-user" style="padding:4px;" title="' . htmlspecialchars($_SESSION['user_nama'] ?? '') . '">
                 <div class="user-avatar">
                     <span class="material-symbols-outlined">person</span>
                 </div>
-                <span class="user-name d-none d-sm-inline">' . htmlspecialchars($_SESSION['user_nama'] ?? '') . '</span>
             </div>
         </div>
     </header>';
