@@ -278,7 +278,6 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                     <span class="badge badge-warning text-[10px]">Periode Lampau</span>
                 <?php endif; ?>
             </div>
-            <p class="text-muted mb-0" style="font-size:12px;">Target wajib penyuluh: <strong>112,5 Jam (6.750 Menit)</strong> per bulan.</p>
 
             <div class="mt-3">
                 <div class="flex justify-between items-center text-xs font-bold mb-1.5">
@@ -297,7 +296,6 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 <p class="tabular-nums text-2xl font-bold <?= $sisa_menit == 0 ? 'text-success' : '' ?>" style="color:<?= $sisa_menit == 0 ? 'var(--md-sys-color-tertiary)' : 'var(--md-sys-color-on-surface)' ?>;">
                     <?= number_format($sisa_menit, 0, ',', '.') ?> <span class="text-xs font-bold text-muted">Menit</span>
                 </p>
-                <p class="text-[11px] text-muted font-medium mt-0.5">Setara dengan <strong><?= $sisa_jam ?> Jam</strong></p>
             </div>
         </div>
     </div>
@@ -305,14 +303,13 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 <?php endif; ?>
 
 <!-- Stats Cards (Volume Kegiatan Periode Terpilih) -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
     <!-- Total Kegiatan -->
     <div class="card p-3">
         <div class="d-flex align-items-center justify-content-between">
             <div>
                 <div class="stat-label">Total Kegiatan</div>
                 <div class="stat-value"><?= $total_kegiatan ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Kegiatan</span></div>
-                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Bulan <?= $nama_bulan_terpilih ?></p>
             </div>
             <div class="stat-icon-wrap primary">
                 <span class="material-symbols-outlined">event_available</span>
@@ -326,7 +323,6 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
             <div>
                 <div class="stat-label">Total Durasi</div>
                 <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
-                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">= <?= $total_durasi_jam ?> Jam</p>
             </div>
             <div class="stat-icon-wrap secondary">
                 <span class="material-symbols-outlined">schedule</span>
@@ -340,24 +336,9 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
             <div>
                 <div class="stat-label">Tingkat Ketercapaian</div>
                 <div class="stat-value" style="color:var(--md-sys-color-tertiary);"><?= $pct_target ?>%</div>
-                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">vs target <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> menit</p>
             </div>
             <div class="stat-icon-wrap tertiary">
                 <span class="material-symbols-outlined">speed</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Capaian Status Disetujui -->
-    <div class="card p-3">
-        <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <div class="stat-label">Capaian Status</div>
-                <div class="stat-value"><?= (int)($breakdown_status['direview'] ?? 0) ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Disetujui</span></div>
-                <p class="text-muted mb-0 mt-1" style="font-size:11.5px;">Dari <?= $total_kegiatan ?> kegiatan bulan ini</p>
-            </div>
-            <div class="stat-icon-wrap primary">
-                <span class="material-symbols-outlined">verified</span>
             </div>
         </div>
     </div>
