@@ -16,7 +16,7 @@ function get_active_class($page_name, $current_page) {
 <!-- Sidebar Nav Rail -->
 <nav id="sidebar">
     <div class="sidebar-brand">
-        <div class="d-flex gap-3 align-items-start">
+        <div class="d-flex gap-3 align-items-center">
             <div class="brand-logo-wrap">
                 <img src="<?= BASE_URL ?>/assets/images/logo.png" alt="SI GALUH" class="brand-logo-img" width="68" height="48" loading="eager" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                 <div class="brand-icon flex-shrink-0" style="display:none;">
@@ -24,10 +24,8 @@ function get_active_class($page_name, $current_page) {
                 </div>
             </div>
             <div class="min-w-0">
-                <div class="brand-org-title">Cabang Dinas Kehutanan</div>
-                <div class="brand-org-sub">Wilayah Nganjuk</div>
-                <h6 class="brand-app mb-0">SI GALUH</h6>
-                <small>Kegiatan Penyuluh Kehutanan</small>
+                <h6 class="brand-app mb-0" style="font-size:15px;font-weight:700;color:var(--md-sys-color-primary);line-height:1.2;margin:0;">SI GALUH</h6>
+                <div class="brand-org-sub" style="font-size:11.5px;font-weight:500;color:var(--md-sys-color-on-surface-variant);line-height:1.3;margin-top:2px;">CDK Wilayah Nganjuk</div>
             </div>
         </div>
     </div>
@@ -100,24 +98,65 @@ function get_active_class($page_name, $current_page) {
         </a>
     </div>
 
-    <div class="sidebar-footer">
-        <div style="font-weight:600;color:var(--md-sys-color-on-surface);"><?= e($_SESSION['user_nama'] ?? '') ?></div>
-        <div style="font-size:10px;color:var(--md-sys-color-on-surface-variant);">NIP. <?= e($_SESSION['user_nip'] ?? '-') ?></div>
-        <div class="d-flex gap-2 mt-2">
-            <a href="<?= BASE_URL ?>/index.php?page=profile/signature" class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1" title="Tanda Tangan Digital">
-                <span class="material-symbols-outlined" style="font-size:16px;">draw</span>
-                <span>TTD</span>
+    <div class="sidebar-footer" x-data="{ open: false }" style="position:relative;">
+        <!-- Dropup Menu Profil & Akses -->
+        <div x-show="open" 
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-2"
+             @click.outside="open = false"
+             style="display:none;position:absolute;bottom:calc(100% + 8px);left:12px;right:12px;background:var(--md-sys-color-surface-container);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);padding:6px;z-index:1050;">
+            
+            <a href="<?= BASE_URL ?>/index.php?page=profile/signature" 
+               class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2"
+               style="font-size:12.5px;color:var(--md-sys-color-on-surface);transition:background 0.2s;"
+               onmouseover="this.style.background='var(--md-sys-color-surface-container-high)'"
+               onmouseout="this.style.background='transparent'">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">draw</span>
+                <span>Tanda Tangan Digital (TTD)</span>
             </a>
-            <a href="<?= BASE_URL ?>/index.php?page=profile/password" class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1" title="Ganti Password">
-                <span class="material-symbols-outlined" style="font-size:16px;">key</span>
-                <span>Sandi</span>
+
+            <a href="<?= BASE_URL ?>/index.php?page=profile/password" 
+               class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2"
+               style="font-size:12.5px;color:var(--md-sys-color-on-surface);transition:background 0.2s;"
+               onmouseover="this.style.background='var(--md-sys-color-surface-container-high)'"
+               onmouseout="this.style.background='transparent'">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">key</span>
+                <span>Ganti Sandi</span>
             </a>
-            <a href="<?= BASE_URL ?>/index.php?page=auth/logout" class="btn btn-danger btn-sm flex-1 d-flex align-items-center justify-content-center gap-1" title="Logout">
-                <span class="material-symbols-outlined" style="font-size:16px;">logout</span>
+
+            <div class="my-1 border-top" style="border-color:var(--md-sys-color-outline-variant);"></div>
+
+            <a href="<?= BASE_URL ?>/index.php?page=auth/logout" 
+               class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2"
+               style="font-size:12.5px;color:var(--md-sys-color-error);font-weight:600;transition:background 0.2s;"
+               onmouseover="this.style.background='rgba(186, 26, 26, 0.08)'"
+               onmouseout="this.style.background='transparent'">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-error);">logout</span>
                 <span>Keluar</span>
             </a>
         </div>
-        <div class="mt-2" style="font-size:10px;color:var(--md-sys-color-outline);">&copy; <?= date('Y') ?> &mdash; SI GALUH</div>
+
+        <!-- Tombol Pengguna pemicu Dropdown -->
+        <button type="button" 
+                @click="open = !open" 
+                class="w-100 text-start border-0 bg-transparent p-1.5 rounded-2 d-flex align-items-center justify-content-between"
+                style="cursor:pointer;transition:background 0.2s;"
+                onmouseover="this.style.background='var(--md-sys-color-surface-container-high)'"
+                onmouseout="this.style.background='transparent'">
+            <div class="min-w-0 flex-grow-1">
+                <div class="text-truncate" style="font-weight:600;color:var(--md-sys-color-on-surface);font-size:13px;"><?= e($_SESSION['user_nama'] ?? '') ?></div>
+                <div style="font-size:10.5px;color:var(--md-sys-color-on-surface-variant);">NIP. <?= e($_SESSION['user_nip'] ?? '-') ?></div>
+            </div>
+            <span class="material-symbols-outlined flex-shrink-0 text-muted" 
+                  style="font-size:18px;transition:transform 0.2s;" 
+                  :style="open ? 'transform:rotate(180deg)' : ''">expand_less</span>
+        </button>
+
+        <div class="mt-1.5 text-center" style="font-size:10px;color:var(--md-sys-color-outline);">&copy; <?= date('Y') ?> &mdash; SI GALUH</div>
     </div>
 </nav>
 <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>

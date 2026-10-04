@@ -186,22 +186,10 @@ $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 ?>
 
-<!-- Header & Filter Periode Utama Dashboard -->
-<div class="card p-3 mb-4">
-    <div class="d-flex flex-column lg:flex-row lg:items-center justify-between gap-3">
-        <div class="d-flex align-items-center gap-3">
-            <div class="stat-icon-wrap primary" style="width:42px;height:42px;flex-shrink:0;">
-                <span class="material-symbols-outlined" style="font-size:24px;">space_dashboard</span>
-            </div>
-            <div>
-                <h2 class="mb-0 text-xl font-bold tracking-tight" style="color:var(--md-sys-color-on-surface);">Dashboard Ringkasan Data Kegiatan</h2>
-                <div class="d-flex align-items-center gap-2 mt-0.5 flex-wrap">
-                    <span class="text-muted" style="font-size:12.5px;">Periode Rekap: <strong style="color:var(--md-sys-color-on-surface);"><?= $nama_bulan_terpilih ?></strong></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filter Periode Form & Quick Nav -->
+<!-- Header Periode & Aksi Utama Dashboard -->
+<div class="card p-2.5 px-3 mb-4">
+    <div class="d-flex flex-column sm:flex-row sm:items-center justify-between gap-2.5 flex-wrap">
+        <!-- Kontrol Periode Navigasi & Form -->
         <div class="d-flex align-items-center gap-1.5 flex-wrap">
             <!-- Navigasi Cepat Bulan Lalu -->
             <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>" 
@@ -256,6 +244,12 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
             </a>
             <?php endif; ?>
         </div>
+
+        <!-- Tombol Aksi Utama Catat Kegiatan -->
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5" style="border-radius:var(--md-radius-pill);padding:6px 14px;">
+            <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+            <span>Catat Kegiatan</span>
+        </a>
     </div>
 </div>
 
@@ -277,14 +271,14 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     <!-- Capaian Target Penyuluhan -->
     <div class="card p-3 md:col-span-2">
         <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <div class="stat-label">Capaian Target Penyuluhan</div>
-                <div class="d-flex align-items-baseline gap-2 flex-wrap">
-                    <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
+            <div class="flex-grow-1 me-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="stat-label mb-0">Capaian Target Penyuluhan</div>
                     <span class="font-bold text-sm <?= $pct_target >= 100 ? 'text-success' : 'text-warning' ?>"><?= $pct_target ?>%</span>
                 </div>
+                <div class="stat-value mt-1"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
             </div>
-            <div class="stat-icon-wrap tertiary">
+            <div class="stat-icon-wrap tertiary flex-shrink-0">
                 <span class="material-symbols-outlined">speed</span>
             </div>
         </div>
@@ -318,12 +312,9 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     <!-- Status Panel Bulan Terpilih -->
     <div class="card">
         <div class="card-header">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
-                    <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Status Kegiatan</span>
-                </div>
-                <span class="text-xs text-muted"><?= $nama_bulan_terpilih ?></span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
+                <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Status Kegiatan</span>
             </div>
         </div>
         <div class="card-body space-y-5">
@@ -391,15 +382,20 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                         <td class="text-center"><?= $r['submitted'] > 0 ? (int)$r['submitted'] : '<span class="text-muted">-</span>' ?></td>
                         <td class="text-center fw-bold" style="color:var(--md-sys-color-tertiary);"><?= $r['direview'] > 0 ? (int)$r['direview'] : '<span class="text-muted">-</span>' ?></td>
                         <td class="text-center text-muted"><?= $r['draft'] > 0 ? (int)$r['draft'] : '<span class="text-muted">-</span>' ?></td>
-                        <td class="text-center fw-bold" style="color:var(--md-sys-color-on-surface);"><?= (int)$r['total'] ?></td>
+                        <td class="text-center fw-bold" style="color:var(--md-sys-color-on-surface);"><?= (int)$r['total'] > 0 ? (int)$r['total'] : '<span class="text-muted">-</span>' ?></td>
                     </tr>
                     <?php endforeach; ?>
+                    <?php
+                    $tot_sub = array_sum(array_column($rekap_tusi, 'submitted'));
+                    $tot_rev = array_sum(array_column($rekap_tusi, 'direview'));
+                    $tot_drf = array_sum(array_column($rekap_tusi, 'draft'));
+                    ?>
                     <tr class="fw-bold" style="background:var(--md-sys-color-surface-container-low);">
                         <td colspan="2">TOTAL KESELURUHAN</td>
-                        <td class="text-center"><?= array_sum(array_column($rekap_tusi, 'submitted')) ?></td>
-                        <td class="text-center" style="color:var(--md-sys-color-tertiary);"><?= array_sum(array_column($rekap_tusi, 'direview')) ?></td>
-                        <td class="text-center text-muted"><?= array_sum(array_column($rekap_tusi, 'draft')) ?></td>
-                        <td class="text-center" style="color:var(--md-sys-color-on-surface);"><?= $rekap_grand_total ?></td>
+                        <td class="text-center"><?= $tot_sub > 0 ? $tot_sub : '<span class="text-muted">-</span>' ?></td>
+                        <td class="text-center"><?= $tot_rev > 0 ? $tot_rev : '<span class="text-muted">-</span>' ?></td>
+                        <td class="text-center"><?= $tot_drf > 0 ? $tot_drf : '<span class="text-muted">-</span>' ?></td>
+                        <td class="text-center" style="color:var(--md-sys-color-on-surface);"><?= $rekap_grand_total > 0 ? $rekap_grand_total : '<span class="text-muted">-</span>' ?></td>
                     </tr>
                 <?php endif; ?>
             </tbody>
