@@ -201,137 +201,81 @@ elseif ($total_kegiatan > 0) { $target_status_txt = 'Perlu dikejar'; $target_sta
 else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral'; }
 ?>
 
-<!-- Hero sapaan + aksi cepat -->
-<div class="card mb-3" style="background:linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, #fff 65%);border:1px solid var(--md-sys-color-outline-variant);">
-    <div class="d-flex flex-column md:flex-row md:items-center justify-between gap-3 p-3 px-3" style="padding:18px 20px;">
-        <div class="min-w-0">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <h2 class="mb-0" style="font-size:18px;font-weight:700;color:var(--md-sys-color-on-surface);">Halo, <?= e($nama_depan) ?> 👋</h2>
-                <?php if ($is_current_month): ?>
-                    <span class="badge badge-primary">Bulan berjalan</span>
-                <?php else: ?>
-                    <span class="badge badge-neutral">Arsip • <?= e($nama_bulan_terpilih) ?></span>
-                <?php endif; ?>
-                <span class="badge <?= $target_status_cls ?>"><?= $target_status_txt ?> • <?= $pct_target ?>%</span>
-            </div>
-            <p class="mb-0 mt-1" style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">
-                <?php if ($total_kegiatan == 0): ?>
-                    Belum ada kegiatan pada <strong><?= e($nama_bulan_terpilih) ?></strong>. Yuk catat kegiatan pertama Anda hari ini.
-                <?php else: ?>
-                    Anda mencatat <strong><?= $total_kegiatan ?> kegiatan</strong> • <strong><?= number_format($total_durasi_menit, 0, ',', '.') ?> menit</strong> (<?= $total_durasi_jam ?> jam) pada <strong><?= e($nama_bulan_terpilih) ?></strong>. Sisa <strong><?= number_format($sisa_menit, 0, ',', '.') ?> menit</strong> menuju target.
-                <?php endif; ?>
-            </p>
+<!-- Sapaan + periode + aksi (satu kartu) -->
+<div class="card px-3 py-2 mb-4" style="padding:10px 16px;">
+    <div class="d-flex flex-column md:flex-row md:items-center justify-between gap-2 flex-wrap">
+        <h2 class="mb-0 flex-shrink-0" style="font-size:16px;font-weight:700;color:var(--md-sys-color-on-surface);">Halo, <?= e($nama_depan) ?></h2>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>"
+               class="btn-icon" title="Ke <?= get_bulan_indo((int)$prev_bulan) ?> <?= $prev_tahun ?>" aria-label="Bulan lalu">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </a>
+            <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-2 m-0">
+                <input type="hidden" name="page" value="dashboard">
+                <select name="bulan" aria-label="Pilih Bulan" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:130px;border-radius:999px;font-weight:600;">
+                    <?php for ($m = 1; $m <= 12; $m++): ?>
+                        <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
+                    <?php endfor; ?>
+                </select>
+                <select name="tahun" aria-label="Pilih Tahun" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:88px;border-radius:999px;font-weight:600;">
+                    <?php $cur_y = (int)date('Y'); for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
+                        <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
+                    <?php endfor; ?>
+                </select>
+                <noscript><button type="submit" class="btn btn-outline-secondary btn-sm">Pilih</button></noscript>
+            </form>
+            <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $next_bulan ?>&tahun=<?= $next_tahun ?>"
+               class="btn-icon" title="Ke <?= get_bulan_indo((int)$next_bulan) ?> <?= $next_tahun ?>" aria-label="Bulan depan">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </a>
+            <?php if (!$is_current_month): ?>
+            <a href="<?= BASE_URL ?>/index.php?page=dashboard" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center">
+                <span class="material-symbols-outlined" style="font-size:16px;">today</span><span class="ms-1">Bulan ini</span>
+            </a>
+            <?php endif; ?>
         </div>
-        <div class="d-flex align-items-center gap-2 flex-shrink-0 flex-wrap">
-            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary" style="padding:9px 20px;font-size:13.5px;">
-                <span class="material-symbols-outlined" style="font-size:18px;">add_circle</span>
+
+        <div class="w-full md:w-auto flex-shrink-0 d-grid d-md-block">
+            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary w-full md:w-auto justify-center" style="padding:8px 20px;font-size:13px;">
+                <span class="material-symbols-outlined" style="font-size:18px;">add</span>
                 Catat Kegiatan
             </a>
-            <a href="<?= BASE_URL ?>/index.php?page=laporan" class="btn btn-outline-secondary" style="padding:9px 16px;background:#fff;">
-                <span class="material-symbols-outlined" style="font-size:18px;">bar_chart</span>
-                Laporan
-            </a>
         </div>
     </div>
 </div>
 
-<!-- Toolbar periode ramping -->
-<div class="card px-3 py-2 mb-4 d-flex flex-column md:flex-row md:items-center justify-between gap-2" style="padding:10px 16px;">
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="d-inline-flex align-items-center gap-1 text-muted" style="font-size:12.5px;font-weight:600;">
-            <span class="material-symbols-outlined" style="font-size:18px;">calendar_month</span> Periode
-        </span>
-        <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>"
-           class="btn-icon" title="Ke <?= get_bulan_indo((int)$prev_bulan) ?> <?= $prev_tahun ?>" aria-label="Bulan lalu">
-            <span class="material-symbols-outlined">chevron_left</span>
-        </a>
-        <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-2 m-0">
-            <input type="hidden" name="page" value="dashboard">
-            <select name="bulan" aria-label="Pilih Bulan" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:130px;border-radius:999px;font-weight:600;">
-                <?php for ($m = 1; $m <= 12; $m++): ?>
-                    <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
-                <?php endfor; ?>
-            </select>
-            <select name="tahun" aria-label="Pilih Tahun" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:88px;border-radius:999px;font-weight:600;">
-                <?php $cur_y = (int)date('Y'); for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
-                    <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
-                <?php endfor; ?>
-            </select>
-            <noscript><button type="submit" class="btn btn-outline-secondary btn-sm">Pilih</button></noscript>
-        </form>
-        <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $next_bulan ?>&tahun=<?= $next_tahun ?>"
-           class="btn-icon" title="Ke <?= get_bulan_indo((int)$next_bulan) ?> <?= $next_tahun ?>" aria-label="Bulan depan">
-            <span class="material-symbols-outlined">chevron_right</span>
-        </a>
-        <?php if (!$is_current_month): ?>
-        <a href="<?= BASE_URL ?>/index.php?page=dashboard" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center">
-            <span class="material-symbols-outlined" style="font-size:16px;">today</span><span class="ms-1">Bulan ini</span>
-        </a>
-        <?php endif; ?>
-    </div>
-    <div class="d-flex align-items-center gap-2 text-muted" style="font-size:12px;">
-        <span class="material-symbols-outlined" style="font-size:16px;">flag</span>
-        Target <strong style="color:var(--md-sys-color-on-surface);">6.750 mnt</strong> / bulan (≈112,5 jam)
-        <span class="d-none d-md-inline" style="color:var(--md-sys-color-outline-variant);">|</span>
-        <span class="d-none d-md-inline">Sepanjang masa: <strong style="color:var(--md-sys-color-on-surface);"><?= $total_kegiatan_all_time ?></strong> kegiatan</span>
-    </div>
-</div>
-
-<!-- KPI ringkas 4 kartu -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4 items-stretch">
-    <div class="card p-3 h-full">
-        <div class="d-flex align-items-start justify-content-between gap-2">
-            <div class="min-w-0">
-                <div class="stat-label">Kegiatan bulan ini</div>
-                <div class="stat-value mt-1"><?= $total_kegiatan ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">kegiatan</span></div>
+<!-- KPI: Total Kegiatan + Capaian Target -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 items-stretch">
+    <div class="card p-3 h-full d-flex flex-column justify-content-center">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div class="stat-label">Total Kegiatan</div>
+                <div class="stat-value"><?= $total_kegiatan ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">kegiatan</span></div>
                 <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= $total_kegiatan_all_time ?> sepanjang masa</div>
             </div>
-            <div class="stat-icon-wrap primary"><span class="material-symbols-outlined">event_available</span></div>
-        </div>
-        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="d-inline-flex align-items-center gap-1 mt-2 text-decoration-none" style="font-size:12px;font-weight:600;color:var(--md-sys-color-primary);">Lihat daftar <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></a>
-    </div>
-    <div class="card p-3 h-full">
-        <div class="d-flex align-items-start justify-content-between gap-2">
-            <div class="min-w-0">
-                <div class="stat-label">Waktu tercatat</div>
-                <div class="stat-value mt-1"><?= $total_durasi_jam ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">jam</span></div>
-                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= number_format($total_durasi_menit, 0, ',', '.') ?> mnt • sisa <?= number_format($sisa_menit, 0, ',', '.') ?> mnt</div>
+            <div class="stat-icon-wrap primary flex-shrink-0">
+                <span class="material-symbols-outlined">event_available</span>
             </div>
-            <div class="stat-icon-wrap secondary"><span class="material-symbols-outlined">schedule</span></div>
-        </div>
-        <div class="progress mt-2" style="height:6px;border-radius:999px;background:var(--md-sys-color-surface-container);">
-            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;border-radius:999px;background:var(--md-sys-color-secondary);"></div>
         </div>
     </div>
-    <div class="card p-3 h-full">
-        <div class="d-flex align-items-start justify-content-between gap-2">
-            <div class="min-w-0">
-                <div class="stat-label">Capaian target</div>
-                <div class="stat-value mt-1"><?= $pct_target ?><span style="font-size:14px;">%</span> <span class="badge <?= $target_status_cls ?> ms-1" style="vertical-align:middle;"><?= $target_status_txt ?></span></div>
-                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> menit</div>
+
+    <div class="card p-3 md:col-span-2 h-full d-flex flex-column justify-content-center">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+            <div class="stat-label mb-0">Capaian Target Penyuluhan</div>
+            <div class="stat-icon-wrap tertiary flex-shrink-0">
+                <span class="material-symbols-outlined">speed</span>
             </div>
-            <div class="stat-icon-wrap tertiary"><span class="material-symbols-outlined">speed</span></div>
         </div>
-        <div class="progress mt-2" style="height:6px;border-radius:999px;background:var(--md-sys-color-surface-container);">
+        <div class="d-flex align-items-baseline justify-content-between gap-2">
+            <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
+            <span class="fw-semibold flex-shrink-0" style="font-size:14px;"><?= $pct_target ?>%</span>
+        </div>
+        <div class="progress mt-2" style="height:8px;border-radius:999px;background:var(--md-sys-color-surface-container);">
             <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;border-radius:999px;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
         </div>
-    </div>
-    <div class="card p-3 h-full">
-        <div class="d-flex align-items-start justify-content-between gap-2">
-            <div class="min-w-0">
-                <div class="stat-label">Persetujuan</div>
-                <div class="stat-value mt-1"><?= $count_disetujui ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">disetujui (<?= $approval_rate ?>%)</span></div>
-                <div class="mt-1 d-flex gap-1 flex-wrap" style="font-size:11.5px;">
-                    <span class="badge badge-warning"><?= $count_diajukan ?> diajukan</span>
-                    <span class="badge badge-neutral"><?= $count_draft ?> draft</span>
-                </div>
-            </div>
-            <div class="stat-icon-wrap <?= $perlu_perhatian > 0 ? 'error' : 'tertiary' ?>"><span class="material-symbols-outlined">check_circle</span></div>
-        </div>
-        <?php if ($perlu_perhatian > 0): ?>
-            <div class="mt-2" style="font-size:12px;color:var(--md-sys-color-on-surface-variant);"><?= $perlu_perhatian ?> kegiatan perlu perhatian.</div>
-        <?php else: ?>
-            <div class="mt-2" style="font-size:12px;color:var(--md-sys-color-tertiary);font-weight:600;">Semua beres 🎉</div>
+        <?php if ($sisa_menit > 0): ?>
+            <p class="mb-0 mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">Sisa <?= number_format($sisa_menit, 0, ',', '.') ?> Menit</p>
         <?php endif; ?>
     </div>
 </div>
@@ -366,7 +310,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
-                    <span class="fw-semibold" style="font-size:13.5px;">Status • <?= e($nama_bulan_terpilih) ?></span>
+                    <span class="fw-semibold" style="font-size:13.5px;">Status Kegiatan</span>
                 </div>
             </div>
         </div>
@@ -387,7 +331,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                         <span class="d-inline-block rounded-pill" style="width:10px;height:10px;<?= $item['dot'] ?>"></span>
                         <div>
                             <div style="font-size:13px;font-weight:600;"><?= $item['label'] ?></div>
-                            <div class="text-muted" style="font-size:11.5px;"><?= $item['desc'] ?> • <?= $share ?>%</div>
+                            <div class="text-muted" style="font-size:11.5px;"><?= $item['desc'] ?></div>
                         </div>
                     </div>
                     <span class="badge <?= $item['badge'] ?>" style="font-size:13px;min-width:34px;justify-content:center;"><?= $val ?></span>
@@ -406,19 +350,17 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
 </div>
 
 <?php if ($total_kegiatan == 0): ?>
-<!-- Empty state ramah -->
+<!-- Empty state: hanya di sini saat total = 0 -->
 <div class="card mb-4 text-center" style="padding:28px 20px;background:var(--md-sys-color-surface-container-low);">
     <div class="d-flex flex-column align-items-center justify-content-center">
         <div class="stat-icon-wrap mb-3" style="width:56px;height:56px;background:#fff;color:var(--md-sys-color-primary);border-radius:50%;border:1px solid var(--md-sys-color-outline-variant);">
             <span class="material-symbols-outlined" style="font-size:30px;">event_upcoming</span>
         </div>
-        <div class="fw-bold" style="font-size:15px;">Belum ada kegiatan di <?= e($nama_bulan_terpilih) ?></div>
-        <p class="text-muted mt-1 mb-3" style="font-size:13px;max-width:480px;">Setiap kegiatan penyuluhan yang Anda catat otomatis menambah jam kerja dan progres target bulanan 6.750 menit.</p>
-        <div class="d-flex gap-2 flex-wrap justify-content-center">
+        <div class="fw-bold" style="font-size:15px;">Belum ada kegiatan pada <?= e($nama_bulan_terpilih) ?>.</div>
+        <div class="mt-3">
             <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary d-inline-flex align-items-center gap-1" style="padding:8px 20px;">
-                <span class="material-symbols-outlined" style="font-size:18px;">add</span> Catat kegiatan pertama
+                <span class="material-symbols-outlined" style="font-size:18px;">add</span> Catat Kegiatan
             </a>
-            <a href="<?= BASE_URL ?>/index.php?page=panduan" class="btn btn-outline-secondary" style="padding:8px 16px;background:#fff;">Lihat panduan</a>
         </div>
     </div>
 </div>
