@@ -78,6 +78,23 @@ $stmt_data = $pdo->prepare($sql_data);
 $stmt_data->execute($params);
 $kegiatan_list = $stmt_data->fetchAll();
 
+// Ambil lampiran foto untuk kegiatan di halaman ini
+$kegiatan_ids = array_column($kegiatan_list, 'id');
+$lampiran_by_kegiatan = [];
+if (!empty($kegiatan_ids)) {
+    $in_placeholders = implode(',', array_fill(0, count($kegiatan_ids), '?'));
+    $stmt_all_lamp = $pdo->prepare("SELECT id, kegiatan_id, nama_file, ukuran_bytes FROM kegiatan_lampiran WHERE kegiatan_id IN ($in_placeholders) ORDER BY uploaded_at ASC, id ASC");
+    $stmt_all_lamp->execute($kegiatan_ids);
+    foreach ($stmt_all_lamp->fetchAll() as $lamp) {
+        $lampiran_by_kegiatan[$lamp['kegiatan_id']][] = [
+            'id' => (int)$lamp['id'],
+            'nama_file' => $lamp['nama_file'],
+            'url' => BASE_URL . '/uploads/lampiran/' . $lamp['kegiatan_id'] . '/' . rawurlencode($lamp['nama_file']),
+            'ukuran_kb' => $lamp['ukuran_bytes'] > 0 ? round($lamp['ukuran_bytes'] / 1024) : 0
+        ];
+    }
+}
+
 // Get TUSI list for filter
 $tusi_list = $pdo->query("SELECT id, kode, nama FROM m_tusi ORDER BY id ASC")->fetchAll();
 
@@ -251,6 +268,30 @@ function get_status_badge($status) {
                                 <?php if ($row['durasi_menit'] > 0): ?>
                                     <div class="text-[10px] fw-bold mt-0.5 text-primary"><?= $row['durasi_menit'] ?> Menit (<?= $row['volume'] ?? 1 ?> <?= e($row['act_satuan'] ?: 'Satuan') ?>)</div>
                                 <?php endif; ?>
+                                <?php 
+                                $row_fotos = $lampiran_by_kegiatan[$row['id']] ?? [];
+                                $foto_count = count($row_fotos);
+                                ?>
+                                <?php if ($foto_count > 0): ?>
+                                    <div class="mt-1.5">
+                                        <button type="button"
+                                            onclick='openFotoModal(<?= htmlspecialchars(json_encode([
+                                                "id" => $row["id"],
+                                                "tanggal" => date("d/m/Y", strtotime($row["tanggal"])),
+                                                "penyuluh" => $row["penyuluh_nama"],
+                                                "tusi" => $row["tusi_kode"],
+                                                "uraian" => $row["uraian_kegiatan"],
+                                                "aktivitas" => $row["nama_aktivitas"] ?: $row["uraian_kegiatan"],
+                                                "fotos" => $row_fotos
+                                            ]), ENT_QUOTES, "UTF-8") ?>)'
+                                            class="badge badge-primary cursor-pointer hover:opacity-85 transition-opacity border-0"
+                                            style="font-size:10.5px;padding:3px 8px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"
+                                            title="Klik untuk membuka & menyalin foto dokumentasi">
+                                            <span class="material-symbols-outlined" style="font-size:13px;">photo_camera</span>
+                                            <?= $foto_count ?> Foto Dokumentasi
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td class="text-sm text-muted" style="max-width:320px;">
                                 <div class="line-clamp-2" title="<?= e($row['uraian_kegiatan']) ?>">
@@ -262,6 +303,28 @@ function get_status_badge($status) {
                             </td>
                             <td class="whitespace-nowrap text-end">
                                 <div class="d-flex align-items-center justify-content-end gap-1">
+                                    <?php if ($foto_count > 0): ?>
+                                    <button type="button"
+                                        class="btn-icon"
+                                        style="color:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary);background:var(--md-sys-color-primary-container);"
+                                        title="Ambil Foto Dokumentasi (<?= $foto_count ?> Foto)"
+                                        onclick='openFotoModal(<?= htmlspecialchars(json_encode([
+                                            "id" => $row["id"],
+                                            "tanggal" => date("d/m/Y", strtotime($row["tanggal"])),
+                                            "penyuluh" => $row["penyuluh_nama"],
+                                            "tusi" => $row["tusi_kode"],
+                                            "uraian" => $row["uraian_kegiatan"],
+                                            "aktivitas" => $row["nama_aktivitas"] ?: $row["uraian_kegiatan"],
+                                            "fotos" => $row_fotos
+                                        ]), ENT_QUOTES, "UTF-8") ?>)'>
+                                        <span class="material-symbols-outlined">photo_camera</span>
+                                    </button>
+                                    <?php else: ?>
+                                    <span class="btn-icon" style="opacity:0.3;cursor:not-allowed;" title="Belum ada foto dokumentasi">
+                                        <span class="material-symbols-outlined">no_photography</span>
+                                    </span>
+                                    <?php endif; ?>
+
                                     <a href="<?= BASE_URL ?>/index.php?page=kegiatan/detail&id=<?= $row['id'] ?>" class="btn-icon" title="Detail">
                                         <span class="material-symbols-outlined">visibility</span>
                                     </a>
@@ -306,23 +369,107 @@ function get_status_badge($status) {
     <?php if ($total_pages > 1): ?>
     <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="text-muted" style="font-size:12.5px;">
-            Menampilkan <span class="fw-bold"><?= $offset + 1 ?></span> hingga <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
+            Menampilkan <span class="fw-bold"><?= $total_rows > 0 ? $offset + 1 : 0 ?></span> &ndash; <span class="fw-bold"><?= min($offset + $limit, $total_rows) ?></span> dari <span class="fw-bold"><?= $total_rows ?></span> data
         </div>
-        <div class="d-flex align-items-center gap-1">
+        <div class="d-flex align-items-center gap-1 flex-wrap">
             <?php
             $query_params = $_GET;
-            for ($i = 1; $i <= $total_pages; $i++):
+
+            if ($page_num > 1):
+                $query_params['p'] = $page_num - 1;
+            ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Sebelumnya">
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+                    <span class="d-none sm:inline">Sebelumnya</span>
+                </a>
+            <?php endif; ?>
+
+            <?php
+            $start_p = max(1, $page_num - 2);
+            $end_p   = min($total_pages, $page_num + 2);
+
+            if ($start_p > 1):
+                $query_params['p'] = 1;
+            ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon">1</a>
+                <?php if ($start_p > 2): ?>
+                    <span class="text-muted px-1" style="font-size:12px;">...</span>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php for ($i = $start_p; $i <= $end_p; $i++):
                 $query_params['p'] = $i;
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="btn-icon <?= $is_active ? '' : 'd-none' ?>" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
+                <a href="<?= $link ?>" class="btn-icon" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
+
+            <?php if ($end_p < $total_pages): ?>
+                <?php if ($end_p < $total_pages - 1): ?>
+                    <span class="text-muted px-1" style="font-size:12px;">...</span>
+                <?php endif; ?>
+                <?php $query_params['p'] = $total_pages; ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn-icon"><?= $total_pages ?></a>
+            <?php endif; ?>
+
+            <?php
+            if ($page_num < $total_pages):
+                $query_params['p'] = $page_num + 1;
+            ?>
+                <a href="<?= BASE_URL ?>/index.php?<?= http_build_query($query_params) ?>" class="btn btn-outline-secondary btn-sm" title="Halaman Selanjutnya">
+                    <span class="d-none sm:inline">Selanjutnya</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
     <?php endif; ?>
+</div>
+
+<!-- Modal Ambil Foto Dokumentasi (Untuk semua user) -->
+<div id="modal-foto" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6" style="transition: opacity 0.2s ease;">
+    <div class="card w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl" style="border-radius:20px;background:var(--md-sys-color-surface);">
+        <!-- Header Modal -->
+        <div class="p-4 border-b d-flex align-items-center justify-content-between" style="border-color:var(--md-sys-color-outline-variant);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="w-10 h-10 rounded-full d-flex align-items-center justify-content-center flex-shrink-0" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
+                    <span class="material-symbols-outlined">photo_library</span>
+                </div>
+                <div>
+                    <h3 class="text-base fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Foto Dokumentasi Kegiatan</h3>
+                    <p id="modal-foto-subjudul" class="text-xs text-muted mb-0 mt-0.5 line-clamp-1"></p>
+                </div>
+            </div>
+            <button type="button" onclick="closeFotoModal()" class="btn-icon" title="Tutup">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Petunjuk Cepat & Tombol Aksi Masal -->
+        <div class="px-4 py-2.5 border-b d-flex align-items-center justify-content-between flex-wrap gap-2" style="background:var(--md-sys-color-surface-container-low);border-color:var(--md-sys-color-outline-variant);">
+            <div class="text-xs text-muted d-flex align-items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary" style="font-size:16px;">content_copy</span>
+                <span>Klik <strong>Salin Gambar</strong> untuk langsung menempelkan (<strong>Ctrl+V</strong>) di WhatsApp, Word, e-Kinerja, dsb.</span>
+            </div>
+            <div id="modal-foto-actions" class="d-flex align-items-center gap-2"></div>
+        </div>
+
+        <!-- Body / List Foto -->
+        <div class="p-4 overflow-y-auto flex-1">
+            <div id="modal-foto-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Diisi secara dinamis oleh JavaScript -->
+            </div>
+        </div>
+
+        <!-- Footer Modal -->
+        <div class="p-3 border-t d-flex justify-content-between align-items-center" style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container-lowest);">
+            <span id="modal-foto-count" class="text-xs text-muted"></span>
+            <button type="button" onclick="closeFotoModal()" class="btn btn-outline-secondary btn-sm">Tutup</button>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Konfirmasi Hapus (hanya admin) -->
@@ -366,3 +513,237 @@ document.getElementById('modal-hapus').addEventListener('click', function(e) {
 });
 </script>
 <?php endif; ?>
+
+<script>
+let currentModalData = null;
+
+function openFotoModal(data) {
+    currentModalData = data;
+    const modal = document.getElementById('modal-foto');
+    const subjudul = document.getElementById('modal-foto-subjudul');
+    const container = document.getElementById('modal-foto-container');
+    const actions = document.getElementById('modal-foto-actions');
+    const countEl = document.getElementById('modal-foto-count');
+
+    subjudul.textContent = `${data.tanggal} | ${data.tusi} | ${data.penyuluh} - ${data.aktivitas}`;
+    countEl.textContent = `Total ${data.fotos.length} foto lampiran`;
+
+    // Tombol aksi masal jika foto lebih dari 1
+    if (data.fotos.length > 1) {
+        actions.innerHTML = `
+            <button type="button" onclick="downloadAllCurrentPhotos()" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1" title="Unduh semua foto ke komputer">
+                <span class="material-symbols-outlined" style="font-size:16px;">folder_zip</span>
+                <span>Unduh Semua (${data.fotos.length})</span>
+            </button>
+        `;
+    } else {
+        actions.innerHTML = '';
+    }
+
+    container.innerHTML = '';
+    data.fotos.forEach((foto, idx) => {
+        const safeDate = data.tanggal.replace(/\//g, '-');
+        const defaultFilename = `Dokumentasi_${safeDate}_${data.tusi}_ID${data.id}_Foto${idx+1}.jpg`;
+        
+        const card = document.createElement('div');
+        card.className = 'border rounded-xl overflow-hidden shadow-sm flex flex-col';
+        card.style.background = 'var(--md-sys-color-surface-container-lowest)';
+        card.style.borderColor = 'var(--md-sys-color-outline-variant)';
+
+        card.innerHTML = `
+            <div class="relative group bg-neutral-900 flex items-center justify-center overflow-hidden" style="aspect-ratio:4/3;">
+                <img src="${foto.url}" 
+                     alt="Foto dokumentasi ${idx+1}" 
+                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                     loading="lazy"
+                     onclick="window.open('${foto.url}', '_blank')"
+                     onerror="this.parentElement.innerHTML='<div class=\\'p-4 text-xs text-center text-muted\\'>Gagal memuat gambar</div>';">
+                <a href="${foto.url}" target="_blank" rel="noopener noreferrer" 
+                   class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                   title="Buka Ukuran Asli">
+                    <span class="material-symbols-outlined" style="font-size:18px;">open_in_new</span>
+                </a>
+                <div class="absolute bottom-2 left-2 bg-black/75 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                    Foto ${idx+1} ${foto.ukuran_kb > 0 ? '• ' + foto.ukuran_kb + ' KB' : ''}
+                </div>
+            </div>
+            <div class="p-3 flex flex-col gap-2 flex-1 justify-between" style="background:var(--md-sys-color-surface-container-low);">
+                <button type="button" 
+                        onclick="copyImageToClipboard('${foto.url}', this)"
+                        class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1.5"
+                        title="Salin gambar ke clipboard untuk langsung ditempel (Ctrl+V) ke Word, WA, Excel, dll">
+                    <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>
+                    <span class="fw-bold">Salin Gambar</span>
+                </button>
+                <div class="d-flex gap-1.5">
+                    <button type="button" 
+                            onclick="forceDownloadImage('${foto.url}', '${defaultFilename}', this)"
+                            class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1"
+                            title="Unduh foto ke perangkat">
+                        <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+                        <span>Unduh</span>
+                    </button>
+                    <button type="button" 
+                            onclick="copyImageUrl('${foto.url}', this)"
+                            class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                            title="Salin Tautan / URL Foto" style="width:34px;padding:0;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">link</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    modal.classList.remove('hidden');
+}
+
+function closeFotoModal() {
+    const modal = document.getElementById('modal-foto');
+    if (modal) modal.classList.add('hidden');
+    currentModalData = null;
+}
+
+document.getElementById('modal-foto')?.addEventListener('click', function(e) {
+    if (e.target === this) closeFotoModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeFotoModal();
+        if (typeof tutupModal === 'function') tutupModal();
+    }
+});
+
+async function copyImageToClipboard(imageUrl, btn) {
+    const originalHtml = btn ? btn.innerHTML : '';
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">hourglass_top</span> <span>Menyalin...</span>';
+        }
+
+        const response = await fetch(imageUrl);
+        if (!response.ok) throw new Error('Gagal mengambil gambar dari server');
+        const blob = await response.blob();
+
+        const pngBlob = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const objUrl = URL.createObjectURL(blob);
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    URL.revokeObjectURL(objUrl);
+                    canvas.toBlob((b) => {
+                        if (b) resolve(b);
+                        else reject(new Error('Canvas gagal menghasilkan blob'));
+                    }, 'image/png');
+                } catch (canvasErr) {
+                    URL.revokeObjectURL(objUrl);
+                    reject(canvasErr);
+                }
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(objUrl);
+                reject(new Error('Gagal memuat image'));
+            };
+            img.src = objUrl;
+        });
+
+        if (navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': pngBlob })
+            ]);
+        } else {
+            throw new Error('ClipboardItem API tidak didukung');
+        }
+
+        if (btn) {
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span> <span class="fw-bold">Tersalin!</span>';
+            btn.style.background = 'var(--md-sys-color-tertiary)';
+            btn.style.color = '#fff';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.disabled = false;
+            }, 2500);
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('Foto berhasil disalin! Tekan Ctrl+V untuk menempelkan di aplikasi lain.', 'success', 4000);
+        }
+    } catch (err) {
+        console.warn('Gagal salin langsung ke clipboard:', err);
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+        // Fallback: unduh otomatis
+        forceDownloadImage(imageUrl);
+        if (typeof showToast === 'function') {
+            showToast('Browser membatasi salin langsung. Foto otomatis diunduh untuk Anda.', 'warning', 4000);
+        }
+    }
+}
+
+async function forceDownloadImage(url, filename, btn) {
+    try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename || url.split('/').pop() || 'foto_dokumentasi.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        if (typeof showToast === 'function') {
+            showToast('Foto sedang diunduh.', 'info', 2000);
+        }
+    } catch (e) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename || 'foto_dokumentasi.jpg';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+}
+
+async function copyImageUrl(url, btn) {
+    try {
+        await navigator.clipboard.writeText(url);
+        if (btn) {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;color:var(--md-sys-color-tertiary);">check</span>';
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        }
+        if (typeof showToast === 'function') {
+            showToast('Tautan foto berhasil disalin ke clipboard.', 'success');
+        }
+    } catch (e) {
+        window.prompt('Salin tautan foto:', url);
+    }
+}
+
+async function downloadAllCurrentPhotos() {
+    if (!currentModalData || !currentModalData.fotos) return;
+    const safeDate = currentModalData.tanggal.replace(/\//g, '-');
+    for (let i = 0; i < currentModalData.fotos.length; i++) {
+        const f = currentModalData.fotos[i];
+        const fn = `Dokumentasi_${safeDate}_${currentModalData.tusi}_ID${currentModalData.id}_Foto${i+1}.jpg`;
+        await forceDownloadImage(f.url, fn);
+        if (i < currentModalData.fotos.length - 1) {
+            await new Promise(r => setTimeout(r, 400));
+        }
+    }
+}
+</script>

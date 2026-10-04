@@ -205,26 +205,69 @@ function get_status_badge($status) {
         <?php if (!empty($lampiran_list)): ?>
         <!-- Lampiran Foto -->
         <div class="card">
-            <div class="card-header d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined">photo_camera</span>
-                Lampiran Foto <span class="ms-2 text-xs fw-normal text-muted">(<?= count($lampiran_list) ?> foto)</span>
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    <span>Lampiran Foto</span>
+                    <span class="ms-1 text-xs fw-normal text-muted">(<?= count($lampiran_list) ?> foto)</span>
+                </div>
+                <?php if (count($lampiran_list) > 1): ?>
+                <button type="button" onclick="downloadAllDetailPhotos()" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size:16px;">folder_zip</span>
+                    <span>Unduh Semua Foto</span>
+                </button>
+                <?php endif; ?>
             </div>
             <div class="card-body">
+                <p class="text-xs text-muted mb-3 d-flex align-items-center gap-1.5">
+                    <span class="material-symbols-outlined text-primary" style="font-size:16px;">content_copy</span>
+                    <span>Gunakan tombol <strong>Salin Gambar</strong> untuk menempelkan foto (<strong>Ctrl+V</strong>) langsung ke aplikasi lain.</span>
+                </p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <?php foreach ($lampiran_list as $lamp): ?>
-                    <div class="rounded-xl overflow-hidden border shadow-sm cursor-pointer"
-                         style="background:var(--md-sys-color-surface-container-low);border-color:var(--md-sys-color-outline-variant);"
-                         onclick="openLightbox('<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>')">
-                        <div style="aspect-ratio:16/9;">
-                            <img src="<?= BASE_URL ?>/uploads/lampiran/<?= $keg['id'] ?>/<?= e($lamp['nama_file']) ?>"
+                    <?php foreach ($lampiran_list as $idx => $lamp): 
+                        $foto_url = BASE_URL . '/uploads/lampiran/' . $keg['id'] . '/' . rawurlencode($lamp['nama_file']);
+                        $foto_filename = 'Dokumentasi_' . date('d-m-Y', strtotime($keg['tanggal'])) . '_' . $keg['tusi_kode'] . '_ID' . $keg['id'] . '_Foto' . ($idx+1) . '.jpg';
+                    ?>
+                    <div class="rounded-xl overflow-hidden border shadow-sm flex flex-col"
+                         style="background:var(--md-sys-color-surface-container-low);border-color:var(--md-sys-color-outline-variant);">
+                        <div class="relative group cursor-pointer overflow-hidden bg-neutral-900" style="aspect-ratio:16/9;"
+                             onclick="openLightbox('<?= $foto_url ?>', '<?= $foto_filename ?>')">
+                            <img src="<?= $foto_url ?>"
                                  alt="Lampiran foto"
                                  loading="lazy"
                                  onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex flex-col items-center justify-center text-xs gap-1.5 p-4\' style=\'color:var(--md-sys-color-on-surface-variant);background:var(--md-sys-color-surface-container-low);\'><span class=\'material-symbols-outlined\'>image_not_supported</span><span>Foto tidak dapat dimuat</span></div>';"
-                                 class="w-full h-full object-cover transition-transform duration-300" style="aspect-ratio:16/9;">
+                                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" style="aspect-ratio:16/9;">
+                            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity d-flex align-items-center justify-content-center text-white gap-1 text-xs fw-semibold">
+                                <span class="material-symbols-outlined" style="font-size:20px;">zoom_in</span>
+                                <span>Perbesar</span>
+                            </div>
                         </div>
-                        <div class="px-3 py-2 d-flex align-items-center justify-content-between" style="border-top:1px solid var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container-low);">
-                            <span class="text-[11px] text-muted"><?= $lamp['ukuran_bytes'] > 0 ? round($lamp['ukuran_bytes'] / 1024) . ' KB' : '' ?></span>
-                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--md-sys-color-outline);">zoom_in</span>
+                        <div class="px-3 py-1.5 d-flex align-items-center justify-content-between text-[11px] text-muted border-b" style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container);">
+                            <span>Foto <?= $idx + 1 ?></span>
+                            <span><?= $lamp['ukuran_bytes'] > 0 ? round($lamp['ukuran_bytes'] / 1024) . ' KB' : '' ?></span>
+                        </div>
+                        <div class="p-2.5 flex flex-col gap-1.5" style="background:var(--md-sys-color-surface-container-lowest);">
+                            <button type="button" 
+                                    onclick="copyImageToClipboard('<?= $foto_url ?>', this)"
+                                    class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1.5"
+                                    title="Salin gambar ke clipboard untuk ditempelkan (Ctrl+V) ke aplikasi lain">
+                                <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>
+                                <span class="fw-bold">Salin Gambar</span>
+                            </button>
+                            <div class="d-flex gap-1.5">
+                                <button type="button" 
+                                        onclick="forceDownloadImage('<?= $foto_url ?>', '<?= $foto_filename ?>', this)"
+                                        class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1"
+                                        title="Unduh foto">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+                                    <span>Unduh</span>
+                                </button>
+                                <a href="<?= $foto_url ?>" target="_blank" rel="noopener noreferrer" 
+                                   class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                                   title="Buka Ukuran Penuh di Tab Baru" style="width:34px;padding:0;">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">open_in_new</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -292,26 +335,185 @@ function get_status_badge($status) {
 <?php if (!empty($lampiran_list)): ?>
 <!-- Lightbox -->
 <div id="lightbox" onclick="closeLightbox()"
-     style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; padding:16px;">
-    <img id="lightbox_img" src="" alt="Foto lampiran"
-         style="max-height:90vh; max-width:100%; border-radius:12px; box-shadow:0 25px 60px rgba(0,0,0,0.5);"
-         onclick="event.stopPropagation()">
+     style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div class="relative max-h-[85vh] max-w-full d-flex flex-col items-center" onclick="event.stopPropagation()">
+        <img id="lightbox_img" src="" alt="Foto lampiran"
+             style="max-height:80vh; max-width:92vw; border-radius:12px; box-shadow:0 25px 60px rgba(0,0,0,0.6); object-fit:contain;">
+        <div class="d-flex align-items-center justify-content-center gap-2 mt-3 flex-wrap">
+            <button type="button" id="lightbox_copy_btn" onclick="copyLightboxImage(this)" class="btn btn-primary btn-sm d-flex align-items-center gap-1.5 shadow">
+                <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>
+                <span class="fw-bold">Salin Gambar</span>
+            </button>
+            <button type="button" onclick="downloadLightboxImage()" class="btn btn-outline-light btn-sm d-flex align-items-center gap-1.5 shadow" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3);">
+                <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+                <span>Unduh Foto</span>
+            </button>
+            <a id="lightbox_newtab_link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-sm d-flex align-items-center gap-1.5 shadow" style="background:rgba(255,255,255,0.15);color:#fff;border-color:rgba(255,255,255,0.3);">
+                <span class="material-symbols-outlined" style="font-size:16px;">open_in_new</span>
+                <span>Ukuran Penuh</span>
+            </a>
+        </div>
+    </div>
     <button onclick="closeLightbox()"
-            style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.5); border:none; color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; line-height:1;">
+            style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.2); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:22px; display:flex; align-items:center; justify-content:center; line-height:1; transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(255,255,255,0.35)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'">
         &times;
     </button>
 </div>
+
 <script>
-function openLightbox(src) {
+let currentLightboxUrl = '';
+let currentLightboxFilename = 'foto_dokumentasi.jpg';
+
+const detailLampiranList = <?= json_encode(array_map(function($idx, $lamp) use ($keg) {
+    return [
+        'url' => BASE_URL . '/uploads/lampiran/' . $keg['id'] . '/' . rawurlencode($lamp['nama_file']),
+        'filename' => 'Dokumentasi_' . date('d-m-Y', strtotime($keg['tanggal'])) . '_' . $keg['tusi_kode'] . '_ID' . $keg['id'] . '_Foto' . ($idx+1) . '.jpg'
+    ];
+}, array_keys($lampiran_list), $lampiran_list)) ?>;
+
+function openLightbox(src, filename) {
+    currentLightboxUrl = src;
+    currentLightboxFilename = filename || 'foto_dokumentasi.jpg';
     var lb = document.getElementById('lightbox');
     document.getElementById('lightbox_img').src = src;
+    document.getElementById('lightbox_newtab_link').href = src;
     lb.style.display = 'flex';
 }
+
 function closeLightbox() {
     var lb = document.getElementById('lightbox');
     lb.style.display = 'none';
     document.getElementById('lightbox_img').src = '';
+    currentLightboxUrl = '';
 }
+
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
+function copyLightboxImage(btn) {
+    if (currentLightboxUrl) {
+        copyImageToClipboard(currentLightboxUrl, btn);
+    }
+}
+
+function downloadLightboxImage() {
+    if (currentLightboxUrl) {
+        forceDownloadImage(currentLightboxUrl, currentLightboxFilename);
+    }
+}
+
+async function copyImageToClipboard(imageUrl, btn) {
+    const originalHtml = btn ? btn.innerHTML : '';
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">hourglass_top</span> <span>Menyalin...</span>';
+        }
+
+        const response = await fetch(imageUrl);
+        if (!response.ok) throw new Error('Gagal memuat gambar');
+        const blob = await response.blob();
+
+        const pngBlob = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const objUrl = URL.createObjectURL(blob);
+            img.onload = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    URL.revokeObjectURL(objUrl);
+                    canvas.toBlob((b) => {
+                        if (b) resolve(b);
+                        else reject(new Error('Canvas gagal menghasilkan blob'));
+                    }, 'image/png');
+                } catch (canvasErr) {
+                    URL.revokeObjectURL(objUrl);
+                    reject(canvasErr);
+                }
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(objUrl);
+                reject(new Error('Gagal memuat elemen gambar'));
+            };
+            img.src = objUrl;
+        });
+
+        if (navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': pngBlob })
+            ]);
+        } else {
+            throw new Error('ClipboardItem API tidak didukung');
+        }
+
+        if (btn) {
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span> <span class="fw-bold">Tersalin!</span>';
+            btn.style.background = 'var(--md-sys-color-tertiary)';
+            btn.style.color = '#fff';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.disabled = false;
+            }, 2500);
+        }
+
+        if (typeof showToast === 'function') {
+            showToast('Foto berhasil disalin! Tekan Ctrl+V untuk menempelkan di aplikasi lain.', 'success', 4000);
+        }
+    } catch (err) {
+        console.warn('Gagal salin langsung:', err);
+        if (btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+        forceDownloadImage(imageUrl);
+        if (typeof showToast === 'function') {
+            showToast('Browser membatasi salin langsung. Foto otomatis diunduh untuk Anda.', 'warning', 4000);
+        }
+    }
+}
+
+async function forceDownloadImage(url, filename, btn) {
+    try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename || url.split('/').pop() || 'foto_dokumentasi.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        if (typeof showToast === 'function') {
+            showToast('Foto sedang diunduh.', 'info', 2000);
+        }
+    } catch (e) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename || 'foto_dokumentasi.jpg';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+}
+
+async function downloadAllDetailPhotos() {
+    if (!detailLampiranList || detailLampiranList.length === 0) return;
+    for (let i = 0; i < detailLampiranList.length; i++) {
+        const item = detailLampiranList[i];
+        await forceDownloadImage(item.url, item.filename);
+        if (i < detailLampiranList.length - 1) {
+            await new Promise(r => setTimeout(r, 400));
+        }
+    }
+}
 </script>
 <?php endif; ?>

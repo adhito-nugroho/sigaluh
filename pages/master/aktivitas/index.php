@@ -222,7 +222,7 @@ $aktivitas_list = $stmt->fetchAll();
                 $link = BASE_URL . '/index.php?' . http_build_query($query_params);
                 $is_active = $page_num === $i;
             ?>
-                <a href="<?= $link ?>" class="btn-icon <?= $is_active ? '' : 'd-none' ?>" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
+                <a href="<?= $link ?>" class="btn-icon" style="<?= $is_active ? 'background:var(--md-sys-color-primary);color:#fff;border-color:var(--md-sys-color-primary);' : '' ?>">
                     <?= $i ?>
                 </a>
             <?php endfor; ?>
