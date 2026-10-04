@@ -186,211 +186,273 @@ $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 ?>
 
-<!-- Header Periode & Aksi Utama Dashboard -->
-<div class="card p-2 px-3 mb-4">
-    <div class="d-flex flex-column md:flex-row md:items-center justify-between gap-2.5">
-        <!-- Kontrol Periode Navigasi & Form -->
-        <div class="d-flex align-items-center gap-1.5 flex-wrap">
-            <!-- Navigasi Cepat Bulan Lalu -->
-            <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>" 
-               class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center" 
-               title="Pindah ke <?= get_bulan_indo((int)$prev_bulan) ?> <?= $prev_tahun ?>" 
-               aria-label="Bulan Lalu"
-               style="border-radius:var(--md-radius-pill);padding:6px 10px;">
-                <span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span>
-            </a>
+<?php
+// Variabel bantu untuk hero & KPI
+$user_nama = $_SESSION['user_nama'] ?? 'Penyuluh';
+$nama_depan = explode(' ', trim($user_nama))[0] ?? $user_nama;
+$count_diajukan = (int)($breakdown_status['submitted'] ?? 0);
+$count_disetujui = (int)($breakdown_status['direview'] ?? 0);
+$count_draft = (int)($breakdown_status['draft'] ?? 0);
+$approval_rate = $total_kegiatan > 0 ? round(($count_disetujui / $total_kegiatan) * 100) : 0;
+$perlu_perhatian = $count_diajukan + $count_draft;
+if ($pct_target >= 100) { $target_status_txt = 'Target tercapai'; $target_status_cls = 'badge-success'; }
+elseif ($pct_target >= 50) { $target_status_txt = 'Progres baik'; $target_status_cls = 'badge-primary'; }
+elseif ($total_kegiatan > 0) { $target_status_txt = 'Perlu dikejar'; $target_status_cls = 'badge-warning'; }
+else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral'; }
+?>
 
-            <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-1.5 flex-wrap m-0">
-                <input type="hidden" name="page" value="dashboard">
-                <select name="bulan" aria-label="Pilih Bulan" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:125px;border-radius:var(--md-radius-pill);">
-                    <?php for ($m = 1; $m <= 12; $m++): ?>
-                        <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>>
-                            <?= get_bulan_indo($m) ?>
-                        </option>
-                    <?php endfor; ?>
-                </select>
-
-                <select name="tahun" aria-label="Pilih Tahun" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:85px;border-radius:var(--md-radius-pill);">
-                    <?php 
-                    $cur_y = (int)date('Y');
-                    for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
-                        <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
-                    <?php endfor; ?>
-                </select>
-
-                <noscript>
-                    <button type="submit" class="btn btn-outline-secondary btn-sm" style="border-radius:var(--md-radius-pill);padding:6px 12px;">
-                        <span class="material-symbols-outlined" style="font-size:16px;">filter_alt</span>
-                        <span class="ms-1">Pilih</span>
-                    </button>
-                </noscript>
-            </form>
-
-            <!-- Navigasi Cepat Bulan Depan -->
-            <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $next_bulan ?>&tahun=<?= $next_tahun ?>" 
-               class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center" 
-               title="Pindah ke <?= get_bulan_indo((int)$next_bulan) ?> <?= $next_tahun ?>" 
-               aria-label="Bulan Depan"
-               style="border-radius:var(--md-radius-pill);padding:6px 10px;">
-                <span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span>
-            </a>
-
-            <?php if (!$is_current_month): ?>
-            <!-- Tombol Kembali ke Bulan Ini -->
-            <a href="<?= BASE_URL ?>/index.php?page=dashboard" 
-               class="btn btn-outline-primary btn-sm d-inline-flex align-items-center" 
-               title="Kembali ke Bulan Berjalan (<?= get_bulan_indo((int)date('m')) ?> <?= date('Y') ?>)"
-               style="border-radius:var(--md-radius-pill);padding:6px 12px;">
-                <span class="material-symbols-outlined" style="font-size:16px;">today</span>
-                <span class="ms-1">Bulan Ini</span>
-            </a>
-            <?php endif; ?>
+<!-- Hero sapaan + aksi cepat -->
+<div class="card mb-3" style="background:linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, #fff 65%);border:1px solid var(--md-sys-color-outline-variant);">
+    <div class="d-flex flex-column md:flex-row md:items-center justify-between gap-3 p-3 px-3" style="padding:18px 20px;">
+        <div class="min-w-0">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h2 class="mb-0" style="font-size:18px;font-weight:700;color:var(--md-sys-color-on-surface);">Halo, <?= e($nama_depan) ?> 👋</h2>
+                <?php if ($is_current_month): ?>
+                    <span class="badge badge-primary">Bulan berjalan</span>
+                <?php else: ?>
+                    <span class="badge badge-neutral">Arsip • <?= e($nama_bulan_terpilih) ?></span>
+                <?php endif; ?>
+                <span class="badge <?= $target_status_cls ?>"><?= $target_status_txt ?> • <?= $pct_target ?>%</span>
+            </div>
+            <p class="mb-0 mt-1" style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">
+                <?php if ($total_kegiatan == 0): ?>
+                    Belum ada kegiatan pada <strong><?= e($nama_bulan_terpilih) ?></strong>. Yuk catat kegiatan pertama Anda hari ini.
+                <?php else: ?>
+                    Anda mencatat <strong><?= $total_kegiatan ?> kegiatan</strong> • <strong><?= number_format($total_durasi_menit, 0, ',', '.') ?> menit</strong> (<?= $total_durasi_jam ?> jam) pada <strong><?= e($nama_bulan_terpilih) ?></strong>. Sisa <strong><?= number_format($sisa_menit, 0, ',', '.') ?> menit</strong> menuju target.
+                <?php endif; ?>
+            </p>
         </div>
-
-        <!-- Tombol Aksi Utama Catat Kegiatan -->
-        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary btn-sm d-inline-flex align-items-center justify-content-center gap-1.5 flex-shrink-0" style="border-radius:var(--md-radius-pill);padding:6px 16px;">
-            <span class="material-symbols-outlined" style="font-size:18px;">add</span>
-            <span class="fw-medium">Catat Kegiatan</span>
-        </a>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0 flex-wrap">
+            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary" style="padding:9px 20px;font-size:13.5px;">
+                <span class="material-symbols-outlined" style="font-size:18px;">add_circle</span>
+                Catat Kegiatan
+            </a>
+            <a href="<?= BASE_URL ?>/index.php?page=laporan" class="btn btn-outline-secondary" style="padding:9px 16px;background:#fff;">
+                <span class="material-symbols-outlined" style="font-size:18px;">bar_chart</span>
+                Laporan
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Stats Cards (Volume Kegiatan & Capaian Target) -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-stretch">
-    <!-- Total Kegiatan -->
-    <div class="card p-3 h-full d-flex flex-column justify-content-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <div class="stat-label">Total Kegiatan</div>
-                <div class="stat-value"><?= $total_kegiatan ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Kegiatan</span></div>
+<!-- Toolbar periode ramping -->
+<div class="card px-3 py-2 mb-4 d-flex flex-column md:flex-row md:items-center justify-between gap-2" style="padding:10px 16px;">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="d-inline-flex align-items-center gap-1 text-muted" style="font-size:12.5px;font-weight:600;">
+            <span class="material-symbols-outlined" style="font-size:18px;">calendar_month</span> Periode
+        </span>
+        <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $prev_bulan ?>&tahun=<?= $prev_tahun ?>"
+           class="btn-icon" title="Ke <?= get_bulan_indo((int)$prev_bulan) ?> <?= $prev_tahun ?>" aria-label="Bulan lalu">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </a>
+        <form method="GET" action="<?= BASE_URL ?>/index.php" class="d-flex align-items-center gap-2 m-0">
+            <input type="hidden" name="page" value="dashboard">
+            <select name="bulan" aria-label="Pilih Bulan" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:130px;border-radius:999px;font-weight:600;">
+                <?php for ($m = 1; $m <= 12; $m++): ?>
+                    <option value="<?= sprintf('%02d', $m) ?>" <?= sprintf('%02d', $m) === $f_bulan ? 'selected' : '' ?>><?= get_bulan_indo($m) ?></option>
+                <?php endfor; ?>
+            </select>
+            <select name="tahun" aria-label="Pilih Tahun" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto;min-width:88px;border-radius:999px;font-weight:600;">
+                <?php $cur_y = (int)date('Y'); for ($y = $cur_y + 1; $y >= 2023; $y--): ?>
+                    <option value="<?= $y ?>" <?= $y === $f_tahun_num ? 'selected' : '' ?>><?= $y ?></option>
+                <?php endfor; ?>
+            </select>
+            <noscript><button type="submit" class="btn btn-outline-secondary btn-sm">Pilih</button></noscript>
+        </form>
+        <a href="<?= BASE_URL ?>/index.php?page=dashboard&bulan=<?= $next_bulan ?>&tahun=<?= $next_tahun ?>"
+           class="btn-icon" title="Ke <?= get_bulan_indo((int)$next_bulan) ?> <?= $next_tahun ?>" aria-label="Bulan depan">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </a>
+        <?php if (!$is_current_month): ?>
+        <a href="<?= BASE_URL ?>/index.php?page=dashboard" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center">
+            <span class="material-symbols-outlined" style="font-size:16px;">today</span><span class="ms-1">Bulan ini</span>
+        </a>
+        <?php endif; ?>
+    </div>
+    <div class="d-flex align-items-center gap-2 text-muted" style="font-size:12px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">flag</span>
+        Target <strong style="color:var(--md-sys-color-on-surface);">6.750 mnt</strong> / bulan (≈112,5 jam)
+        <span class="d-none d-md-inline" style="color:var(--md-sys-color-outline-variant);">|</span>
+        <span class="d-none d-md-inline">Sepanjang masa: <strong style="color:var(--md-sys-color-on-surface);"><?= $total_kegiatan_all_time ?></strong> kegiatan</span>
+    </div>
+</div>
+
+<!-- KPI ringkas 4 kartu -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4 items-stretch">
+    <div class="card p-3 h-full">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+            <div class="min-w-0">
+                <div class="stat-label">Kegiatan bulan ini</div>
+                <div class="stat-value mt-1"><?= $total_kegiatan ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">kegiatan</span></div>
+                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= $total_kegiatan_all_time ?> sepanjang masa</div>
             </div>
-            <div class="stat-icon-wrap primary flex-shrink-0">
-                <span class="material-symbols-outlined">event_available</span>
+            <div class="stat-icon-wrap primary"><span class="material-symbols-outlined">event_available</span></div>
+        </div>
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="d-inline-flex align-items-center gap-1 mt-2 text-decoration-none" style="font-size:12px;font-weight:600;color:var(--md-sys-color-primary);">Lihat daftar <span class="material-symbols-outlined" style="font-size:14px;">arrow_forward</span></a>
+    </div>
+    <div class="card p-3 h-full">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+            <div class="min-w-0">
+                <div class="stat-label">Waktu tercatat</div>
+                <div class="stat-value mt-1"><?= $total_durasi_jam ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">jam</span></div>
+                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= number_format($total_durasi_menit, 0, ',', '.') ?> mnt • sisa <?= number_format($sisa_menit, 0, ',', '.') ?> mnt</div>
             </div>
+            <div class="stat-icon-wrap secondary"><span class="material-symbols-outlined">schedule</span></div>
+        </div>
+        <div class="progress mt-2" style="height:6px;border-radius:999px;background:var(--md-sys-color-surface-container);">
+            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;border-radius:999px;background:var(--md-sys-color-secondary);"></div>
         </div>
     </div>
-
-    <!-- Capaian Target Penyuluhan -->
-    <div class="card p-3 md:col-span-2 h-full d-flex flex-column justify-content-center">
-        <div class="d-flex align-items-center justify-content-between mb-1">
-            <div class="stat-label mb-0">Capaian Target Penyuluhan</div>
-            <div class="stat-icon-wrap tertiary flex-shrink-0">
-                <span class="material-symbols-outlined">speed</span>
+    <div class="card p-3 h-full">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+            <div class="min-w-0">
+                <div class="stat-label">Capaian target</div>
+                <div class="stat-value mt-1"><?= $pct_target ?><span style="font-size:14px;">%</span> <span class="badge <?= $target_status_cls ?> ms-1" style="vertical-align:middle;"><?= $target_status_txt ?></span></div>
+                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> menit</div>
             </div>
+            <div class="stat-icon-wrap tertiary"><span class="material-symbols-outlined">speed</span></div>
         </div>
-        <div class="d-flex align-items-baseline justify-content-between">
-            <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
-            <span class="fw-semibold <?= $pct_target >= 100 ? 'text-success' : 'text-warning' ?>" style="font-size:14px;"><?= $pct_target ?>%</span>
+        <div class="progress mt-2" style="height:6px;border-radius:999px;background:var(--md-sys-color-surface-container);">
+            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;border-radius:999px;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
         </div>
-        <div class="progress mt-2" style="height:8px;">
-            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
+    </div>
+    <div class="card p-3 h-full">
+        <div class="d-flex align-items-start justify-content-between gap-2">
+            <div class="min-w-0">
+                <div class="stat-label">Persetujuan</div>
+                <div class="stat-value mt-1"><?= $count_disetujui ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">disetujui (<?= $approval_rate ?>%)</span></div>
+                <div class="mt-1 d-flex gap-1 flex-wrap" style="font-size:11.5px;">
+                    <span class="badge badge-warning"><?= $count_diajukan ?> diajukan</span>
+                    <span class="badge badge-neutral"><?= $count_draft ?> draft</span>
+                </div>
+            </div>
+            <div class="stat-icon-wrap <?= $perlu_perhatian > 0 ? 'error' : 'tertiary' ?>"><span class="material-symbols-outlined">check_circle</span></div>
         </div>
-        <?php if ($sisa_menit > 0): ?>
-            <p class="text-[11px] text-muted font-medium mb-0 mt-1">Sisa <?= number_format($sisa_menit, 0, ',', '.') ?> Menit</p>
+        <?php if ($perlu_perhatian > 0): ?>
+            <div class="mt-2" style="font-size:12px;color:var(--md-sys-color-on-surface-variant);"><?= $perlu_perhatian ?> kegiatan perlu perhatian.</div>
+        <?php else: ?>
+            <div class="mt-2" style="font-size:12px;color:var(--md-sys-color-tertiary);font-weight:600;">Semua beres 🎉</div>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- Chart + Status Panel -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-    <!-- Chart Tren 6 Bulan -->
+<!-- Tren + Status -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
     <div class="card lg:col-span-2">
         <div class="card-header">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">bar_chart</span>
-                    <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Grafik Jumlah Kegiatan Bulanan</span>
+                    <span class="fw-semibold" style="font-size:13.5px;">Tren 6 bulan terakhir</span>
                 </div>
-                <span class="text-xs text-muted">Hingga <?= $nama_bulan_terpilih ?></span>
+                <span class="badge badge-neutral">Hingga <?= e($nama_bulan_terpilih) ?></span>
             </div>
         </div>
-        <div class="card-body" style="position: relative; height: 200px;">
-            <canvas id="trendChart"></canvas>
+        <div class="card-body" style="position:relative;height:220px;">
+            <?php if (array_sum($chart_values) == 0): ?>
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center" style="min-height:180px;">
+                    <div class="stat-icon-wrap mb-2" style="width:48px;height:48px;border-radius:50%;background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);"><span class="material-symbols-outlined" style="font-size:26px;">insights</span></div>
+                    <div class="fw-semibold" style="font-size:13.5px;">Belum ada tren yang bisa ditampilkan</div>
+                    <div class="text-muted" style="font-size:12.5px;">Data 6 bulan terakhir masih kosong. Mulai catat agar grafik terisi otomatis.</div>
+                </div>
+            <?php else: ?>
+                <canvas id="trendChart"></canvas>
+            <?php endif; ?>
         </div>
     </div>
 
-    <!-- Status Panel Bulan Terpilih -->
     <div class="card">
         <div class="card-header">
-            <div class="d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
-                <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Status Kegiatan</span>
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">check_circle</span>
+                    <span class="fw-semibold" style="font-size:13.5px;">Status • <?= e($nama_bulan_terpilih) ?></span>
+                </div>
             </div>
         </div>
-        <div class="card-body space-y-5">
-            <div>
-                <?php
-                $status_items = [
-                    ['key' => 'direview', 'label' => 'Disetujui', 'color' => 'background:var(--md-sys-color-tertiary);', 'badge' => 'badge-success'],
-                    ['key' => 'submitted', 'label' => 'Diajukan', 'color' => 'background:var(--md-sys-color-secondary);', 'badge' => 'badge-warning'],
-                    ['key' => 'draft',     'label' => 'Draft',     'color' => 'background:var(--md-sys-color-outline);',   'badge' => 'badge-primary'],
-                ];
-                foreach ($status_items as $item):
-                ?>
-                <div class="d-flex justify-content-between align-items-center py-2">
+        <div class="card-body" style="padding:8px 20px 16px 20px;">
+            <?php
+            $status_items = [
+                ['key' => 'direview', 'label' => 'Disetujui', 'desc' => 'Sudah direview', 'dot' => 'background:#0E9F6E;', 'badge' => 'badge-success'],
+                ['key' => 'submitted', 'label' => 'Diajukan', 'desc' => 'Menunggu review', 'dot' => 'background:#C27803;', 'badge' => 'badge-warning'],
+                ['key' => 'draft', 'label' => 'Draft', 'desc' => 'Belum diajukan', 'dot' => 'background:#9AA0B4;', 'badge' => 'badge-neutral'],
+            ];
+            foreach ($status_items as $item):
+                $val = (int)($breakdown_status[$item['key']] ?? 0);
+                $share = $total_kegiatan > 0 ? round(($val / $total_kegiatan) * 100) : 0;
+            ?>
+            <div class="py-2" style="border-bottom:1px solid var(--md-sys-color-surface-container-high);">
+                <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="d-inline-block rounded-pill" style="width:10px;height:10px;<?= $item['color'] ?>"></span>
-                        <span class="text-muted" style="font-size:12.5px;"><?= $item['label'] ?></span>
+                        <span class="d-inline-block rounded-pill" style="width:10px;height:10px;<?= $item['dot'] ?>"></span>
+                        <div>
+                            <div style="font-size:13px;font-weight:600;"><?= $item['label'] ?></div>
+                            <div class="text-muted" style="font-size:11.5px;"><?= $item['desc'] ?> • <?= $share ?>%</div>
+                        </div>
                     </div>
-                    <span class="badge <?= $item['badge'] ?>"><?= (int)($breakdown_status[$item['key']] ?? 0) ?></span>
+                    <span class="badge <?= $item['badge'] ?>" style="font-size:13px;min-width:34px;justify-content:center;"><?= $val ?></span>
                 </div>
-                <?php endforeach; ?>
+                <div class="progress mt-2" style="height:5px;border-radius:999px;background:var(--md-sys-color-surface-container);">
+                    <div class="progress-bar" style="width:<?= $share ?>%;border-radius:999px;<?= $item['dot'] ?>"></div>
+                </div>
             </div>
-
-            <div class="pt-2 border-top" style="border-color:var(--md-sys-color-outline-variant);">
-                <div class="d-flex justify-content-between align-items-center text-xs text-muted">
-                    <span>Total Sepanjang Masa:</span>
-                    <span><?= $total_kegiatan_all_time ?></span>
-                </div>
+            <?php endforeach; ?>
+            <div class="d-flex justify-content-between align-items-center pt-3" style="font-size:12.5px;">
+                <span class="text-muted">Total sepanjang masa</span>
+                <span class="fw-bold"><?= $total_kegiatan_all_time ?> kegiatan</span>
             </div>
         </div>
     </div>
 </div>
 
 <?php if ($total_kegiatan == 0): ?>
-<!-- Empty State Periode Tanpa Data -->
-<div class="card mb-4 text-center py-5 px-3">
+<!-- Empty state ramah -->
+<div class="card mb-4 text-center" style="padding:28px 20px;background:var(--md-sys-color-surface-container-low);">
     <div class="d-flex flex-column align-items-center justify-content-center">
-        <div class="stat-icon-wrap mb-3" style="width:52px;height:52px;background:var(--md-sys-color-surface-container-high);color:var(--md-sys-color-on-surface-variant);border-radius:50%;">
-            <span class="material-symbols-outlined" style="font-size:28px;">event_busy</span>
+        <div class="stat-icon-wrap mb-3" style="width:56px;height:56px;background:#fff;color:var(--md-sys-color-primary);border-radius:50%;border:1px solid var(--md-sys-color-outline-variant);">
+            <span class="material-symbols-outlined" style="font-size:30px;">event_upcoming</span>
         </div>
-        <p class="mb-3 text-muted" style="font-size:14px;">Belum ada kegiatan pada <?= $nama_bulan_terpilih ?>.</p>
-        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5" style="border-radius:var(--md-radius-pill);padding:6px 16px;">
-            <span class="material-symbols-outlined" style="font-size:18px;">add</span>
-            <span class="fw-medium">Catat Kegiatan</span>
-        </a>
+        <div class="fw-bold" style="font-size:15px;">Belum ada kegiatan di <?= e($nama_bulan_terpilih) ?></div>
+        <p class="text-muted mt-1 mb-3" style="font-size:13px;max-width:480px;">Setiap kegiatan penyuluhan yang Anda catat otomatis menambah jam kerja dan progres target bulanan 6.750 menit.</p>
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+            <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary d-inline-flex align-items-center gap-1" style="padding:8px 20px;">
+                <span class="material-symbols-outlined" style="font-size:18px;">add</span> Catat kegiatan pertama
+            </a>
+            <a href="<?= BASE_URL ?>/index.php?page=panduan" class="btn btn-outline-secondary" style="padding:8px 16px;background:#fff;">Lihat panduan</a>
+        </div>
     </div>
 </div>
 <?php else: ?>
-<!-- Rekap Laporan per TUSI -->
+<!-- Rekap per TUSI -->
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">table_chart</span>
-            <span class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Rekap Laporan per TUSI</span>
+            <span class="fw-semibold" style="font-size:13.5px;">Rekap per TUSI • <?= e($nama_bulan_terpilih) ?></span>
         </div>
+        <span class="badge badge-primary"><?= $rekap_grand_total ?> kegiatan</span>
     </div>
-    <div class="card-body table-responsive">
-        <table class="table table-striped table-hover table-sm align-middle mb-0">
+    <div class="card-body table-responsive" style="padding:0;">
+        <table class="table table-hover table-sm align-middle mb-0">
             <thead>
                 <tr>
-                    <th class="text-muted">TUSI</th>
-                    <th class="text-muted">Uraian Tugas</th>
-                    <th class="text-muted text-center">Diajukan</th>
-                    <th class="text-muted text-center">Disetujui</th>
-                    <th class="text-muted text-center">Draft</th>
-                    <th class="text-muted text-center">Total</th>
+                    <th style="width:90px;">Kode</th>
+                    <th>Uraian tugas</th>
+                    <th class="text-center" style="width:90px;">Diajukan</th>
+                    <th class="text-center" style="width:90px;">Disetujui</th>
+                    <th class="text-center" style="width:80px;">Draft</th>
+                    <th class="text-center" style="width:80px;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($rekap_tusi as $r): ?>
                 <tr>
-                    <td class="fw-semibold" style="color:var(--md-sys-color-on-surface);"><?= e($r['kode']) ?></td>
-                    <td><?= e($r['nama']) ?></td>
-                    <td class="text-center"><?= $r['submitted'] > 0 ? (int)$r['submitted'] : '<span class="text-muted">-</span>' ?></td>
-                    <td class="text-center fw-bold" style="color:var(--md-sys-color-tertiary);"><?= $r['direview'] > 0 ? (int)$r['direview'] : '<span class="text-muted">-</span>' ?></td>
-                    <td class="text-center text-muted"><?= $r['draft'] > 0 ? (int)$r['draft'] : '<span class="text-muted">-</span>' ?></td>
-                    <td class="text-center fw-bold" style="color:var(--md-sys-color-on-surface);"><?= (int)$r['total'] > 0 ? (int)$r['total'] : '<span class="text-muted">-</span>' ?></td>
+                    <td><span class="badge badge-neutral"><?= e($r['kode']) ?></span></td>
+                    <td style="min-width:220px;"><?= e($r['nama']) ?></td>
+                    <td class="text-center"><?= $r['submitted'] > 0 ? '<span class="badge badge-warning">'.(int)$r['submitted'].'</span>' : '<span class="text-muted">–</span>' ?></td>
+                    <td class="text-center"><?= $r['direview'] > 0 ? '<span class="badge badge-success">'.(int)$r['direview'].'</span>' : '<span class="text-muted">–</span>' ?></td>
+                    <td class="text-center"><?= $r['draft'] > 0 ? '<span class="badge badge-neutral">'.(int)$r['draft'].'</span>' : '<span class="text-muted">–</span>' ?></td>
+                    <td class="text-center fw-bold"><?= (int)$r['total'] > 0 ? (int)$r['total'] : '<span class="text-muted">–</span>' ?></td>
                 </tr>
                 <?php endforeach; ?>
                 <?php
@@ -399,11 +461,11 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 $tot_drf = array_sum(array_column($rekap_tusi, 'draft'));
                 ?>
                 <tr class="fw-bold" style="background:var(--md-sys-color-surface-container-low);">
-                    <td colspan="2">TOTAL KESELURUHAN</td>
-                    <td class="text-center"><?= $tot_sub > 0 ? $tot_sub : '<span class="text-muted">-</span>' ?></td>
-                    <td class="text-center"><?= $tot_rev > 0 ? $tot_rev : '<span class="text-muted">-</span>' ?></td>
-                    <td class="text-center"><?= $tot_drf > 0 ? $tot_drf : '<span class="text-muted">-</span>' ?></td>
-                    <td class="text-center" style="color:var(--md-sys-color-on-surface);"><?= $rekap_grand_total > 0 ? $rekap_grand_total : '<span class="text-muted">-</span>' ?></td>
+                    <td colspan="2">Total keseluruhan</td>
+                    <td class="text-center"><?= $tot_sub > 0 ? $tot_sub : '–' ?></td>
+                    <td class="text-center"><?= $tot_rev > 0 ? $tot_rev : '–' ?></td>
+                    <td class="text-center"><?= $tot_drf > 0 ? $tot_drf : '–' ?></td>
+                    <td class="text-center"><?= $rekap_grand_total > 0 ? $rekap_grand_total : '–' ?></td>
                 </tr>
             </tbody>
         </table>
@@ -412,48 +474,45 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 <?php endif; ?>
 
 <?php if ($role !== 'penyuluh'): ?>
-<!-- Executive Summary Target Waktu Bulanan Penyuluh (Admin / Pimpinan View) -->
-<div class="card card-detail mb-4" id="exec-summary">
+<!-- Ringkasan tim (admin / pimpinan) -->
+<div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
-            <span class="stat-icon-wrap secondary" style="width:30px;height:30px;">
-                <span class="material-symbols-outlined" style="font-size:16px;">leaderboard</span>
-            </span>
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">leaderboard</span>
             <div>
-                <div class="fw-semibold" style="font-size:13.5px;color:var(--md-sys-color-on-surface);">Target Waktu Penyuluh</div>
-                <div class="text-muted" style="font-size:11.5px;">Capaian periode <strong><?= $nama_bulan_terpilih ?></strong></div>
+                <div class="fw-semibold" style="font-size:13.5px;">Capaian tim • <?= e($nama_bulan_terpilih) ?></div>
+                <div class="text-muted" style="font-size:11.5px;"><?= $total_p ?> penyuluh • rata-rata <?= $avg_pct ?>% (<?= $avg_j ?> jam)</div>
             </div>
         </div>
-        <a href="index.php?page=penyuluh" class="btn btn-outline-secondary btn-sm" style="border-radius:var(--md-radius-pill);">
-            <span class="material-symbols-outlined" style="font-size:16px;">monitoring</span>
-            <span class="ms-1">Buka Monitoring Lengkap</span>
-        </a>
+        <a href="index.php?page=penyuluh" class="btn btn-outline-secondary btn-sm">Buka monitoring <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></a>
     </div>
-    <div class="stat-strip">
-        <div class="stat-strip-item">
-            <div class="stat-strip-label">Rata-rata Ketercapaian</div>
-            <div class="stat-strip-value" style="color:var(--md-sys-color-primary);"><?= $avg_pct ?>%</div>
-            <div class="stat-strip-unit"><?= $total_p ?> penyuluh aktif</div>
-        </div>
-        <div class="stat-strip-item">
-            <div class="stat-strip-label">Rata-rata Jam</div>
-            <div class="stat-strip-value"><?= $avg_j ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Jam</span></div>
-            <div class="stat-strip-unit"><?= $avg_m ?> menit per penyuluh</div>
-        </div>
-        <div class="stat-strip-item">
-            <div class="stat-strip-label">Tuntas</div>
-            <div class="stat-strip-value" style="color:var(--md-sys-color-tertiary);"><?= $count_tuntas ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
-            <div class="stat-strip-unit"><?= $total_p > 0 ? round(($count_tuntas/$total_p)*100, 1) : 0 ?>% dari total</div>
-        </div>
-        <div class="stat-strip-item">
-            <div class="stat-strip-label">Sedang Progres</div>
-            <div class="stat-strip-value" style="color:var(--md-sys-color-secondary);"><?= $count_progres ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
-            <div class="stat-strip-unit"><?= $total_p > 0 ? round(($count_progres/$total_p)*100, 1) : 0 ?>% dari total</div>
-        </div>
-        <div class="stat-strip-item">
-            <div class="stat-strip-label">Belum Ada Aktivitas</div>
-            <div class="stat-strip-value" style="color:var(--md-sys-color-error);"><?= $count_nol ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
-            <div class="stat-strip-unit"><?= $total_p > 0 ? round(($count_nol/$total_p)*100, 1) : 0 ?>% dari total</div>
+    <div class="card-body">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-surface-container-low);border:1px solid var(--md-sys-color-outline-variant);">
+                <div class="stat-label">Rata-rata capaian</div>
+                <div class="stat-value" style="color:var(--md-sys-color-primary);"><?= $avg_pct ?>%</div>
+                <div class="text-muted" style="font-size:11.5px;"><?= $total_p ?> penyuluh aktif</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-surface-container-low);border:1px solid var(--md-sys-color-outline-variant);">
+                <div class="stat-label">Rata-rata waktu</div>
+                <div class="stat-value"><?= $avg_j ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">jam</span></div>
+                <div class="text-muted" style="font-size:11.5px;"><?= number_format($avg_m, 0, ',', '.') ?> mnt / penyuluh</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-tertiary-container);border:1px solid transparent;">
+                <div class="stat-label" style="color:var(--md-sys-color-on-tertiary-container);">Tuntas ≥100%</div>
+                <div class="stat-value" style="color:var(--md-sys-color-on-tertiary-container);"><?= $count_tuntas ?></div>
+                <div style="font-size:11.5px;color:var(--md-sys-color-on-tertiary-container);"><?= $total_p > 0 ? round(($count_tuntas/$total_p)*100, 1) : 0 ?>% dari tim</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-secondary-container);border:1px solid transparent;">
+                <div class="stat-label" style="color:var(--md-sys-color-on-secondary-container);">Progres 1–99%</div>
+                <div class="stat-value" style="color:var(--md-sys-color-on-secondary-container);"><?= $count_progres ?></div>
+                <div style="font-size:11.5px;color:var(--md-sys-color-on-secondary-container);"><?= $total_p > 0 ? round(($count_progres/$total_p)*100, 1) : 0 ?>% dari tim</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-error-container);border:1px solid transparent;">
+                <div class="stat-label" style="color:var(--md-sys-color-on-error-container);">Belum ada aktivitas</div>
+                <div class="stat-value" style="color:var(--md-sys-color-on-error-container);"><?= $count_nol ?></div>
+                <div style="font-size:11.5px;color:var(--md-sys-color-on-error-container);"><?= $total_p > 0 ? round(($count_nol/$total_p)*100, 1) : 0 ?>% dari tim</div>
+            </div>
         </div>
     </div>
 </div>
@@ -468,19 +527,25 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
         const labels = <?= json_encode($chart_labels) ?>;
         const data = <?= json_encode($chart_values) ?>;
+        const maxVal = Math.max(...data, 5);
+
+        const grad = ctx.createLinearGradient(0, 0, 0, 200);
+        grad.addColorStop(0, 'rgba(57,73,171,0.95)');
+        grad.addColorStop(1, 'rgba(57,73,171,0.55)');
 
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Jumlah Laporan',
+                    label: 'Kegiatan',
                     data: data,
-                    backgroundColor: 'rgba(84, 178, 132, 0.8)',
-                    hoverBackgroundColor: 'rgba(74, 144, 226, 0.8)',
-                    borderRadius: 6,
+                    backgroundColor: data.map(v => v === maxVal && v > 0 ? grad : 'rgba(57,73,171,0.28)'),
+                    hoverBackgroundColor: 'rgba(20,108,92,0.85)',
+                    borderRadius: 8,
+                    borderSkipped: 'start',
                     borderWidth: 0,
-                    barThickness: 14,
+                    maxBarThickness: 34,
                 }]
             },
             options: {
@@ -488,15 +553,25 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1B1B21',
+                        padding: 10,
+                        cornerRadius: 10,
+                        callbacks: { label: (c) => ` ${c.parsed.y} kegiatan` }
+                    },
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { precision: 0 },
+                        suggestedMax: maxVal + 2,
+                        ticks: { precision: 0, font: { size: 11 }, color: '#6B7280' },
                         grid: { color: 'rgba(0,0,0,0.06)' },
+                        border: { display: false },
                     },
                     x: {
                         grid: { display: false },
+                        ticks: { font: { size: 11 }, color: '#4B5563', maxRotation: 0, autoSkip: true, maxTicksLimit: 6 },
+                        border: { display: false },
                     }
                 }
             }
