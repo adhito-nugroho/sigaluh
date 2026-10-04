@@ -430,36 +430,36 @@ function get_status_badge($status) {
 </div>
 
 <!-- Modal Ambil Foto Dokumentasi (Untuk semua user) -->
-<div id="modal-foto" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6" style="transition: opacity 0.2s ease;">
-    <div class="card w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl" style="border-radius:20px;background:var(--md-sys-color-surface);">
+<div id="modal-foto" style="display:none; position:fixed; inset:0; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; z-index:99999; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
+    <div class="card shadow-2xl flex flex-col" style="width:100%; max-width:820px; max-height:90vh; border-radius:20px; background:var(--md-sys-color-surface); border:1px solid var(--md-sys-color-outline-variant); overflow:hidden; margin:auto;" onclick="event.stopPropagation()">
         <!-- Header Modal -->
-        <div class="p-4 border-b d-flex align-items-center justify-content-between" style="border-color:var(--md-sys-color-outline-variant);">
-            <div class="d-flex align-items-center gap-3">
+        <div class="p-3 sm:p-4 border-b d-flex align-items-center justify-content-between" style="border-color:var(--md-sys-color-outline-variant);background:var(--md-sys-color-surface-container-low);">
+            <div class="d-flex align-items-center gap-3 min-w-0">
                 <div class="w-10 h-10 rounded-full d-flex align-items-center justify-content-center flex-shrink-0" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
-                    <span class="material-symbols-outlined">photo_library</span>
+                    <span class="material-symbols-outlined" style="font-size:22px;">photo_library</span>
                 </div>
-                <div>
-                    <h3 class="text-base fw-bold mb-0" style="color:var(--md-sys-color-on-surface);">Foto Dokumentasi Kegiatan</h3>
-                    <p id="modal-foto-subjudul" class="text-xs text-muted mb-0 mt-0.5 line-clamp-1"></p>
+                <div class="min-w-0">
+                    <h3 class="text-base fw-bold mb-0 text-truncate" style="color:var(--md-sys-color-on-surface);">Foto Dokumentasi Kegiatan</h3>
+                    <p id="modal-foto-subjudul" class="text-xs text-muted mb-0 mt-0.5 line-clamp-1" style="font-size:12px;"></p>
                 </div>
             </div>
-            <button type="button" onclick="closeFotoModal()" class="btn-icon" title="Tutup">
+            <button type="button" onclick="closeFotoModal()" class="btn-icon flex-shrink-0" title="Tutup">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
 
         <!-- Petunjuk Cepat & Tombol Aksi Masal -->
-        <div class="px-4 py-2.5 border-b d-flex align-items-center justify-content-between flex-wrap gap-2" style="background:var(--md-sys-color-surface-container-low);border-color:var(--md-sys-color-outline-variant);">
+        <div class="px-4 py-2.5 border-b d-flex align-items-center justify-content-between flex-wrap gap-2" style="background:var(--md-sys-color-surface-container-lowest);border-color:var(--md-sys-color-outline-variant);">
             <div class="text-xs text-muted d-flex align-items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary" style="font-size:16px;">content_copy</span>
-                <span>Klik <strong>Salin Gambar</strong> untuk langsung menempelkan (<strong>Ctrl+V</strong>) di WhatsApp, Word, e-Kinerja, dsb.</span>
+                <span class="material-symbols-outlined text-primary" style="font-size:17px;">content_copy</span>
+                <span>Klik <strong>Salin Gambar</strong> untuk menempelkan foto (<strong>Ctrl+V</strong>) di WhatsApp, Word, e-Kinerja BKN, dsb.</span>
             </div>
             <div id="modal-foto-actions" class="d-flex align-items-center gap-2"></div>
         </div>
 
         <!-- Body / List Foto -->
         <div class="p-4 overflow-y-auto flex-1">
-            <div id="modal-foto-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="modal-foto-container">
                 <!-- Diisi secara dinamis oleh JavaScript -->
             </div>
         </div>
@@ -474,8 +474,8 @@ function get_status_badge($status) {
 
 <!-- Modal Konfirmasi Hapus (hanya admin) -->
 <?php if ($role === 'admin'): ?>
-<div id="modal-hapus" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-    <div class="card w-full max-w-sm p-4" style="border-radius:16px;">
+<div id="modal-hapus" style="display:none; position:fixed; inset:0; top:0; left:0; width:100vw; height:100vh; z-index:99999; background:rgba(0,0,0,0.65); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
+    <div class="card w-full max-w-sm p-4" style="border-radius:16px;margin:auto;" onclick="event.stopPropagation()">
         <div class="d-flex align-items-center gap-3 mb-4">
             <div class="w-10 h-10 rounded-full d-flex align-items-center justify-content-center flex-shrink-0" style="background:var(--md-sys-color-error-container);">
                 <span class="material-symbols-outlined" style="color:var(--md-sys-color-error);">warning</span>
@@ -503,12 +503,14 @@ function get_status_badge($status) {
 function confirmDelete(btn) {
     document.getElementById('modal-id').value = btn.dataset.id;
     document.getElementById('modal-uraian').textContent = btn.dataset.uraian || '(tanpa uraian)';
-    document.getElementById('modal-hapus').classList.remove('hidden');
+    var m = document.getElementById('modal-hapus');
+    if (m) m.style.display = 'flex';
 }
 function tutupModal() {
-    document.getElementById('modal-hapus').classList.add('hidden');
+    var m = document.getElementById('modal-hapus');
+    if (m) m.style.display = 'none';
 }
-document.getElementById('modal-hapus').addEventListener('click', function(e) {
+document.getElementById('modal-hapus')?.addEventListener('click', function(e) {
     if (e.target === this) tutupModal();
 });
 </script>
@@ -541,6 +543,19 @@ function openFotoModal(data) {
     }
 
     container.innerHTML = '';
+
+    // Responsif container layout sesuai jumlah foto
+    if (data.fotos.length === 1) {
+        container.style.display = 'flex';
+        container.style.justifyContent = 'center';
+        container.style.gridTemplateColumns = '';
+        container.style.gap = '0';
+    } else {
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(' + (data.fotos.length === 2 ? '280px' : '220px') + ', 1fr))';
+        container.style.gap = '16px';
+    }
+
     data.fotos.forEach((foto, idx) => {
         const safeDate = data.tanggal.replace(/\//g, '-');
         const defaultFilename = `Dokumentasi_${safeDate}_${data.tusi}_ID${data.id}_Foto${idx+1}.jpg`;
@@ -549,9 +564,13 @@ function openFotoModal(data) {
         card.className = 'border rounded-xl overflow-hidden shadow-sm flex flex-col';
         card.style.background = 'var(--md-sys-color-surface-container-lowest)';
         card.style.borderColor = 'var(--md-sys-color-outline-variant)';
+        if (data.fotos.length === 1) {
+            card.style.width = '100%';
+            card.style.maxWidth = '480px';
+        }
 
         card.innerHTML = `
-            <div class="relative group bg-neutral-900 flex items-center justify-center overflow-hidden" style="aspect-ratio:4/3;">
+            <div class="relative group bg-neutral-900 flex items-center justify-center overflow-hidden" style="aspect-ratio:16/10;">
                 <img src="${foto.url}" 
                      alt="Foto dokumentasi ${idx+1}" 
                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
@@ -581,12 +600,12 @@ function openFotoModal(data) {
                             class="btn btn-outline-secondary btn-sm flex-1 d-flex align-items-center justify-content-center gap-1"
                             title="Unduh foto ke perangkat">
                         <span class="material-symbols-outlined" style="font-size:16px;">download</span>
-                        <span>Unduh</span>
+                        <span>Unduh Foto</span>
                     </button>
                     <button type="button" 
                             onclick="copyImageUrl('${foto.url}', this)"
                             class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
-                            title="Salin Tautan / URL Foto" style="width:34px;padding:0;">
+                            title="Salin Tautan / URL Foto" style="width:36px;padding:0;">
                         <span class="material-symbols-outlined" style="font-size:16px;">link</span>
                     </button>
                 </div>
@@ -595,12 +614,12 @@ function openFotoModal(data) {
         container.appendChild(card);
     });
 
-    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
 }
 
 function closeFotoModal() {
     const modal = document.getElementById('modal-foto');
-    if (modal) modal.classList.add('hidden');
+    if (modal) modal.style.display = 'none';
     currentModalData = null;
 }
 
