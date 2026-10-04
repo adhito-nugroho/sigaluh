@@ -77,25 +77,27 @@ $needs_layout = !in_array($page, $public_pages) && strpos($page, 'api/') === fal
 // Breadcrumb helper
 function get_breadcrumb($page) {
     $map = [
-        'dashboard' => ['Beranda', 'Dashboard'],
-        'kegiatan' => ['Kegiatan Penyuluh'],
-        'kegiatan/form' => ['Kegiatan Penyuluh', 'Form'],
-        'kegiatan/detail' => ['Kegiatan Penyuluh', 'Detail'],
+        'dashboard' => ['Dashboard'],
+        'kegiatan' => ['Kegiatan', 'Pencatatan'],
+        'kegiatan/form' => ['Kegiatan', 'Form'],
+        'kegiatan/detail' => ['Kegiatan', 'Detail'],
         'kth' => ['Data KTH'],
         'kth/form' => ['Data KTH', 'Form'],
         'kth/detail' => ['Data KTH', 'Detail'],
-        'laporan' => ['Laporan Renja'],
-        'laporan/aktivitas' => ['Laporan', 'Laporan Aktivitas Harian'],
-        'penyuluh' => ['Data Penyuluh'],
-        'penyuluh/form' => ['Data Penyuluh', 'Form'],
-        'users' => ['Kelola User'],
-        'users/form' => ['Kelola User', 'Form'],
-        'master/tusi' => ['Master Data', 'Kelola TUSI'],
+        'laporan' => ['Laporan', 'Renja Bulanan'],
+        'laporan/aktivitas' => ['Laporan', 'Aktivitas Harian'],
+        'penyuluh' => ['Penyuluh', 'Daftar Penyuluh'],
+        'penyuluh/form' => ['Penyuluh', 'Form Penyuluh'],
+        'users' => ['Pengguna', 'Kelola Pengguna'],
+        'users/form' => ['Pengguna', 'Form Pengguna'],
+        'master/tusi' => ['Master Data', 'Master TUSI'],
         'master/aktivitas' => ['Master Data', 'Aktivitas Harian'],
-        'settings/wilayah' => ['Pengaturan', 'Wilayah'],
-        'settings/app' => ['Pengaturan', 'Tanda Tangan'],
-        'panduan' => ['Panduan'],
+        'settings/wilayah' => ['Pengaturan', 'Wilayah Administratif'],
+        'settings/app' => ['Pengaturan', 'Pejabat Penandatangan'],
+        'logs' => ['Sistem', 'Log Aktivitas'],
+        'panduan' => ['Bantuan', 'Panduan Penggunaan'],
         'profile/password' => ['Profil', 'Ganti Password'],
+        'profile/signature' => ['Profil', 'Tanda Tangan Digital'],
     ];
     return $map[$page] ?? [ucfirst(str_replace('/', ' › ', $page))];
 }
@@ -112,21 +114,37 @@ if ($needs_layout) {
     require_once 'includes/header.php';
     require_once 'includes/sidebar.php';
     
-    // ── TOPBAR ──
+    // ── TOPBAR BREADCRUMB ──
+    $crumb_items = [];
+    $total_crumbs = count($breadcrumbs);
+    foreach ($breadcrumbs as $i => $crumb) {
+        $is_last = ($i === $total_crumbs - 1);
+        if ($is_last) {
+            $crumb_items[] = '<span class="topbar-crumb-active text-truncate">' . htmlspecialchars($crumb) . '</span>';
+        } else {
+            $crumb_items[] = '<span class="text-muted d-none d-sm-inline">' . htmlspecialchars($crumb) . '</span>';
+        }
+    }
+    $sep = '<span class="material-symbols-outlined topbar-crumb-sep d-none d-sm-inline">chevron_right</span>';
+    $crumbs_html = implode($sep, $crumb_items);
+
     echo '
     <header id="topbar">
-        <div class="d-flex align-items-center gap-3 min-w-0">
-            <button type="button" class="btn topbar-menu-btn d-lg-none" id="sidebarToggle" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
+        <div class="d-flex align-items-center gap-2 sm:gap-3 min-w-0">
+            <button type="button" class="btn topbar-menu-btn d-lg-none flex-shrink-0" id="sidebarToggle" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
                 <span class="material-symbols-outlined">menu</span>
             </button>
-            <div class="min-w-0">
-                <h1 class="page-title">' . htmlspecialchars($page_title) . '</h1>
-                <div class="topbar-brand-line d-none d-md-block">' . htmlspecialchars(implode(' / ', $breadcrumbs)) . '</div>
-            </div>
+            <nav aria-label="Breadcrumb" class="topbar-breadcrumb min-w-0">
+                <a href="' . BASE_URL . '/index.php?page=dashboard" class="topbar-home-link d-none d-sm-inline-flex" title="Beranda">
+                    <span class="material-symbols-outlined" style="font-size:18px;">home</span>
+                </a>
+                <span class="material-symbols-outlined topbar-crumb-sep d-none d-sm-inline">chevron_right</span>
+                ' . $crumbs_html . '
+            </nav>
         </div>
 
-        <div class="d-flex align-items-center gap-3">
-            <span class="badge" style="background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);font-weight:500;padding:6px 12px;">
+        <div class="d-flex align-items-center gap-2 sm:gap-3 flex-shrink-0">
+            <span class="badge d-none d-md-inline-flex" style="background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);font-weight:500;padding:6px 12px;">
                 <span class="material-symbols-outlined me-1" style="font-size:14px;">calendar_today</span>' . date('d M Y') . '
             </span>
             <div class="topbar-user">

@@ -285,12 +285,45 @@ h1, h2, h3, h4, h5, h6, .page-title, .brand-org-title {
   font-size: 20px;
 }
 
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1;
+}
+
+.topbar-home-link {
+  color: var(--md-sys-color-on-surface-variant);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.topbar-home-link:hover {
+  color: var(--md-sys-color-primary);
+}
+
+.topbar-crumb-sep {
+  font-size: 15px !important;
+  color: var(--md-sys-color-outline);
+  opacity: 0.5;
+  user-select: none;
+}
+
+.topbar-crumb-active {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+}
+
 .page-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--md-sys-color-on-surface);
-  margin-bottom: 0;
-  line-height: 1.2;
+  margin-bottom: 2px;
+  line-height: 1.25;
 }
 
 .topbar-brand-line {
