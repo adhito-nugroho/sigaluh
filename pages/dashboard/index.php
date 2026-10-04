@@ -197,11 +197,6 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
                 <h2 class="mb-0 text-xl font-bold tracking-tight" style="color:var(--md-sys-color-on-surface);">Dashboard Ringkasan Data Kegiatan</h2>
                 <div class="d-flex align-items-center gap-2 mt-0.5 flex-wrap">
                     <span class="text-muted" style="font-size:12.5px;">Periode Rekap: <strong style="color:var(--md-sys-color-on-surface);"><?= $nama_bulan_terpilih ?></strong></span>
-                    <?php if ($is_current_month): ?>
-                        <span class="badge badge-success text-[10px] px-2 py-0.5">Bulan Berjalan</span>
-                    <?php else: ?>
-                        <span class="badge badge-warning text-[10px] px-2 py-0.5">Bulan Sebelumnya</span>
-                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -264,46 +259,8 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
     </div>
 </div>
 
-<?php if ($role === 'penyuluh'): ?>
-<!-- Banner Widget Target Waktu Bulanan Personal Penyuluh (112.5 Jam / 6.750 Menit) -->
-<div class="card p-3 mb-4">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div class="flex-1">
-            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                <span class="stat-icon-wrap primary" style="width:32px;height:32px;">
-                    <span class="material-symbols-outlined" style="font-size:18px;">timer</span>
-                </span>
-                <h3 class="text-base font-bold tracking-tight mb-0" style="color:var(--md-sys-color-on-surface);">Target Waktu Penyuluhan (<?= $nama_bulan_terpilih ?>)</h3>
-                <?php if (!$is_current_month): ?>
-                    <span class="badge badge-warning text-[10px]">Periode Lampau</span>
-                <?php endif; ?>
-            </div>
-
-            <div class="mt-3">
-                <div class="flex justify-between items-center text-xs font-bold mb-1.5">
-                    <span class="text-muted">Tercapai: <strong style="color:var(--md-sys-color-on-surface);"><?= number_format($total_durasi_menit, 0, ',', '.') ?> Menit (<?= $total_durasi_jam ?> Jam)</strong></span>
-                    <span class="<?= $pct_target >= 100 ? 'text-success fw-black' : 'text-warning fw-black' ?>"><?= $pct_target ?>%</span>
-                </div>
-                <div class="progress" style="height:8px;">
-                    <div class="progress-bar" style="width:<?= $pct_target ?>%;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-6" style="border-color:var(--md-sys-color-outline-variant);">
-            <div class="text-center sm:text-left">
-                <p class="text-[11px] font-bold text-muted uppercase tracking-wider">Sisa Target Menit</p>
-                <p class="tabular-nums text-2xl font-bold <?= $sisa_menit == 0 ? 'text-success' : '' ?>" style="color:<?= $sisa_menit == 0 ? 'var(--md-sys-color-tertiary)' : 'var(--md-sys-color-on-surface)' ?>;">
-                    <?= number_format($sisa_menit, 0, ',', '.') ?> <span class="text-xs font-bold text-muted">Menit</span>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-
-<!-- Stats Cards (Volume Kegiatan Periode Terpilih) -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+<!-- Stats Cards (Volume Kegiatan & Capaian Target) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
     <!-- Total Kegiatan -->
     <div class="card p-3">
         <div class="d-flex align-items-center justify-content-between">
@@ -317,30 +274,26 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
         </div>
     </div>
 
-    <!-- Total Durasi -->
-    <div class="card p-3">
+    <!-- Capaian Target Penyuluhan -->
+    <div class="card p-3 md:col-span-2">
         <div class="d-flex align-items-center justify-content-between">
             <div>
-                <div class="stat-label">Total Durasi</div>
-                <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
-            </div>
-            <div class="stat-icon-wrap secondary">
-                <span class="material-symbols-outlined">schedule</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tingkat Ketercapaian -->
-    <div class="card p-3">
-        <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <div class="stat-label">Tingkat Ketercapaian</div>
-                <div class="stat-value" style="color:var(--md-sys-color-tertiary);"><?= $pct_target ?>%</div>
+                <div class="stat-label">Capaian Target Penyuluhan</div>
+                <div class="d-flex align-items-baseline gap-2 flex-wrap">
+                    <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> <span class="text-xs fw-medium" style="color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
+                    <span class="font-bold text-sm <?= $pct_target >= 100 ? 'text-success' : 'text-warning' ?>"><?= $pct_target ?>%</span>
+                </div>
             </div>
             <div class="stat-icon-wrap tertiary">
                 <span class="material-symbols-outlined">speed</span>
             </div>
         </div>
+        <div class="progress mt-2" style="height:8px;">
+            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
+        </div>
+        <?php if ($sisa_menit > 0): ?>
+            <p class="text-[11px] text-muted font-medium mb-0 mt-1">Sisa <?= number_format($sisa_menit, 0, ',', '.') ?> Menit</p>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -395,10 +348,6 @@ $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
             <div class="pt-2 border-top" style="border-color:var(--md-sys-color-outline-variant);">
                 <div class="d-flex justify-content-between align-items-center text-xs text-muted">
-                    <span>Total Kegiatan Periode Ini:</span>
-                    <strong style="color:var(--md-sys-color-on-surface);"><?= $total_kegiatan ?></strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center text-xs text-muted mt-1">
                     <span>Total Sepanjang Masa:</span>
                     <span><?= $total_kegiatan_all_time ?></span>
                 </div>
