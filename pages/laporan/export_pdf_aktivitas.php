@@ -49,7 +49,7 @@ $sql = "
            desa.nama as desa_nama, kec.nama as kecamatan_nama, kab.nama as kabupaten_nama,
            act.nama_aktivitas, act.satuan as act_satuan, act.wpt_menit as act_wpt, act.objek_kerja as act_objek_kerja,
            COALESCE(k.volume, 1) as vol_final,
-           COALESCE(NULLIF(k.durasi_menit, 0), act.wpt_menit, 60) as wpt_final
+           COALESCE(act.wpt_menit, ROUND(NULLIF(k.durasi_menit, 0) / GREATEST(COALESCE(k.volume, 1), 1)), 60) as wpt_final
     FROM kegiatan k
     JOIN users u ON k.user_id = u.id
     JOIN m_tusi t ON k.tusi_id = t.id
