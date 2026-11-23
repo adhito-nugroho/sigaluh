@@ -185,11 +185,11 @@ $count_tuntas = (int)($exec_sum['count_tuntas'] ?? 0);
 $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
-// 7. Partisipasi Penyuluh (khusus pimpinan): jumlah penyuluh yang sudah input kegiatan pada bulan terpilih
+// 7. Partisipasi Penyuluh (admin & pimpinan): jumlah penyuluh yang sudah input kegiatan pada bulan terpilih
 $penyuluh_sudah_input = 0;
 $penyuluh_belum_input = 0;
 $pct_partisipasi = 0;
-if ($role === 'pimpinan') {
+if ($role !== 'penyuluh') {
     $stmt_part = $pdo->prepare("
         SELECT COUNT(DISTINCT k.user_id)
         FROM kegiatan k
@@ -257,7 +257,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         </div>
 
         <div class="w-full sm:w-auto flex-shrink-0">
-            <?php if ($role === 'pimpinan'): ?>
+            <?php if ($role !== 'penyuluh'): ?>
             <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="btn btn-primary w-full sm:w-auto justify-center" style="padding:8px 20px;font-size:13px;">
                 <span class="material-symbols-outlined" style="font-size:18px;">monitoring</span>
                 Monitoring Penyuluh
@@ -288,7 +288,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
     </div>
 
     <div class="card p-3 md:col-span-2 h-full d-flex flex-column justify-content-center">
-        <?php if ($role === 'pimpinan'): ?>
+        <?php if ($role !== 'penyuluh'): ?>
         <div class="d-flex align-items-center justify-content-between mb-1">
             <div class="stat-label mb-0">Penyuluh Sudah Input Kegiatan</div>
             <div class="stat-icon-wrap tertiary flex-shrink-0">
@@ -344,7 +344,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center" style="min-height:180px;">
                     <div class="stat-icon-wrap mb-2" style="width:48px;height:48px;border-radius:50%;background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);"><span class="material-symbols-outlined" style="font-size:26px;">insights</span></div>
                     <div class="fw-semibold" style="font-size:13.5px;">Belum ada tren yang bisa ditampilkan</div>
-                    <div class="text-muted" style="font-size:12.5px;"><?= $role === 'pimpinan' ? 'Belum ada kegiatan penyuluh pada 6 bulan terakhir.' : 'Data 6 bulan terakhir masih kosong. Mulai catat agar grafik terisi otomatis.' ?></div>
+                    <div class="text-muted" style="font-size:12.5px;"><?= $role !== 'penyuluh' ? 'Belum ada kegiatan penyuluh pada 6 bulan terakhir.' : 'Data 6 bulan terakhir masih kosong. Mulai catat agar grafik terisi otomatis.' ?></div>
                 </div>
             <?php else: ?>
                 <canvas id="trendChart"></canvas>
@@ -400,7 +400,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <span class="material-symbols-outlined" style="font-size:30px;">event_upcoming</span>
         </div>
         <div class="fw-bold" style="font-size:15px;">Belum ada kegiatan pada <?= e($nama_bulan_terpilih) ?>.</div>
-        <?php if ($role === 'pimpinan'): ?>
+        <?php if ($role !== 'penyuluh'): ?>
         <div class="text-muted mt-1" style="font-size:12.5px;">Penyuluh di tim Anda belum menginput kegiatan pada periode ini.</div>
         <?php else: ?>
         <div class="mt-3">
