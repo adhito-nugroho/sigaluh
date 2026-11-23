@@ -3,7 +3,7 @@
 global $pdo;
 
 $role = $_SESSION['user_role'] ?? '';
-if (!in_array($role, ['admin', 'pimpinan'])) {
+if ($role !== 'admin') {
     header('Location: ' . BASE_URL . '/index.php?page=dashboard');
     exit;
 }

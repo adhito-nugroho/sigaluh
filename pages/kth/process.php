@@ -11,6 +11,11 @@ verify_csrf_token($_POST['csrf_token'] ?? '');
 $role = $_SESSION['user_role'] ?? '';
 $user_id = (int)($_SESSION['user_id'] ?? 0);
 
+if ($role === 'pimpinan') {
+    header('Location: ' . BASE_URL . '/index.php?page=dashboard');
+    exit;
+}
+
 global $pdo;
 
 $action = $_POST['action'] ?? '';

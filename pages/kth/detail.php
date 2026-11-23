@@ -2,6 +2,11 @@
 // pages/kth/detail.php
 global $pdo;
 
+if (($_SESSION['user_role'] ?? '') === 'pimpinan') {
+    header('Location: ' . BASE_URL . '/index.php?page=dashboard');
+    exit;
+}
+
 $id = $_GET['id'] ?? 0;
 
 if (!$id) {

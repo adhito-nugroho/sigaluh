@@ -6,6 +6,11 @@ $role = $_SESSION['user_role'] ?? '';
 $user_id = $_SESSION['user_id'] ?? 0;
 require_login();
 
+if ($role === 'pimpinan') {
+    header('Location: ' . BASE_URL . '/index.php?page=dashboard');
+    exit;
+}
+
 $id = $_GET['id'] ?? 0;
 $kth = null;
 

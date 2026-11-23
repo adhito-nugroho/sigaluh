@@ -140,7 +140,7 @@ if ($f_bulan && $f_tahun) {
                 <span class="material-symbols-outlined">table_chart</span> Download Excel
             </button>
         </form>
-        <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank" onsubmit="return handleDownloadPdf(event, <?= $penyuluh_has_ttd ? 'true' : 'false' ?>, '<?= addslashes(e($penyuluh_aktif['nama'] ?? '')) ?>', '<?= $link_upload_ttd ?>')">
+        <form action="<?= BASE_URL ?>/index.php" method="GET" target="_blank" onsubmit="return handleDownloadPdf(event, <?= ($role === 'pimpinan' || $penyuluh_has_ttd) ? 'true' : 'false' ?>, '<?= addslashes(e($penyuluh_aktif['nama'] ?? '')) ?>', '<?= $link_upload_ttd ?>')">
             <input type="hidden" name="page" value="laporan/export_pdf">
             <input type="hidden" name="bulan" value="<?= e($f_bulan) ?>">
             <input type="hidden" name="tahun" value="<?= e($f_tahun) ?>">
@@ -153,7 +153,7 @@ if ($f_bulan && $f_tahun) {
     </div>
 </div>
 
-<?php if ($penyuluh_aktif && !$penyuluh_has_ttd): ?>
+<?php if ($penyuluh_aktif && !$penyuluh_has_ttd && $role !== 'pimpinan'): ?>
 <!-- Banner Peringatan Tanda Tangan Belum Di-set -->
 <div class="alert alert-warning mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 shadow-sm" style="border-radius:12px;border:1px solid #f59e0b;background:#fffbeb;">
     <div class="d-flex align-items-center gap-2.5">

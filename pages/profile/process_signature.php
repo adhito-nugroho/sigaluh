@@ -8,6 +8,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_login();
 verify_csrf_token($_POST['csrf_token'] ?? '');
 
+if (($_SESSION['user_role'] ?? '') === 'pimpinan') {
+    header('Location: ' . BASE_URL . '/index.php?page=dashboard');
+    exit;
+}
+
 global $pdo;
 $user_id = (int)($_SESSION['user_id'] ?? 0);
 if (!$user_id) {

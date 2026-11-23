@@ -3,6 +3,11 @@
 global $pdo;
 $role = $_SESSION['user_role'] ?? '';
 
+if ($role === 'pimpinan') {
+    header('Location: ' . BASE_URL . '/index.php?page=dashboard');
+    exit;
+}
+
 $f_q = $_GET['q'] ?? '';
 $where_clauses = [];
 $params = [];

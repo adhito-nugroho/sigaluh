@@ -4,6 +4,11 @@ global $pdo;
 
 require_login();
 
+if (($_SESSION['user_role'] ?? '') === 'pimpinan') {
+    header('Location: ' . BASE_URL . '/index.php?page=dashboard');
+    exit;
+}
+
 $user_id = $_SESSION['user_id'] ?? 0;
 $stmt = $pdo->prepare("SELECT u.*, r.nama as role_nama FROM users u JOIN m_roles r ON u.role_id = r.id WHERE u.id = ?");
 $stmt->execute([$user_id]);

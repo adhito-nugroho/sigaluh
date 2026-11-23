@@ -47,10 +47,12 @@ function get_active_class($page_name, $current_page) {
             <span>Pencatatan Kegiatan</span>
         </a>
         <?php endif; ?>
+        <?php if (!has_role('pimpinan')): ?>
         <a href="<?= BASE_URL ?>/index.php?page=kth" class="nav-link <?= get_active_class('kth', $current_page) ?>">
             <span class="material-symbols-outlined">groups</span>
             <span>Data KTH</span>
         </a>
+        <?php endif; ?>
         <a href="<?= BASE_URL ?>/index.php?page=laporan" class="nav-link <?= get_active_class('laporan', $current_page) ?>">
             <span class="material-symbols-outlined">bar_chart</span>
             <span>Laporan Renja (Bulanan)</span>
@@ -60,16 +62,20 @@ function get_active_class($page_name, $current_page) {
             <span>Laporan Aktivitas Harian</span>
         </a>
 
-        <?php if (has_role(['admin', 'pimpinan'])): ?>
+        <?php if (has_role(['admin', 'pimpinan', 'kasi'])): ?>
         <div class="nav-section-label mt-2">Administrasi</div>
+        <?php if (has_role(['admin', 'pimpinan'])): ?>
         <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="nav-link <?= get_active_class('penyuluh', $current_page) ?>">
             <span class="material-symbols-outlined">badge</span>
             <span>Daftar Penyuluh</span>
         </a>
+        <?php endif; ?>
+        <?php if (has_role(['admin', 'kasi'])): ?>
         <a href="<?= BASE_URL ?>/index.php?page=master/aktivitas" class="nav-link <?= get_active_class('master/aktivitas', $current_page) ?>">
             <span class="material-symbols-outlined">list_alt</span>
             <span>Aktivitas Harian</span>
         </a>
+        <?php endif; ?>
         <?php if (has_role('admin')): ?>
         <a href="<?= BASE_URL ?>/index.php?page=master/tusi" class="nav-link <?= get_active_class('master/tusi', $current_page) ?>">
             <span class="material-symbols-outlined">layers</span>
@@ -114,12 +120,14 @@ function get_active_class($page_name, $current_page) {
 
         <!-- Menu Profil & Akses (tampil langsung, tanpa dropdown) -->
         <div class="d-flex flex-column gap-1 rounded-2" style="background:var(--md-sys-color-surface-container);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;padding:6px;">
+            <?php if (!has_role('pimpinan')): ?>
             <a href="<?= BASE_URL ?>/index.php?page=profile/signature"
                class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2 <?= get_active_class('profile/signature', $current_page) ?>"
                style="font-size:12.5px;color:var(--md-sys-color-on-surface);">
                 <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">draw</span>
                 <span>Tanda Tangan Digital (TTD)</span>
             </a>
+            <?php endif; ?>
 
             <a href="<?= BASE_URL ?>/index.php?page=profile/password"
                class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2 <?= get_active_class('profile/password', $current_page) ?>"
