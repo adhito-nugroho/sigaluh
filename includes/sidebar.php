@@ -36,10 +36,17 @@ function get_active_class($page_name, $current_page) {
             <span class="material-symbols-outlined">dashboard</span>
             <span>Ringkasan Data</span>
         </a>
+        <?php if (has_role('pimpinan')): ?>
+        <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="nav-link <?= get_active_class('kegiatan', $current_page) ?>">
+            <span class="material-symbols-outlined">fact_check</span>
+            <span>Data Kegiatan</span>
+        </a>
+        <?php else: ?>
         <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="nav-link <?= get_active_class('kegiatan', $current_page) ?>">
             <span class="material-symbols-outlined">checklist</span>
             <span>Pencatatan Kegiatan</span>
         </a>
+        <?php endif; ?>
         <a href="<?= BASE_URL ?>/index.php?page=kth" class="nav-link <?= get_active_class('kth', $current_page) ?>">
             <span class="material-symbols-outlined">groups</span>
             <span>Data KTH</span>

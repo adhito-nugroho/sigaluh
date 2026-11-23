@@ -130,8 +130,8 @@ function get_status_badge($status) {
 
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Pelaksanaan Kegiatan</h2>
-        <p class="text-muted mb-0" style="font-size:12.5px;">Kelola data kegiatan penyuluh kehutanan.</p>
+        <h2 class="page-title" style="font-size:20px;margin-bottom:2px;"><?= $role === 'pimpinan' ? 'Data Kegiatan Penyuluh' : 'Pelaksanaan Kegiatan' ?></h2>
+        <p class="text-muted mb-0" style="font-size:12.5px;"><?= $role === 'pimpinan' ? 'Pantau data kegiatan penyuluh kehutanan.' : 'Kelola data kegiatan penyuluh kehutanan.' ?></p>
     </div>
     <div>
         <?php if ($role === 'penyuluh'): ?>

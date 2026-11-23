@@ -184,6 +184,26 @@ $avg_pct = min(100, round(($avg_m / 6750) * 100, 1));
 $count_tuntas = (int)($exec_sum['count_tuntas'] ?? 0);
 $count_progres = (int)($exec_sum['count_progres'] ?? 0);
 $count_nol = (int)($exec_sum['count_nol'] ?? 0);
+
+// 7. Partisipasi Penyuluh (khusus pimpinan): jumlah penyuluh yang sudah input kegiatan pada bulan terpilih
+$penyuluh_sudah_input = 0;
+$penyuluh_belum_input = 0;
+$pct_partisipasi = 0;
+if ($role === 'pimpinan') {
+    $stmt_part = $pdo->prepare("
+        SELECT COUNT(DISTINCT k.user_id)
+        FROM kegiatan k
+        JOIN users u ON u.id = k.user_id
+        JOIN m_roles r ON r.id = u.role_id
+        WHERE r.kode = 'penyuluh'
+          AND DATE_FORMAT(k.tanggal, '%Y-%m') = ?
+    ");
+    $stmt_part->execute([$selected_month_str]);
+    $penyuluh_sudah_input = (int)$stmt_part->fetchColumn();
+    $penyuluh_belum_input = max(0, $total_p - $penyuluh_sudah_input);
+    $pct_partisipasi = $total_p > 0 ? round(($penyuluh_sudah_input / $total_p) * 100, 1) : 0;
+}
+$avg_kegiatan_per_penyuluh = $total_p > 0 ? round($total_kegiatan / $total_p, 1) : 0;
 ?>
 
 <?php
@@ -237,10 +257,17 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         </div>
 
         <div class="w-full sm:w-auto flex-shrink-0">
+            <?php if ($role === 'pimpinan'): ?>
+            <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="btn btn-primary w-full sm:w-auto justify-center" style="padding:8px 20px;font-size:13px;">
+                <span class="material-symbols-outlined" style="font-size:18px;">monitoring</span>
+                Monitoring Penyuluh
+            </a>
+            <?php else: ?>
             <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary w-full sm:w-auto justify-center" style="padding:8px 20px;font-size:13px;">
                 <span class="material-symbols-outlined" style="font-size:18px;">add</span>
                 Catat Kegiatan
             </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -261,6 +288,25 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
     </div>
 
     <div class="card p-3 md:col-span-2 h-full d-flex flex-column justify-content-center">
+        <?php if ($role === 'pimpinan'): ?>
+        <div class="d-flex align-items-center justify-content-between mb-1">
+            <div class="stat-label mb-0">Penyuluh Sudah Input Kegiatan</div>
+            <div class="stat-icon-wrap tertiary flex-shrink-0">
+                <span class="material-symbols-outlined">group_add</span>
+            </div>
+        </div>
+        <div class="d-flex align-items-baseline justify-content-between gap-2">
+            <div class="stat-value"><?= $penyuluh_sudah_input ?> / <?= $total_p ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
+            <span class="fw-semibold flex-shrink-0" style="font-size:14px;"><?= $pct_partisipasi ?>%</span>
+        </div>
+        <div class="progress mt-2" style="height:8px;border-radius:999px;background:var(--md-sys-color-surface-container);">
+            <div class="progress-bar" style="width:<?= min(100, $pct_partisipasi) ?>%;border-radius:999px;<?= $pct_partisipasi >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
+        </div>
+        <p class="mb-0 mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">
+            <?= $penyuluh_belum_input > 0 ? $penyuluh_belum_input . ' penyuluh belum input' : 'Seluruh penyuluh sudah input' ?>
+            &middot; <?= e($nama_bulan_terpilih) ?>
+        </p>
+        <?php else: ?>
         <div class="d-flex align-items-center justify-content-between mb-1">
             <div class="stat-label mb-0">Capaian Target Penyuluhan</div>
             <div class="stat-icon-wrap tertiary flex-shrink-0">
@@ -276,6 +322,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         </div>
         <?php if ($sisa_menit > 0): ?>
             <p class="mb-0 mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">Sisa <?= number_format($sisa_menit, 0, ',', '.') ?> Menit</p>
+        <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
@@ -297,7 +344,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center" style="min-height:180px;">
                     <div class="stat-icon-wrap mb-2" style="width:48px;height:48px;border-radius:50%;background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);"><span class="material-symbols-outlined" style="font-size:26px;">insights</span></div>
                     <div class="fw-semibold" style="font-size:13.5px;">Belum ada tren yang bisa ditampilkan</div>
-                    <div class="text-muted" style="font-size:12.5px;">Data 6 bulan terakhir masih kosong. Mulai catat agar grafik terisi otomatis.</div>
+                    <div class="text-muted" style="font-size:12.5px;"><?= $role === 'pimpinan' ? 'Belum ada kegiatan penyuluh pada 6 bulan terakhir.' : 'Data 6 bulan terakhir masih kosong. Mulai catat agar grafik terisi otomatis.' ?></div>
                 </div>
             <?php else: ?>
                 <canvas id="trendChart"></canvas>
@@ -353,11 +400,15 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <span class="material-symbols-outlined" style="font-size:30px;">event_upcoming</span>
         </div>
         <div class="fw-bold" style="font-size:15px;">Belum ada kegiatan pada <?= e($nama_bulan_terpilih) ?>.</div>
+        <?php if ($role === 'pimpinan'): ?>
+        <div class="text-muted mt-1" style="font-size:12.5px;">Penyuluh di tim Anda belum menginput kegiatan pada periode ini.</div>
+        <?php else: ?>
         <div class="mt-3">
             <a href="<?= BASE_URL ?>/index.php?page=kegiatan" class="btn btn-primary d-inline-flex align-items-center gap-1" style="padding:8px 20px;">
                 <span class="material-symbols-outlined" style="font-size:18px;">add</span> Catat Kegiatan
             </a>
         </div>
+        <?php endif; ?>
     </div>
 </div>
 <?php else: ?>
@@ -418,13 +469,46 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">leaderboard</span>
             <div>
                 <div class="fw-semibold" style="font-size:13.5px;">Capaian tim • <?= e($nama_bulan_terpilih) ?></div>
-                <div class="text-muted" style="font-size:11.5px;"><?= $total_p ?> penyuluh • rata-rata <?= $avg_pct ?>% (<?= $avg_j ?> jam)</div>
+                <div class="text-muted" style="font-size:11.5px;">
+                    <?php if ($role === 'pimpinan'): ?>
+                    <?= $total_p ?> penyuluh • <?= $penyuluh_sudah_input ?> sudah input (<?= $pct_partisipasi ?>%)
+                    <?php else: ?>
+                    <?= $total_p ?> penyuluh • rata-rata <?= $avg_pct ?>% (<?= $avg_j ?> jam)
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <a href="index.php?page=penyuluh" class="btn btn-outline-secondary btn-sm">Buka monitoring <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></a>
     </div>
     <div class="card-body">
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <?php if ($role === 'pimpinan'): ?>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-surface-container-low);border:1px solid var(--md-sys-color-outline-variant);">
+                <div class="stat-label">Sudah input</div>
+                <div class="stat-value" style="color:var(--md-sys-color-primary);"><?= $penyuluh_sudah_input ?></div>
+                <div class="text-muted" style="font-size:11.5px;">dari <?= $total_p ?> penyuluh</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-error-container);border:1px solid transparent;">
+                <div class="stat-label" style="color:var(--md-sys-color-on-error-container);">Belum input</div>
+                <div class="stat-value" style="color:var(--md-sys-color-on-error-container);"><?= $penyuluh_belum_input ?></div>
+                <div style="font-size:11.5px;color:var(--md-sys-color-on-error-container);">penyuluh belum input</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-tertiary-container);border:1px solid transparent;">
+                <div class="stat-label" style="color:var(--md-sys-color-on-tertiary-container);">Partisipasi</div>
+                <div class="stat-value" style="color:var(--md-sys-color-on-tertiary-container);"><?= $pct_partisipasi ?>%</div>
+                <div style="font-size:11.5px;color:var(--md-sys-color-on-tertiary-container);">penyuluh sudah input</div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-surface-container-low);border:1px solid var(--md-sys-color-outline-variant);">
+                <div class="stat-label">Total kegiatan</div>
+                <div class="stat-value"><?= $total_kegiatan ?></div>
+                <div class="text-muted" style="font-size:11.5px;">pada <?= e($nama_bulan_terpilih) ?></div>
+            </div>
+            <div class="rounded-2 p-3" style="background:var(--md-sys-color-secondary-container);border:1px solid transparent;">
+                <div class="stat-label" style="color:var(--md-sys-color-on-secondary-container);">Rata-rata kegiatan</div>
+                <div class="stat-value" style="color:var(--md-sys-color-on-secondary-container);"><?= $avg_kegiatan_per_penyuluh ?></div>
+                <div style="font-size:11.5px;color:var(--md-sys-color-on-secondary-container);">kegiatan / penyuluh</div>
+            </div>
+            <?php else: ?>
             <div class="rounded-2 p-3" style="background:var(--md-sys-color-surface-container-low);border:1px solid var(--md-sys-color-outline-variant);">
                 <div class="stat-label">Rata-rata capaian</div>
                 <div class="stat-value" style="color:var(--md-sys-color-primary);"><?= $avg_pct ?>%</div>
@@ -450,6 +534,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 <div class="stat-value" style="color:var(--md-sys-color-on-error-container);"><?= $count_nol ?></div>
                 <div style="font-size:11.5px;color:var(--md-sys-color-on-error-container);"><?= $total_p > 0 ? round(($count_nol/$total_p)*100, 1) : 0 ?>% dari tim</div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
