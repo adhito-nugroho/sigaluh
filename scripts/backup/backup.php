@@ -105,6 +105,49 @@ function cnf_value(string $value): string
     return '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $value) . '"';
 }
 
+/**
+ * Tambahkan seluruh isi folder ke zip. File yang tidak bisa dibaca dilewati
+ * dan dicatat, karena satu file terkunci (mis. sedang dibuka) membuat
+ * ZipArchive::close() gagal dan seluruh arsip batal.
+ *
+ * @param string[] $skipped
+ */
+function zip_add_tree(ZipArchive $zip, string $src, string $prefix, array &$skipped): int
+{
+    if (!is_dir($src)) {
+        return 0;
+    }
+
+    $count = 0;
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)
+    );
+
+    foreach ($iterator as $file) {
+        if (!$file->isFile()) {
+            continue;
+        }
+
+        $full  = $file->getPathname();
+        $local = $prefix . '/' . str_replace('\\', '/', substr($full, strlen($src) + 1));
+
+        $handle = @fopen($full, 'rb');
+        if ($handle === false) {
+            $skipped[] = $local;
+            continue;
+        }
+        fclose($handle);
+
+        if (@$zip->addFile($full, $local)) {
+            $count++;
+        } else {
+            $skipped[] = $local;
+        }
+    }
+
+    return $count;
+}
+
 $mysqldump = find_mysqldump();
 if ($mysqldump === null) {
     fail('mysqldump tidak ditemukan. Set env MYSQLDUMP_PATH ke lokasi mysqldump.exe.');
@@ -175,40 +218,64 @@ try {
     b_log('Dump database selesai: ' . number_format(filesize($sqlFile) / 1024, 1, ',', '.') . ' KB');
 
     // ── Zip database + foto ─────────────────────────────────────────────────
-    $zip = new ZipArchive();
-    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-        throw new RuntimeException('Tidak dapat membuat file zip: ' . $zipPath);
+    $freeBytes = @disk_free_space($backupDir);
+    if ($freeBytes !== false) {
+        b_log('Ruang disk folder backup: ' . number_format($freeBytes / 1048576, 0, ',', '.') . ' MB');
+        if ($freeBytes < 300 * 1048576) {
+            b_log('PERINGATAN: ruang disk kurang dari 300 MB.');
+        }
     }
 
-    $zip->addFile($sqlFile, 'database/sigaluh2.sql');
+    $buildZip = static function (string $target, string $sql, string $baseDir, array &$skipped): array {
+        $zip = new ZipArchive();
+        $openCode = $zip->open($target, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        if ($openCode !== true) {
+            throw new RuntimeException('Tidak dapat membuat file zip (kode ' . $openCode . ').');
+        }
 
-    $addDir = static function (ZipArchive $zip, string $src, string $prefix): int {
-        if (!is_dir($src)) {
-            return 0;
+        $zip->addFile($sql, 'database/sigaluh2.sql');
+        $foto = zip_add_tree($zip, $baseDir . '/uploads/lampiran', 'uploads/lampiran', $skipped);
+        $ttd  = zip_add_tree($zip, $baseDir . '/uploads/ttd', 'uploads/ttd', $skipped);
+
+        if ($zip->close() !== true) {
+            $status = method_exists($zip, 'getStatusString') ? (string)$zip->getStatusString() : '';
+            throw new RuntimeException('Gagal menyimpan zip' . ($status !== '' ? ': ' . $status : '.'));
         }
-        $count = 0;
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS)
-        );
-        foreach ($iterator as $file) {
-            if (!$file->isFile()) {
-                continue;
-            }
-            $full  = $file->getPathname();
-            $local = $prefix . '/' . str_replace('\\', '/', substr($full, strlen($src) + 1));
-            $zip->addFile($full, $local);
-            $count++;
-        }
-        return $count;
+
+        return ['foto' => $foto, 'ttd' => $ttd];
     };
 
-    $fotoCount = $addDir($zip, $appDir . '/uploads/lampiran', 'uploads/lampiran');
-    $ttdCount  = $addDir($zip, $appDir . '/uploads/ttd', 'uploads/ttd');
-
-    if ($zip->close() !== true) {
-        throw new RuntimeException('Gagal menutup/menyimpan file zip.');
+    $zipCounts = null;
+    $zipError  = null;
+    for ($attempt = 1; $attempt <= 2; $attempt++) {
+        try {
+            $skippedFiles = [];
+            $zipCounts = $buildZip($zipPath, $sqlFile, $appDir, $skippedFiles);
+            $zipError = null;
+            break;
+        } catch (Throwable $zipFail) {
+            $zipError = $zipFail;
+            @unlink($zipPath);
+            if ($attempt === 1) {
+                b_log('Percobaan zip gagal: ' . $zipFail->getMessage() . ' — mencoba ulang...');
+                sleep(2);
+            }
+        }
     }
-    $zipReady = true;
+
+    if ($zipCounts === null) {
+        throw new RuntimeException('Gagal membuat arsip zip. ' . ($zipError ? $zipError->getMessage() : ''));
+    }
+
+    $zipReady  = true;
+    $fotoCount = $zipCounts['foto'];
+    $ttdCount  = $zipCounts['ttd'];
+
+    if ($skippedFiles) {
+        $preview = implode(', ', array_slice($skippedFiles, 0, 5));
+        b_log('PERINGATAN: ' . count($skippedFiles) . ' file dilewati (tidak dapat dibaca): ' . $preview
+            . (count($skippedFiles) > 5 ? ', ...' : ''));
+    }
 
     b_log('Arsip dibuat: ' . basename($zipPath) . ' (' . number_format(filesize($zipPath) / 1024, 1, ',', '.') . ' KB)');
     b_log('Isi: database + ' . $fotoCount . ' file foto + ' . $ttdCount . ' file TTD');
