@@ -50,6 +50,40 @@ function dashboard_format_nama(string $nama): string
     return implode(' ', $tokens);
 }
 
+// Format persen gaya Indonesia tanpa desimal yang tidak perlu: 27,3 / 100 / 0
+function dashboard_format_persen(float $nilai): string
+{
+    $teks = number_format($nilai, 1, ',', '.');
+    return rtrim(rtrim($teks, '0'), ',');
+}
+
+// Sinyal ambang target: warna tidak pernah sendirian (selalu ada ikon + teks).
+function dashboard_target_signal(float $pct): array
+{
+    if ($pct >= TARGET_AMBANG_HIJAU) {
+        return [
+            'label' => 'Sesuai target',
+            'icon'  => 'check_circle',
+            'badge' => 'badge-success',
+            'bar'   => 'var(--md-sys-color-tertiary)',
+        ];
+    }
+    if ($pct >= TARGET_AMBANG_KUNING) {
+        return [
+            'label' => 'Mendekati target',
+            'icon'  => 'warning',
+            'badge' => 'badge-warning',
+            'bar'   => 'var(--md-sys-color-secondary)',
+        ];
+    }
+    return [
+        'label' => 'Di bawah target',
+        'icon'  => 'error',
+        'badge' => 'badge-danger',
+        'bar'   => 'var(--md-sys-color-error)',
+    ];
+}
+
 // Navigasi cepat bulan sebelumnya & berikutnya
 $current_ts = strtotime("{$f_tahun}-{$f_bulan}-01");
 $prev_ts = strtotime("-1 month", $current_ts);
@@ -79,8 +113,8 @@ $stmt_all_time = $pdo->prepare("SELECT COUNT(*) FROM kegiatan $all_time_where");
 $stmt_all_time->execute($all_time_params);
 $total_kegiatan_all_time = (int)$stmt_all_time->fetchColumn();
 
-// Target Waktu Bulanan (112.5 jam = 6.750 menit)
-$TARGET_MENIT_BULANAN = 6750;
+// Target Waktu Bulanan — lihat config/app.php
+$TARGET_MENIT_BULANAN = TARGET_MENIT_BULANAN;
 $sql_durasi = "SELECT SUM(durasi_menit) FROM kegiatan k $month_where";
 $stmt_durasi = $pdo->prepare($sql_durasi);
 $stmt_durasi->execute($month_params);
@@ -180,35 +214,18 @@ $stmt_rekap->execute($rek_params);
 $rekap_tusi = $stmt_rekap->fetchAll();
 $rekap_grand_total = array_sum(array_column($rekap_tusi, 'total'));
 
-// 6. Executive Summary Target Waktu (Admin / Pimpinan) pada Bulan Terpilih
+// 6. Jumlah seluruh penyuluh (untuk penyebut partisipasi)
 $sql_summary = "
-    SELECT 
-        COUNT(u.id) as total_penyuluh,
-        COALESCE(AVG(p_durasi.total_menit), 0) as avg_menit,
-        SUM(CASE WHEN COALESCE(p_durasi.total_menit, 0) >= 6750 THEN 1 ELSE 0 END) as count_tuntas,
-        SUM(CASE WHEN COALESCE(p_durasi.total_menit, 0) > 0 AND COALESCE(p_durasi.total_menit, 0) < 6750 THEN 1 ELSE 0 END) as count_progres,
-        SUM(CASE WHEN COALESCE(p_durasi.total_menit, 0) = 0 THEN 1 ELSE 0 END) as count_nol
+    SELECT COUNT(u.id) as total_penyuluh
     FROM users u
     JOIN m_roles r ON u.role_id = r.id
-    LEFT JOIN (
-        SELECT user_id, SUM(durasi_menit) as total_menit 
-        FROM kegiatan 
-        WHERE MONTH(tanggal) = ? AND YEAR(tanggal) = ?
-        GROUP BY user_id
-    ) p_durasi ON u.id = p_durasi.user_id
     WHERE r.kode = 'penyuluh'
 ";
 $stmt_sum = $pdo->prepare($sql_summary);
-$stmt_sum->execute([$f_bulan_num, $f_tahun_num]);
+$stmt_sum->execute();
 $exec_sum = $stmt_sum->fetch();
 
 $total_p = (int)($exec_sum['total_penyuluh'] ?? 0);
-$avg_m = round($exec_sum['avg_menit'] ?? 0);
-$avg_j = round($avg_m / 60, 1);
-$avg_pct = min(100, round(($avg_m / 6750) * 100, 1));
-$count_tuntas = (int)($exec_sum['count_tuntas'] ?? 0);
-$count_progres = (int)($exec_sum['count_progres'] ?? 0);
-$count_nol = (int)($exec_sum['count_nol'] ?? 0);
 
 // 7. Partisipasi Penyuluh (admin & pimpinan): jumlah penyuluh yang sudah input kegiatan pada bulan terpilih
 $penyuluh_sudah_input = 0;
@@ -230,6 +247,10 @@ if ($role !== 'penyuluh') {
 }
 $avg_kegiatan_per_input = $penyuluh_sudah_input > 0 ? round($total_kegiatan / $penyuluh_sudah_input, 1) : null;
 $avg_kegiatan_all_penyuluh = $total_p > 0 ? round($total_kegiatan / $total_p, 1) : null;
+
+// Sinyal ambang target (>=80% hijau, 50-79% kuning, <50% merah)
+$partisipasi_signal = $total_p > 0 ? dashboard_target_signal((float)$pct_partisipasi) : null;
+$target_signal = dashboard_target_signal((float)$pct_target);
 
 // 8. Penyuluh yang belum input pada bulan terpilih (tindak lanjut)
 $belum_input_rows = [];
@@ -346,38 +367,49 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         <?php if ($role !== 'penyuluh'): ?>
         <div class="d-flex align-items-center justify-content-between mb-1">
             <div class="stat-label mb-0">Penyuluh Sudah Input Kegiatan</div>
-            <div class="stat-icon-wrap tertiary flex-shrink-0">
+            <div class="stat-icon-wrap primary flex-shrink-0">
                 <span class="material-symbols-outlined">group_add</span>
             </div>
         </div>
         <div class="d-flex align-items-baseline justify-content-between gap-2">
             <div class="stat-value"><?= $penyuluh_sudah_input ?> / <?= $total_p ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
-            <span class="fw-semibold flex-shrink-0" style="font-size:14px;"><?= $pct_partisipasi ?>%</span>
+            <span class="fw-semibold flex-shrink-0" style="font-size:14px;font-variant-numeric:tabular-nums;"><?= $total_p > 0 ? dashboard_format_persen((float)$pct_partisipasi) . '%' : '–' ?></span>
         </div>
         <div class="progress mt-2" style="height:8px;border-radius:999px;background:var(--md-sys-color-surface-container);">
-            <div class="progress-bar" style="width:<?= min(100, $pct_partisipasi) ?>%;border-radius:999px;<?= $pct_partisipasi >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
+            <div class="progress-bar" style="width:<?= min(100, $pct_partisipasi) ?>%;border-radius:999px;<?= $partisipasi_signal ? 'background:' . $partisipasi_signal['bar'] . ';' : '' ?>"></div>
         </div>
-        <p class="mb-0 mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">
-            <?= $penyuluh_belum_input > 0 ? $penyuluh_belum_input . ' penyuluh belum input' : 'Seluruh penyuluh sudah input' ?>
-            &middot; <?= e($nama_bulan_terpilih) ?>
+        <p class="mb-0 mt-1 d-flex align-items-center gap-2 flex-wrap" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">
+            <?php if ($partisipasi_signal): ?>
+            <span class="badge <?= $partisipasi_signal['badge'] ?> d-inline-flex align-items-center gap-1">
+                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:13px;"><?= $partisipasi_signal['icon'] ?></span><?= $partisipasi_signal['label'] ?>
+            </span>
+            <?php endif; ?>
+            <span><?= $total_p === 0 ? 'Belum ada data penyuluh' : ($penyuluh_belum_input > 0 ? $penyuluh_belum_input . ' penyuluh belum input' : 'Seluruh penyuluh sudah input') ?></span>
+            <span aria-hidden="true">&middot;</span>
+            <span><?= e($nama_bulan_terpilih) ?></span>
         </p>
         <?php else: ?>
         <div class="d-flex align-items-center justify-content-between mb-1">
             <div class="stat-label mb-0">Capaian Target Penyuluhan</div>
-            <div class="stat-icon-wrap tertiary flex-shrink-0">
+            <div class="stat-icon-wrap primary flex-shrink-0">
                 <span class="material-symbols-outlined">speed</span>
             </div>
         </div>
         <div class="d-flex align-items-baseline justify-content-between gap-2">
             <div class="stat-value"><?= number_format($total_durasi_menit, 0, ',', '.') ?> / <?= number_format($TARGET_MENIT_BULANAN, 0, ',', '.') ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">Menit</span></div>
-            <span class="fw-semibold flex-shrink-0" style="font-size:14px;"><?= $pct_target ?>%</span>
+            <span class="fw-semibold flex-shrink-0" style="font-size:14px;font-variant-numeric:tabular-nums;"><?= dashboard_format_persen((float)$pct_target) ?>%</span>
         </div>
         <div class="progress mt-2" style="height:8px;border-radius:999px;background:var(--md-sys-color-surface-container);">
-            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;border-radius:999px;<?= $pct_target >= 100 ? 'background:var(--md-sys-color-tertiary);' : 'background:var(--md-sys-color-primary);' ?>"></div>
+            <div class="progress-bar" style="width:<?= min(100, $pct_target) ?>%;border-radius:999px;background:<?= $target_signal['bar'] ?>;"></div>
         </div>
-        <?php if ($sisa_menit > 0): ?>
-            <p class="mb-0 mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">Sisa <?= number_format($sisa_menit, 0, ',', '.') ?> Menit</p>
-        <?php endif; ?>
+        <p class="mb-0 mt-1 d-flex align-items-center gap-2 flex-wrap" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);font-weight:500;">
+            <span class="badge <?= $target_signal['badge'] ?> d-inline-flex align-items-center gap-1">
+                <span class="material-symbols-outlined" aria-hidden="true" style="font-size:13px;"><?= $target_signal['icon'] ?></span><?= $target_signal['label'] ?>
+            </span>
+            <?php if ($sisa_menit > 0): ?>
+            <span>Sisa <?= number_format($sisa_menit, 0, ',', '.') ?> Menit</span>
+            <?php endif; ?>
+        </p>
         <?php endif; ?>
     </div>
 </div>
@@ -469,14 +501,21 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
 <?php else: ?>
 <!-- Rekap per TUSI -->
 <div class="card mb-4">
+    <?php $ada_tusi_kosong = count(array_filter($rekap_tusi, fn($r) => (int)$r['total'] === 0)) > 0; ?>
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">table_chart</span>
             <span class="fw-semibold" style="font-size:13.5px;">Rekap per TUSI</span>
         </div>
+        <?php if ($ada_tusi_kosong): ?>
+        <label class="d-inline-flex align-items-center gap-2 mb-0" style="font-size:12px;color:var(--md-sys-color-on-surface-variant);cursor:pointer;">
+            <input type="checkbox" id="tusiToggleSemua" class="form-check-input m-0">
+            <span>Tampilkan semua TUSI</span>
+        </label>
+        <?php endif; ?>
     </div>
-    <div class="card-body table-responsive" style="padding:0;">
-        <table class="table table-hover table-sm align-middle mb-0">
+    <div class="card-body table-responsive" style="padding:0;max-height:460px;overflow:auto;">
+        <table class="table table-hover table-sm align-middle mb-0" aria-label="Rekap kegiatan per TUSI pada <?= e($nama_bulan_terpilih) ?>">
             <thead>
                 <tr>
                     <th style="width:90px;">Kode</th>
@@ -488,14 +527,24 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($rekap_tusi as $r): ?>
-                <tr>
-                    <td><span class="badge badge-neutral"><?= e($r['kode']) ?></span></td>
+                <?php foreach ($rekap_tusi as $r):
+                    $is_zero = (int)$r['total'] === 0;
+                    $is_nontusi = strtoupper(trim((string)$r['kode'])) === 'NONTUSI';
+                ?>
+                <tr class="<?= $is_zero ? 'tusi-zero' : '' ?><?= $is_nontusi && !$is_zero ? ' tusi-nontusi' : '' ?>"
+                    <?= $is_nontusi ? 'title="Kegiatan NONTUSI: di luar uraian tugas pokok TUSI"' : '' ?>
+                    <?= $is_zero ? 'style="display:none;"' : ($is_nontusi ? 'style="background:rgba(255,222,166,0.28);"' : '') ?>>
+                    <td>
+                        <span class="badge badge-neutral"><?= e($r['kode']) ?></span>
+                        <?php if ($is_nontusi && !$is_zero): ?>
+                        <span class="material-symbols-outlined" style="font-size:14px;color:var(--md-sys-color-secondary);vertical-align:-2px;margin-left:2px;" aria-hidden="true">info</span>
+                        <?php endif; ?>
+                    </td>
                     <td style="min-width:220px;"><?= e($r['nama']) ?></td>
-                    <td class="text-center"><?= $r['submitted'] > 0 ? '<span class="badge badge-warning">'.(int)$r['submitted'].'</span>' : '<span class="text-muted">–</span>' ?></td>
-                    <td class="text-center"><?= $r['direview'] > 0 ? '<span class="badge badge-success">'.(int)$r['direview'].'</span>' : '<span class="text-muted">–</span>' ?></td>
-                    <td class="text-center"><?= $r['draft'] > 0 ? '<span class="badge badge-neutral">'.(int)$r['draft'].'</span>' : '<span class="text-muted">–</span>' ?></td>
-                    <td class="text-center fw-bold"><?= (int)$r['total'] > 0 ? (int)$r['total'] : '<span class="text-muted">–</span>' ?></td>
+                    <td class="text-center"><?= $r['submitted'] > 0 ? '<span class="badge badge-warning">'.(int)$r['submitted'].'</span>' : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center"><?= $r['direview'] > 0 ? '<span class="badge badge-success">'.(int)$r['direview'].'</span>' : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center"><?= $r['draft'] > 0 ? '<span class="badge badge-neutral">'.(int)$r['draft'].'</span>' : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center fw-bold"><?= (int)$r['total'] > 0 ? (int)$r['total'] : '<span class="text-muted">0</span>' ?></td>
                 </tr>
                 <?php endforeach; ?>
                 <?php
@@ -503,14 +552,16 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 $tot_rev = array_sum(array_column($rekap_tusi, 'direview'));
                 $tot_drf = array_sum(array_column($rekap_tusi, 'draft'));
                 ?>
-                <tr class="fw-bold" style="background:var(--md-sys-color-surface-container-low);">
-                    <td colspan="2">Total keseluruhan</td>
-                    <td class="text-center"><?= $tot_sub > 0 ? $tot_sub : '–' ?></td>
-                    <td class="text-center"><?= $tot_rev > 0 ? $tot_rev : '–' ?></td>
-                    <td class="text-center"><?= $tot_drf > 0 ? $tot_drf : '–' ?></td>
-                    <td class="text-center"><?= $rekap_grand_total > 0 ? $rekap_grand_total : '–' ?></td>
-                </tr>
             </tbody>
+            <tfoot style="position:sticky;bottom:0;z-index:2;">
+                <tr class="fw-bold" style="background:var(--md-sys-color-surface-container-low);box-shadow:0 -1px 0 var(--md-sys-color-outline-variant);">
+                    <td colspan="2">Total keseluruhan</td>
+                    <td class="text-center"><?= (int)$tot_sub ?></td>
+                    <td class="text-center"><?= (int)$tot_rev ?></td>
+                    <td class="text-center"><?= (int)$tot_drf ?></td>
+                    <td class="text-center"><?= (int)$rekap_grand_total ?></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </div>
@@ -664,4 +715,14 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             }
         });
     });
+</script>
+<script>
+(function () {
+    const toggle = document.getElementById('tusiToggleSemua');
+    if (!toggle) return;
+    const rows = Array.from(document.querySelectorAll('tr.tusi-zero'));
+    const apply = () => rows.forEach(tr => { tr.style.display = toggle.checked ? '' : 'none'; });
+    toggle.addEventListener('change', apply);
+    apply();
+})();
 </script>
