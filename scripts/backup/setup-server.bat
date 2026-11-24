@@ -64,8 +64,23 @@ if errorlevel 1 (
 rem --- 3. Uji backup sekali ---
 echo.
 echo [3/3] Menjalankan uji backup pertama...
+
+rem status.json lama dihapus supaya hasil uji benar-benar berasal dari run ini
+if exist "backups\status.json" del /f /q "backups\status.json" >nul 2>&1
+if exist "backups\status.json" (
+    echo [GAGAL] status.json terkunci proses lain. Tutup backup yang sedang berjalan lalu ulangi.
+    exit /b 1
+)
+
 call "%~dp0run-backup.bat"
 set "TEST_EXIT=%errorlevel%"
+
+if not exist "backups\status.json" (
+    echo.
+    echo [GAGAL] Script backup tidak berjalan sampai selesai.
+    echo         Periksa php.exe dan izin tulis folder backups, lalu ulangi.
+    exit /b 1
+)
 
 echo.
 echo --- 6 baris terakhir backups\backup.log ---

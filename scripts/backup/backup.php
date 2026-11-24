@@ -34,7 +34,10 @@ function b_log(string $msg): void
     global $logFile;
     $line = '[' . date('Y-m-d H:i:s') . '] ' . $msg . PHP_EOL;
     echo $line;
-    @file_put_contents($logFile, $line, FILE_APPEND);
+    if (@file_put_contents($logFile, $line, FILE_APPEND) === false) {
+        usleep(150000);
+        @file_put_contents($logFile, $line, FILE_APPEND);
+    }
 }
 
 function fail(string $msg): void
@@ -52,8 +55,16 @@ if (!is_dir($backupDir) && !mkdir($backupDir, 0755, true) && !is_dir($backupDir)
     fail('Tidak dapat membuat folder backups: ' . $backupDir);
 }
 
+// Fatal error PHP tetap tercatat walau output tidak diarahkan ke file oleh batch.
+ini_set('log_errors', '1');
+ini_set('error_log', $backupDir . DIRECTORY_SEPARATOR . 'php-error.log');
+
 if (is_file($logFile) && filesize($logFile) > 1048576) {
     @rename($logFile, $logFile . '.1');
+}
+$phpErrorLog = $backupDir . DIRECTORY_SEPARATOR . 'php-error.log';
+if (is_file($phpErrorLog) && filesize($phpErrorLog) > 1048576) {
+    @rename($phpErrorLog, $phpErrorLog . '.1');
 }
 
 $lockHandle = fopen($backupDir . DIRECTORY_SEPARATOR . '.backup.lock', 'c');
