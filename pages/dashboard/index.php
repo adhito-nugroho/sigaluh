@@ -365,7 +365,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <?php
             $status_items = [
                 ['key' => 'direview', 'label' => 'Disetujui', 'desc' => 'Sudah direview', 'dot' => 'background:#0E9F6E;', 'badge' => 'badge-success'],
-                ['key' => 'submitted', 'label' => 'Diajukan', 'desc' => 'Menunggu review', 'dot' => 'background:#C27803;', 'badge' => 'badge-warning'],
+                ['key' => 'submitted', 'label' => 'Diajukan', 'desc' => 'Belum direview', 'dot' => 'background:#C27803;', 'badge' => 'badge-warning'],
                 ['key' => 'draft', 'label' => 'Draft', 'desc' => 'Belum diajukan', 'dot' => 'background:#9AA0B4;', 'badge' => 'badge-neutral'],
             ];
             foreach ($status_items as $item):

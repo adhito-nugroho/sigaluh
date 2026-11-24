@@ -33,13 +33,12 @@ if ($f_penyuluh !== '' && !ctype_digit($f_penyuluh)) {
     $f_penyuluh = '';
 }
 
-// Tab status: menunggu review (submitted) | disetujui (direview) | semua
+// Tab status: disetujui (direview) | diajukan (submitted) | status lain bila ada | semua
 // Penyuluh default melihat semua kegiatannya agar draf tidak tersembunyi.
 $default_status = $is_penyuluh ? 'all' : 'submitted';
-$allowed_tabs = ['submitted', 'direview', 'all'];
-$f_status = $_GET['status'] ?? $default_status;
-if (!is_string($f_status) || !in_array($f_status, $allowed_tabs, true)) {
-    $f_status = $default_status;
+$requested_status = $_GET['status'] ?? $default_status;
+if (!is_string($requested_status)) {
+    $requested_status = $default_status;
 }
 
 // Pagination
@@ -81,7 +80,7 @@ if ($f_q !== '') {
 $where_filter = count($filter_clauses) > 0 ? 'WHERE ' . implode(' AND ', $filter_clauses) : '';
 
 // Hitung per status untuk tab (mengabaikan filter status)
-$status_counts = ['draft' => 0, 'submitted' => 0, 'direview' => 0];
+$status_counts = [];
 $stmt_status = $pdo->prepare(
     "SELECT k.status, COUNT(*) AS total
      FROM kegiatan k
@@ -93,6 +92,36 @@ $stmt_status->execute($filter_params);
 foreach ($stmt_status->fetchAll() as $row_status) {
     $status_counts[$row_status['status']] = (int)$row_status['total'];
 }
+
+function keg_status_label(string $status): string
+{
+    $labels = [
+        'draft' => 'Draft',
+        'submitted' => 'Diajukan',
+        'direview' => 'Disetujui',
+        'rejected' => 'Ditolak',
+        'ditolak' => 'Ditolak',
+    ];
+    return $labels[$status] ?? ucfirst($status);
+}
+
+// Tab hanya memuat status yang benar-benar ada pada hasil filter, plus tab tetap.
+$f_status = $requested_status;
+if ($f_status !== 'all' && !array_key_exists($f_status, $status_counts)
+    && !in_array($f_status, ['submitted', 'direview'], true)) {
+    $f_status = $default_status;
+}
+
+$tab_statuses = ['submitted', 'direview'];
+foreach ($status_counts as $st => $st_count) {
+    if (!in_array($st, $tab_statuses, true) && $st_count > 0) {
+        $tab_statuses[] = $st;
+    }
+}
+if ($f_status !== 'all' && !in_array($f_status, $tab_statuses, true)) {
+    $tab_statuses[] = $f_status;
+}
+$tab_statuses[] = 'all';
 
 $where_sql = $where_filter;
 $data_params = $filter_params;
@@ -135,6 +164,16 @@ $stmt_data = $pdo->prepare($sql_data);
 $stmt_data->execute($data_params);
 $kegiatan_list = $stmt_data->fetchAll();
 
+// Sembunyikan kolom Penyuluh bila hasil filter hanya berisi satu penyuluh.
+$distinct_penyuluh = 0;
+if (!$is_penyuluh) {
+    $stmt_pen = $pdo->prepare("SELECT COUNT(DISTINCT k.user_id) FROM kegiatan k JOIN users u ON k.user_id = u.id $where_sql");
+    $stmt_pen->execute($data_params);
+    $distinct_penyuluh = (int)$stmt_pen->fetchColumn();
+}
+$show_penyuluh_col = !$is_penyuluh && $distinct_penyuluh !== 1;
+$show_status_col = ($f_status !== 'submitted');
+
 // Ambil lampiran foto untuk kegiatan di halaman ini
 $kegiatan_ids = array_column($kegiatan_list, 'id');
 $lampiran_by_kegiatan = [];
@@ -175,6 +214,31 @@ function get_status_badge($status)
     }
 }
 
+// Title Case untuk data nama yang tersimpan dalam huruf kapital; gelar/insial tetap kapital.
+function format_nama_penyuluh(string $nama): string
+{
+    $nama = trim(preg_replace('/\s+/u', ' ', $nama));
+    if ($nama === '') {
+        return '';
+    }
+    $tokens = preg_split('/\s+/u', $nama);
+    foreach ($tokens as &$token) {
+        if (mb_strtoupper($token, 'UTF-8') !== $token) {
+            continue;
+        }
+        $letters = preg_replace('/[^\p{L}]/u', '', $token);
+        $hasDot = strpos($token, '.') !== false;
+        $isInitial = $letters !== '' && (mb_strlen($letters, 'UTF-8') <= 2 || !preg_match('/[aeiou]/iu', $letters));
+        if ($hasDot || $isInitial) {
+            continue;
+        }
+        $lower = mb_strtolower($token, 'UTF-8');
+        $token = mb_strtoupper(mb_substr($lower, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($lower, 1, null, 'UTF-8');
+    }
+    unset($token);
+    return implode(' ', $tokens);
+}
+
 function kegiatan_url(array $params): string
 {
     $params = array_merge(['page' => 'kegiatan'], $params);
@@ -200,13 +264,17 @@ $reset_url = kegiatan_url(['status' => $f_status]);
 
 $pagination_params = array_merge($filter_base_params, ['status' => $f_status]);
 
-$tab_counts = [
-    'submitted' => $status_counts['submitted'] ?? 0,
-    'direview' => $status_counts['direview'] ?? 0,
-    'all' => array_sum($status_counts),
-];
+$tab_counts = [];
+foreach ($tab_statuses as $tab_status) {
+    $tab_counts[$tab_status] = $tab_status === 'all'
+        ? array_sum($status_counts)
+        : (int)($status_counts[$tab_status] ?? 0);
+}
 
-$col_count = ($is_penyuluh ? 6 : 7) + ($can_approve ? 1 : 0);
+$col_count = 5
+    + ($can_approve ? 1 : 0)
+    + ($show_penyuluh_col ? 1 : 0)
+    + ($show_status_col ? 1 : 0);
 $csrf_token = generate_csrf_token();
 ?>
 
@@ -263,6 +331,20 @@ $csrf_token = generate_csrf_token();
 .keg-row-check { width: 18px; height: 18px; accent-color: var(--md-sys-color-primary); cursor: pointer; }
 .keg-row-check:disabled { cursor: not-allowed; }
 .keg-dash { color: var(--md-sys-color-outline); }
+.keg-date { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.keg-penyuluh-nama {
+    font-size: 13.5px; font-weight: 500; line-height: 1.35;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: none;
+}
+.keg-activity-title {
+    font-size: 15px; font-weight: 600; line-height: 1.35;
+    color: var(--md-sys-color-on-surface);
+}
+.keg-activity-meta {
+    font-size: 13px; font-weight: 600; margin-top: 2px;
+    color: var(--md-sys-color-primary);
+}
 tr.keg-selected td { background: var(--md-sys-color-primary-container) !important; }
 tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity .2s ease, transform .2s ease; }
 .keg-actions-inner { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
@@ -494,21 +576,21 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
     <div class="card mb-4">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-3">
             <nav class="keg-tabs" aria-label="Filter status kegiatan">
-                <a id="keg-tab-submitted" class="keg-tab <?= $f_status === 'submitted' ? 'is-active' : '' ?>" href="<?= e($tab_url('submitted')) ?>" <?= $f_status === 'submitted' ? 'aria-current="page"' : '' ?>>
-                    Menunggu review <span class="keg-tab-count" data-tab-count="submitted"><?= (int)$tab_counts['submitted'] ?></span>
+                <?php foreach ($tab_statuses as $tab_status):
+                    $tab_is_active = ($f_status === $tab_status);
+                    $tab_id = 'keg-tab-' . preg_replace('/[^a-z0-9_-]+/i', '-', $tab_status);
+                    $tab_label = $tab_status === 'all' ? 'Semua status' : keg_status_label($tab_status);
+                ?>
+                <a id="<?= e($tab_id) ?>" class="keg-tab <?= $tab_is_active ? 'is-active' : '' ?>" href="<?= e($tab_url($tab_status)) ?>" <?= $tab_is_active ? 'aria-current="page"' : '' ?>>
+                    <?= e($tab_label) ?> <span class="keg-tab-count" data-tab-count="<?= e($tab_status) ?>"><?= (int)$tab_counts[$tab_status] ?></span>
                 </a>
-                <a id="keg-tab-direview" class="keg-tab <?= $f_status === 'direview' ? 'is-active' : '' ?>" href="<?= e($tab_url('direview')) ?>" <?= $f_status === 'direview' ? 'aria-current="page"' : '' ?>>
-                    Disetujui <span class="keg-tab-count" data-tab-count="direview"><?= (int)$tab_counts['direview'] ?></span>
-                </a>
-                <a id="keg-tab-all" class="keg-tab <?= $f_status === 'all' ? 'is-active' : '' ?>" href="<?= e($tab_url('all')) ?>" <?= $f_status === 'all' ? 'aria-current="page"' : '' ?>>
-                    Semua <span class="keg-tab-count" data-tab-count="all"><?= (int)$tab_counts['all'] ?></span>
-                </a>
+                <?php endforeach; ?>
             </nav>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="keg-table" aria-describedby="keg-table-caption">
-                    <caption id="keg-table-caption" class="keg-sr-only">Daftar kegiatan penyuluh sesuai filter. Tab aktif: <?= $f_status === 'submitted' ? 'Menunggu review' : ($f_status === 'direview' ? 'Disetujui' : 'Semua') ?>.</caption>
+                    <caption id="keg-table-caption" class="keg-sr-only">Daftar kegiatan penyuluh sesuai filter. Tab aktif: <?= e($f_status === 'all' ? 'Semua status' : keg_status_label($f_status)) ?>.</caption>
                     <thead>
                         <tr>
                             <?php if ($can_approve): ?>
@@ -517,13 +599,15 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                             </th>
                             <?php endif; ?>
                             <th scope="col">Tanggal</th>
-                            <?php if (!$is_penyuluh): ?>
+                            <?php if ($show_penyuluh_col): ?>
                             <th scope="col">Penyuluh</th>
                             <?php endif; ?>
                             <th scope="col"><abbr class="keg-abbr" title="Tugas, Pokok, dan Fungsi">TUSI</abbr></th>
                             <th scope="col">Aktivitas Harian</th>
                             <th scope="col">Ringkasan Kegiatan</th>
+                            <?php if ($show_status_col): ?>
                             <th scope="col">Status</th>
+                            <?php endif; ?>
                             <th scope="col" class="text-end">Aksi</th>
                         </tr>
                     </thead>
@@ -560,7 +644,8 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                             $row_id = (int)$row['id'];
                             $row_tanggal = date('d/m/Y', strtotime($row['tanggal']));
                             $row_aktivitas = $row['nama_aktivitas'] ?: $row['uraian_kegiatan'];
-                            $row_context = $row_tanggal . ' oleh ' . $row['penyuluh_nama'];
+                            $row_penyuluh = format_nama_penyuluh($row['penyuluh_nama']);
+                            $row_context = $row_tanggal . ' oleh ' . $row_penyuluh;
                             $row_fotos = $lampiran_by_kegiatan[$row_id] ?? [];
                             $foto_count = count($row_fotos);
                             $foto_json = '';
@@ -568,7 +653,7 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                                 $foto_json = htmlspecialchars(json_encode([
                                     'id' => $row_id,
                                     'tanggal' => $row_tanggal,
-                                    'penyuluh' => $row['penyuluh_nama'],
+                                    'penyuluh' => $row_penyuluh,
                                     'tusi' => $row['tusi_kode'],
                                     'uraian' => $row['uraian_kegiatan'],
                                     'aktivitas' => $row_aktivitas,
@@ -581,7 +666,7 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                             data-kegiatan-id="<?= $row_id ?>"
                             data-status="<?= e($row['status']) ?>"
                             data-tanggal="<?= e($row_tanggal) ?>"
-                            data-penyuluh="<?= e($row['penyuluh_nama']) ?>"
+                            data-penyuluh="<?= e($row_penyuluh) ?>"
                             data-aktivitas="<?= e($row_aktivitas) ?>"
                             data-uraian="<?= e($row['uraian_kegiatan']) ?>">
                             <?php if ($can_approve): ?>
@@ -594,15 +679,15 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                             </td>
                             <?php endif; ?>
 
-                            <td class="whitespace-nowrap fw-medium"><?= e($row_tanggal) ?></td>
+                            <td class="whitespace-nowrap fw-medium keg-date"><?= e($row_tanggal) ?></td>
 
-                            <?php if (!$is_penyuluh): ?>
+                            <?php if ($show_penyuluh_col): ?>
                             <td class="whitespace-nowrap">
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="w-7 h-7 rounded-lg d-flex align-items-center justify-content-center text-xs fw-bold" aria-hidden="true" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
-                                        <?= strtoupper(substr($row['penyuluh_nama'], 0, 1)) ?>
+                                    <div class="w-7 h-7 rounded-lg d-flex align-items-center justify-content-center text-xs fw-bold flex-shrink-0" aria-hidden="true" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
+                                        <?= e(mb_strtoupper(mb_substr($row_penyuluh, 0, 1, 'UTF-8'), 'UTF-8')) ?>
                                     </div>
-                                    <span class="text-sm fw-medium"><?= e($row['penyuluh_nama']) ?></span>
+                                    <span class="keg-penyuluh-nama"><?= e($row_penyuluh) ?></span>
                                 </div>
                             </td>
                             <?php endif; ?>
@@ -612,10 +697,10 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                                 <span class="badge badge-<?= $tc ?>"><abbr class="keg-abbr" title="<?= e($row['tusi_nama']) ?>"><?= e($row['tusi_kode']) ?></abbr></span>
                             </td>
 
-                            <td class="text-xs fw-semibold" style="max-width:240px;">
-                                <div class="line-clamp-2" title="<?= e($row_aktivitas) ?>"><?= e($row_aktivitas) ?></div>
+                            <td style="max-width:280px;">
+                                <div class="keg-activity-title"><?= e($row_aktivitas) ?></div>
                                 <?php if ($row['durasi_menit'] > 0): ?>
-                                    <div class="text-[10px] fw-bold mt-0.5 text-primary"><?= (int)$row['durasi_menit'] ?> Menit (<?= (int)($row['volume'] ?? 1) ?> <?= e($row['act_satuan'] ?: 'Satuan') ?>)</div>
+                                    <div class="keg-activity-meta"><?= (int)$row['durasi_menit'] ?> Menit (<?= (int)($row['volume'] ?? 1) ?> <?= e($row['act_satuan'] ?: 'Satuan') ?>)</div>
                                 <?php endif; ?>
                                 <?php if ($foto_count > 0): ?>
                                     <div class="keg-foto-count">
@@ -629,9 +714,11 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                                 <div class="line-clamp-2" title="<?= e($row['uraian_kegiatan']) ?>"><?= e($row['uraian_kegiatan']) ?></div>
                             </td>
 
+                            <?php if ($show_status_col): ?>
                             <td class="whitespace-nowrap keg-status">
                                 <?= get_status_badge($row['status']) ?>
                             </td>
+                            <?php endif; ?>
 
                             <td class="whitespace-nowrap text-end">
                                 <div class="keg-actions-inner">
@@ -645,7 +732,7 @@ tr.keg-row-leave { opacity: 0; transform: translateY(-4px); transition: opacity 
                                             <span class="material-symbols-outlined" aria-hidden="true">check</span>
                                             <span>Disetujui</span>
                                         </button>
-                                        <?php else: ?>
+                                        <?php elseif ($row['status'] === 'direview'): ?>
                                         <button type="button" class="btn btn-sm" disabled aria-label="Kegiatan sudah disetujui">
                                             <span class="material-symbols-outlined" aria-hidden="true">check</span>
                                             <span>Disetujui</span>
