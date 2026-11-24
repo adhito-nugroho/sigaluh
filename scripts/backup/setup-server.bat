@@ -10,6 +10,12 @@ rem ============================================================
 set "APP_DIR=%~dp0..\.."
 cd /d "%APP_DIR%"
 
+rem Sesi SSH Windows sering tidak punya System32 di PATH — pakai path penuh.
+set "PS_EXE=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+if not exist "%PS_EXE%" set "PS_EXE=powershell"
+set "SCHTASKS_EXE=%SystemRoot%\System32\schtasks.exe"
+if not exist "%SCHTASKS_EXE%" set "SCHTASKS_EXE=schtasks"
+
 echo ======================================================
 echo  SETUP BACKUP OTOMATIS SI GALUH
 echo ======================================================
@@ -41,13 +47,18 @@ echo [1/3] PHP: %PHP_EXE%
 rem --- 2. Daftarkan jadwal harian 23:15 ---
 echo.
 echo [2/3] Mendaftarkan jadwal backup harian 23:15...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0register-task.ps1"
+"%PS_EXE%" -NoProfile -ExecutionPolicy Bypass -File "%~dp0register-task.ps1"
 if errorlevel 1 (
-    echo.
-    echo [GAGAL] Windows Task Scheduler menolak pendaftaran.
-    echo         Jalankan skrip ini langsung di server lewat cmd/RDP,
-    echo         bukan dari sesi SSH non-interaktif.
-    exit /b 1
+    echo [!] Pendaftaran via PowerShell gagal, mencoba schtasks...
+    "%SCHTASKS_EXE%" /Create /F /SC DAILY /ST 23:15 /TN "SI GALUH - Backup Harian" /TR "cmd /c \"%~dp0run-backup.bat\""
+    if errorlevel 1 (
+        echo.
+        echo [GAGAL] Windows Task Scheduler menolak pendaftaran.
+        echo         Jalankan skrip ini langsung di server lewat cmd/RDP,
+        echo         bukan dari sesi SSH non-interaktif.
+        exit /b 1
+    )
+    echo [OK] Tugas didaftarkan lewat schtasks.
 )
 
 rem --- 3. Uji backup sekali ---
@@ -58,15 +69,17 @@ set "TEST_EXIT=%errorlevel%"
 
 echo.
 echo --- 6 baris terakhir backups\backup.log ---
-powershell -NoProfile -Command "Get-Content 'backups\backup.log' -Tail 6 -ErrorAction SilentlyContinue"
+"%PS_EXE%" -NoProfile -Command "Get-Content 'backups\backup.log' -Tail 6 -ErrorAction SilentlyContinue"
 
 echo.
 if "%TEST_EXIT%"=="0" (
     echo [OK] Backup lokal + salin ke Google Drive berhasil.
 ) else (
-    echo [PERINGATAN] Backup lokal berhasil, tetapi Google Drive belum tersalin.
-    echo   - Pasang dan login "Google Drive for desktop" di server ini, atau
-    echo   - isi folder tujuan lewat menu Pengaturan ^> Backup Data di aplikasi.
+    echo [PERINGATAN] Uji backup belum sepenuhnya berhasil ^(kode %TEST_EXIT%^).
+    echo   - Lihat log di atas untuk penyebabnya.
+    echo   - Jika backup lokal sukses tetapi Drive kosong: pasang dan login
+    echo     "Google Drive for desktop" di server ini, atau isi folder tujuan
+    echo     lewat menu Pengaturan ^> Backup Data di aplikasi.
 )
 
 echo.
