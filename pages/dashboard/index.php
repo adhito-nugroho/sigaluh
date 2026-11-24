@@ -57,6 +57,12 @@ function dashboard_format_persen(float $nilai): string
     return rtrim(rtrim($teks, '0'), ',');
 }
 
+// Format angka gaya Indonesia: 1.250
+function dashboard_format_angka(int $nilai): string
+{
+    return number_format($nilai, 0, ',', '.');
+}
+
 // Sinyal ambang target: warna tidak pernah sendirian (selalu ada ikon + teks).
 function dashboard_target_signal(float $pct): array
 {
@@ -182,6 +188,20 @@ $chart_data_raw = $stmt_chart->fetchAll(PDO::FETCH_KEY_PAIR);
 
 foreach ($months_skeleton as $key => $val) {
     $chart_values[] = (int)($chart_data_raw[$key] ?? 0);
+}
+
+// Ringkasan grafik untuk pembaca layar + penanda bulan berjalan
+$chart_current_index = array_search(date('Y-m'), array_keys($months_skeleton), true);
+$chart_current_note = '';
+$chart_summary_text = 'Grafik tren kegiatan ' . ($chart_labels[0] ?? '-') . ' sampai ' . ($chart_labels[count($chart_labels) - 1] ?? '-') . '. ';
+$chart_summary_text .= implode('; ', array_map(
+    fn($label, $nilai) => $label . ' ' . dashboard_format_angka((int)$nilai) . ' kegiatan',
+    $chart_labels,
+    $chart_values
+)) . '.';
+if ($chart_current_index !== false) {
+    $chart_current_note = 'Data sampai ' . date('j') . ' ' . get_bulan_indo((int)date('n')) . ' ' . date('Y');
+    $chart_summary_text .= ' Bulan berjalan ' . get_bulan_indo((int)date('n')) . ' ' . date('Y') . ' belum lengkap, ' . $chart_current_note . '.';
 }
 
 // 5. Rekap Laporan per TUSI (Bulan Terpilih)
@@ -354,8 +374,12 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         <div class="d-flex align-items-center justify-content-between">
             <div>
                 <div class="stat-label">Total Kegiatan</div>
-                <div class="stat-value"><?= $total_kegiatan ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">kegiatan</span></div>
-                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);"><?= $total_kegiatan_all_time ?> sepanjang masa</div>
+                <div class="stat-value"><?= dashboard_format_angka($total_kegiatan) ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">kegiatan</span></div>
+                <div class="mt-1" style="font-size:11.5px;color:var(--md-sys-color-on-surface-variant);">
+                    <span style="font-weight:600;"><?= e($nama_bulan_terpilih) ?></span>
+                    <span aria-hidden="true"> &middot; </span>
+                    <?= dashboard_format_angka($total_kegiatan_all_time) ?> sepanjang masa
+                </div>
             </div>
             <div class="stat-icon-wrap primary flex-shrink-0">
                 <span class="material-symbols-outlined">event_available</span>
@@ -372,7 +396,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             </div>
         </div>
         <div class="d-flex align-items-baseline justify-content-between gap-2">
-            <div class="stat-value"><?= $penyuluh_sudah_input ?> / <?= $total_p ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
+            <div class="stat-value"><?= dashboard_format_angka($penyuluh_sudah_input) ?> / <?= dashboard_format_angka($total_p) ?> <span style="font-size:12px;font-weight:500;color:var(--md-sys-color-on-surface-variant);">Penyuluh</span></div>
             <span class="fw-semibold flex-shrink-0" style="font-size:14px;font-variant-numeric:tabular-nums;"><?= $total_p > 0 ? dashboard_format_persen((float)$pct_partisipasi) . '%' : '–' ?></span>
         </div>
         <div class="progress mt-2" style="height:8px;border-radius:999px;background:var(--md-sys-color-surface-container);">
@@ -384,7 +408,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 <span class="material-symbols-outlined" aria-hidden="true" style="font-size:13px;"><?= $partisipasi_signal['icon'] ?></span><?= $partisipasi_signal['label'] ?>
             </span>
             <?php endif; ?>
-            <span><?= $total_p === 0 ? 'Belum ada data penyuluh' : ($penyuluh_belum_input > 0 ? $penyuluh_belum_input . ' penyuluh belum input' : 'Seluruh penyuluh sudah input') ?></span>
+            <span><?= $total_p === 0 ? 'Belum ada data penyuluh' : ($penyuluh_belum_input > 0 ? dashboard_format_angka($penyuluh_belum_input) . ' penyuluh belum input' : 'Seluruh penyuluh sudah input') ?></span>
             <span aria-hidden="true">&middot;</span>
             <span><?= e($nama_bulan_terpilih) ?></span>
         </p>
@@ -423,7 +447,15 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                     <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">bar_chart</span>
                     <span class="fw-semibold" style="font-size:13.5px;">Tren 6 bulan terakhir</span>
                 </div>
-                <span class="badge badge-neutral">Hingga <?= e($nama_bulan_terpilih) ?></span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge badge-neutral">Hingga <?= e($nama_bulan_terpilih) ?></span>
+                    <?php if ($chart_current_note !== ''): ?>
+                    <span class="badge badge-neutral d-inline-flex align-items-center gap-1" title="<?= e($chart_current_note) ?> (bulan berjalan)">
+                        <span class="material-symbols-outlined" aria-hidden="true" style="font-size:13px;">info</span>
+                        Bulan berjalan belum lengkap
+                    </span>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <div class="card-body" style="position:relative;height:220px;">
@@ -434,7 +466,8 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                     <div class="text-muted" style="font-size:12.5px;"><?= $role !== 'penyuluh' ? 'Belum ada kegiatan penyuluh pada 6 bulan terakhir.' : 'Data 6 bulan terakhir masih kosong. Mulai catat agar grafik terisi otomatis.' ?></div>
                 </div>
             <?php else: ?>
-                <canvas id="trendChart"></canvas>
+                <p id="trendSummary" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;"><?= e($chart_summary_text) ?></p>
+                <canvas id="trendChart" role="img" aria-label="Grafik tren kegiatan 6 bulan terakhir" aria-describedby="trendSummary"></canvas>
             <?php endif; ?>
         </div>
     </div>
@@ -468,7 +501,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                             <div class="text-muted" style="font-size:11.5px;"><?= $item['desc'] ?></div>
                         </div>
                     </div>
-                    <span class="badge <?= $item['badge'] ?>" style="font-size:13px;min-width:34px;justify-content:center;"><?= $val ?></span>
+                    <span class="badge <?= $item['badge'] ?>" style="font-size:13px;min-width:34px;justify-content:center;"><?= dashboard_format_angka($val) ?></span>
                 </div>
                 <div class="progress mt-2" style="height:5px;border-radius:999px;background:var(--md-sys-color-surface-container);">
                     <div class="progress-bar" style="width:<?= $share ?>%;border-radius:999px;<?= $item['dot'] ?>"></div>
@@ -541,10 +574,10 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                         <?php endif; ?>
                     </td>
                     <td style="min-width:220px;"><?= e($r['nama']) ?></td>
-                    <td class="text-center"><?= $r['submitted'] > 0 ? '<span class="badge badge-warning">'.(int)$r['submitted'].'</span>' : '<span class="text-muted">0</span>' ?></td>
-                    <td class="text-center"><?= $r['direview'] > 0 ? '<span class="badge badge-success">'.(int)$r['direview'].'</span>' : '<span class="text-muted">0</span>' ?></td>
-                    <td class="text-center"><?= $r['draft'] > 0 ? '<span class="badge badge-neutral">'.(int)$r['draft'].'</span>' : '<span class="text-muted">0</span>' ?></td>
-                    <td class="text-center fw-bold"><?= (int)$r['total'] > 0 ? (int)$r['total'] : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center"><?= $r['submitted'] > 0 ? '<span class="badge badge-warning">'.dashboard_format_angka((int)$r['submitted']).'</span>' : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center"><?= $r['direview'] > 0 ? '<span class="badge badge-success">'.dashboard_format_angka((int)$r['direview']).'</span>' : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center"><?= $r['draft'] > 0 ? '<span class="badge badge-neutral">'.dashboard_format_angka((int)$r['draft']).'</span>' : '<span class="text-muted">0</span>' ?></td>
+                    <td class="text-center fw-bold"><?= (int)$r['total'] > 0 ? dashboard_format_angka((int)$r['total']) : '<span class="text-muted">0</span>' ?></td>
                 </tr>
                 <?php endforeach; ?>
                 <?php
@@ -556,10 +589,10 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
             <tfoot style="position:sticky;bottom:0;z-index:2;">
                 <tr class="fw-bold" style="background:var(--md-sys-color-surface-container-low);box-shadow:0 -1px 0 var(--md-sys-color-outline-variant);">
                     <td colspan="2">Total keseluruhan</td>
-                    <td class="text-center"><?= (int)$tot_sub ?></td>
-                    <td class="text-center"><?= (int)$tot_rev ?></td>
-                    <td class="text-center"><?= (int)$tot_drf ?></td>
-                    <td class="text-center"><?= (int)$rekap_grand_total ?></td>
+                    <td class="text-center"><?= dashboard_format_angka((int)$tot_sub) ?></td>
+                    <td class="text-center"><?= dashboard_format_angka((int)$tot_rev) ?></td>
+                    <td class="text-center"><?= dashboard_format_angka((int)$tot_drf) ?></td>
+                    <td class="text-center"><?= dashboard_format_angka((int)$rekap_grand_total) ?></td>
                 </tr>
             </tfoot>
         </table>
@@ -574,12 +607,12 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         <div class="d-flex align-items-center gap-2">
             <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">pending_actions</span>
             <div>
-                <div class="fw-semibold" style="font-size:13.5px;">Penyuluh yang belum input (<?= $belum_input_total ?>)</div>
+                <div class="fw-semibold" style="font-size:13.5px;">Penyuluh yang belum input (<?= dashboard_format_angka($belum_input_total) ?>)</div>
                 <div class="text-muted" style="font-size:11.5px;">
                     <?= e($nama_bulan_terpilih) ?> &middot;
                     Rata-rata <strong><?= $avg_kegiatan_per_input === null ? '–' : number_format($avg_kegiatan_per_input, 1, ',', '.') ?></strong> kegiatan per penyuluh yang sudah input
                     <?php if ($penyuluh_sudah_input > 0 && $penyuluh_sudah_input < $total_p && $avg_kegiatan_all_penyuluh !== null): ?>
-                        <span style="color:var(--md-sys-color-on-surface-variant);">(<?= number_format($avg_kegiatan_all_penyuluh, 1, ',', '.') ?> jika dibagi seluruh <?= $total_p ?> penyuluh)</span>
+                        <span style="color:var(--md-sys-color-on-surface-variant);">(<?= number_format($avg_kegiatan_all_penyuluh, 1, ',', '.') ?> jika dibagi seluruh <?= dashboard_format_angka($total_p) ?> penyuluh)</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -633,7 +666,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                         </td>
                         <td class="text-center">
                             <?php if ((int)$bp['draft_count'] > 0): ?>
-                                <span class="badge badge-neutral"><?= (int)$bp['draft_count'] ?></span>
+                                <span class="badge badge-neutral"><?= dashboard_format_angka((int)$bp['draft_count']) ?></span>
                             <?php else: ?>
                                 <span class="text-muted">0</span>
                             <?php endif; ?>
@@ -645,7 +678,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
         </div>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid var(--md-sys-color-outline-variant);">
             <span class="text-muted" style="font-size:11.5px;">
-                Menampilkan <?= count($belum_input_preview) ?> dari <?= $belum_input_total ?> penyuluh
+                Menampilkan <?= dashboard_format_angka(count($belum_input_preview)) ?> dari <?= dashboard_format_angka($belum_input_total) ?> penyuluh
             </span>
             <a href="<?= BASE_URL ?>/index.php?page=penyuluh" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
                 Lihat semua <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
@@ -665,11 +698,53 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
 
         const labels = <?= json_encode($chart_labels) ?>;
         const data = <?= json_encode($chart_values) ?>;
+        const currentIndex = <?= $chart_current_index === false ? 'null' : (int)$chart_current_index ?>;
+        const currentNote = <?= json_encode($chart_current_note) ?>;
+        const fmt = (v) => Number(v).toLocaleString('id-ID');
         const maxVal = Math.max(...data, 5);
 
         const grad = ctx.createLinearGradient(0, 0, 0, 200);
         grad.addColorStop(0, 'rgba(57,73,171,0.95)');
         grad.addColorStop(1, 'rgba(57,73,171,0.55)');
+
+        // Arsir bar bulan berjalan: datanya belum lengkap sampai akhir bulan
+        const hatchCanvas = document.createElement('canvas');
+        hatchCanvas.width = 8;
+        hatchCanvas.height = 8;
+        const hctx = hatchCanvas.getContext('2d');
+        hctx.fillStyle = 'rgba(57,73,171,0.30)';
+        hctx.fillRect(0, 0, 8, 8);
+        hctx.strokeStyle = 'rgba(57,73,171,0.75)';
+        hctx.lineWidth = 2;
+        hctx.beginPath();
+        hctx.moveTo(-2, 10);
+        hctx.lineTo(10, -2);
+        hctx.stroke();
+        const hatch = ctx.createPattern(hatchCanvas, 'repeat');
+
+        const backgrounds = data.map((v, i) => {
+            if (i === currentIndex) return hatch;
+            return v === maxVal && v > 0 ? grad : 'rgba(57,73,171,0.28)';
+        });
+
+        // Label nilai di atas setiap bar; bulan tanpa kegiatan tampil "0" muted
+        const valueLabels = {
+            id: 'valueLabels',
+            afterDatasetsDraw(chart) {
+                const meta = chart.getDatasetMeta(0);
+                const barCtx = chart.ctx;
+                meta.data.forEach((bar, i) => {
+                    const v = chart.data.datasets[0].data[i];
+                    barCtx.save();
+                    barCtx.font = '600 11px Roboto, sans-serif';
+                    barCtx.fillStyle = Number(v) === 0 ? '#8A8A93' : '#1B1B21';
+                    barCtx.textAlign = 'center';
+                    barCtx.textBaseline = 'bottom';
+                    barCtx.fillText(fmt(v), bar.x, bar.y - 4);
+                    barCtx.restore();
+                });
+            }
+        };
 
         new Chart(ctx, {
             type: 'bar',
@@ -678,7 +753,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                 datasets: [{
                     label: 'Kegiatan',
                     data: data,
-                    backgroundColor: data.map(v => v === maxVal && v > 0 ? grad : 'rgba(57,73,171,0.28)'),
+                    backgroundColor: backgrounds,
                     hoverBackgroundColor: 'rgba(20,108,92,0.85)',
                     borderRadius: 8,
                     borderSkipped: 'start',
@@ -686,6 +761,7 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                     maxBarThickness: 34,
                 }]
             },
+            plugins: [valueLabels],
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -695,14 +771,22 @@ else { $target_status_txt = 'Belum mulai'; $target_status_cls = 'badge-neutral';
                         backgroundColor: '#1B1B21',
                         padding: 10,
                         cornerRadius: 10,
-                        callbacks: { label: (c) => ` ${c.parsed.y} kegiatan` }
+                        callbacks: {
+                            label: (c) => {
+                                const lines = [` ${fmt(c.parsed.y)} kegiatan`];
+                                if (currentIndex !== null && c.dataIndex === currentIndex) {
+                                    lines.push(' ' + currentNote + ' (bulan berjalan)');
+                                }
+                                return lines;
+                            }
+                        }
                     },
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         suggestedMax: maxVal + 2,
-                        ticks: { precision: 0, font: { size: 11 }, color: '#6B7280' },
+                        ticks: { precision: 0, font: { size: 11 }, color: '#6B7280', callback: (v) => fmt(v) },
                         grid: { color: 'rgba(0,0,0,0.06)' },
                         border: { display: false },
                     },
