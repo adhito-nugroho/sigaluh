@@ -116,38 +116,10 @@ function get_active_class($page_name, $current_page) {
     </div>
 
     <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:10px;">
-        <!-- Info Pengguna (tampil langsung, tanpa klik) -->
-        <div class="rounded-2 p-2" style="background:var(--md-sys-color-surface-container);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;padding:10px 12px;">
+        <!-- Info Pengguna dari session -->
+        <div class="p-2" style="background:var(--md-sys-color-surface-container);border:1px solid var(--md-sys-color-outline-variant);border-radius:16px;padding:10px 12px;">
             <div class="text-truncate" style="font-weight:700;color:var(--md-sys-color-on-surface);font-size:13px;line-height:1.3;"><?= e($_SESSION['user_nama'] ?? '') ?></div>
-            <div style="font-size:11px;color:var(--md-sys-color-on-surface-variant);margin-top:2px;">NIP. <?= e($_SESSION['user_nip'] ?? '-') ?></div>
-        </div>
-
-        <!-- Menu Profil & Akses (tampil langsung, tanpa dropdown) -->
-        <div class="d-flex flex-column gap-1 rounded-2" style="background:var(--md-sys-color-surface-container);border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;padding:6px;">
-            <?php if (!has_role('pimpinan')): ?>
-            <a href="<?= BASE_URL ?>/index.php?page=profile/signature"
-               class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2 <?= get_active_class('profile/signature', $current_page) ?>"
-               style="font-size:12.5px;color:var(--md-sys-color-on-surface);">
-                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-primary);">draw</span>
-                <span>Tanda Tangan Digital (TTD)</span>
-            </a>
-            <?php endif; ?>
-
-            <a href="<?= BASE_URL ?>/index.php?page=profile/password"
-               class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2 <?= get_active_class('profile/password', $current_page) ?>"
-               style="font-size:12.5px;color:var(--md-sys-color-on-surface);">
-                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-secondary);">key</span>
-                <span>Ganti Sandi</span>
-            </a>
-
-            <div class="my-1 border-top" style="border-color:var(--md-sys-color-outline-variant);"></div>
-
-            <a href="<?= BASE_URL ?>/index.php?page=auth/logout"
-               class="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2"
-               style="font-size:12.5px;color:var(--md-sys-color-error);font-weight:600;">
-                <span class="material-symbols-outlined" style="font-size:18px;color:var(--md-sys-color-error);">logout</span>
-                <span>Keluar</span>
-            </a>
+            <div class="text-truncate" style="font-size:11px;color:var(--md-sys-color-on-surface-variant);margin-top:2px;">NIP. <?= e($_SESSION['user_nip'] ?? '-') ?></div>
         </div>
 
         <div class="text-center" style="font-size:10px;color:var(--md-sys-color-outline);">&copy; <?= date('Y') ?> &mdash; SI GALUH</div>
