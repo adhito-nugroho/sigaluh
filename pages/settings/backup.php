@@ -140,7 +140,8 @@ $fmtSize = static function (string $path): string {
 <div class="mb-4">
     <h2 class="page-title" style="font-size:20px;margin-bottom:2px;">Backup Data</h2>
     <p class="text-muted mb-0" style="font-size:12.5px;">
-        Backup otomatis database + foto ke Google Drive, dijalankan Windows Task Scheduler di komputer server setiap hari pukul 23:15.
+        Arsip backup database + foto dibuat di komputer server; pengiriman ke Google Drive dilakukan manual
+        lewat tombol <b>Kirim ke Drive</b> (khusus admin).
     </p>
 </div>
 
@@ -199,22 +200,17 @@ $fmtSize = static function (string $path): string {
         </div>
     </div>
 
-    <!-- Jadwal & jalankan -->
+    <!-- Buat arsip & kirim -->
     <div class="card">
         <div class="card-body">
-            <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-3">Jadwal Otomatis</p>
+            <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-3">Buat Arsip Baru</p>
             <div class="d-flex align-items-baseline gap-2 mb-1">
-                <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-primary);">schedule</span>
-                <span class="fw-bold" style="font-size:15px;">Setiap hari 23:15</span>
+                <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-primary);">backup</span>
+                <span class="fw-bold" style="font-size:15px;">Backup manual</span>
             </div>
             <p class="text-muted mb-3" style="font-size:12px;">
-                Windows Task Scheduler: <span class="font-mono">SI GALUH - Backup Harian</span>. Didaftarkan oleh
-                <span class="font-mono">scripts\backup\setup-server.bat</span> di server.
-                <?php if ($usingRclone): ?>
-                    Pengunggahan memakai rclone, jadi tidak bergantung sesi login Windows.
-                <?php else: ?>
-                    Tugas menyalin ke folder Drive lokal, sehingga user Windows server perlu login saat jadwal berjalan.
-                <?php endif; ?>
+                Membuat zip database + foto di folder <span class="font-mono">backups</span> server.
+                Setelah selesai, arsip muncul di daftar bawah dan bisa dikirim ke Google Drive satu per satu.
             </p>
 
             <form method="POST" class="mb-0">
