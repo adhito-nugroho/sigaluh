@@ -120,6 +120,17 @@ function cnf_value(string $value): string
  * Folder virtual Google Drive (File Stream) kadang menolak mkdir dari PHP,
  * sehingga dicoba juga lewat cmd sebelum menyerah.
  */
+function cmd_exe(): string
+{
+    $comspec = getenv('COMSPEC') ?: '';
+    if ($comspec !== '' && is_file($comspec)) {
+        return $comspec;
+    }
+    $systemRoot = getenv('SystemRoot') ?: 'C:\\Windows';
+    $full = $systemRoot . '\\System32\\cmd.exe';
+    return is_file($full) ? $full : 'cmd.exe';
+}
+
 function ensure_dir(string $dir, ?string &$detail = null): bool
 {
     if (is_dir($dir)) {
@@ -136,7 +147,7 @@ function ensure_dir(string $dir, ?string &$detail = null): bool
     $detail = isset($last['message']) ? (string)$last['message'] : '';
 
     $out = [];
-    @exec('cmd /c mkdir "' . $dir . '" 2>&1', $out, $rc);
+    @exec('"' . cmd_exe() . '" /c mkdir "' . $dir . '" 2>&1', $out, $rc);
     clearstatcache(true, $dir);
     if (is_dir($dir)) {
         return true;
@@ -170,7 +181,7 @@ function copy_to_drive(string $src, string $dest, ?string &$detail = null): bool
 
     // Cadangan: salin lewat cmd bila PHP ditolak folder virtual Drive.
     $out = [];
-    @exec('cmd /c copy /b /y "' . $src . '" "' . $dest . '" 2>&1', $out, $rc);
+    @exec('"' . cmd_exe() . '" /c copy /b /y "' . $src . '" "' . $dest . '" 2>&1', $out, $rc);
     clearstatcache(true, $dest);
     if (@filesize($dest) === $srcSize) {
         return true;

@@ -26,6 +26,7 @@ echo 'PHP        : ' . PHP_VERSION . ' (' . PHP_BINARY . ")\n";
 echo 'User       : ' . (getenv('USERNAME') ?: '?') . "\n";
 echo 'Profil     : ' . (getenv('USERPROFILE') ?: '?') . "\n";
 echo 'Sesi       : ' . (getenv('SESSIONNAME') ?: '(kosong - khas SSH/service)') . "\n";
+echo 'COMSPEC    : ' . (getenv('COMSPEC') ?: '(kosong)') . "\n";
 $who = trim((string)@shell_exec('whoami 2>nul'));
 if ($who !== '') {
     echo 'whoami     : ' . $who . "\n";
@@ -66,8 +67,12 @@ function probe_dir(string $dir): void
     }
 
     if (!is_dir($dir)) {
+        $comspec = getenv('COMSPEC') ?: '';
+        if ($comspec === '' || !is_file($comspec)) {
+            $comspec = (getenv('SystemRoot') ?: 'C:\\Windows') . '\\System32\\cmd.exe';
+        }
         $out = [];
-        @exec('cmd /c mkdir "' . $dir . '" 2>&1', $out, $rc);
+        @exec('"' . $comspec . '" /c mkdir "' . $dir . '" 2>&1', $out, $rc);
         clearstatcache(true, $dir);
         echo '  mkdir cmd: ' . (is_dir($dir) ? 'OK'
             : 'GAGAL (kode ' . $rc . ') ' . trim(implode(' ', $out))) . "\n";
