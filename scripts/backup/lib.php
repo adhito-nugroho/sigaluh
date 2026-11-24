@@ -55,10 +55,16 @@ function backup_detect_drive_dir(array $cfg = []): string
         }
     }
 
+    // Beberapa instalasi Drive for desktop (mode mirror) menyimpan salinan lokal
+    // di profil user, yang lebih ramah untuk ditulisi PHP daripada drive virtual.
     $home = getenv('USERPROFILE') ?: '';
     if ($home !== '') {
+        $homeRoots = [];
         foreach ($names as $name) {
-            $root = $home . '\\' . $name;
+            $homeRoots[] = $home . '\\Google Drive\\' . $name;
+            $homeRoots[] = $home . '\\' . $name;
+        }
+        foreach ($homeRoots as $root) {
             if (is_dir($root)) {
                 return $root . '\\Backup SI GALUH';
             }

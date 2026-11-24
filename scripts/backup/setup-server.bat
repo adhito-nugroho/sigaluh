@@ -95,6 +95,9 @@ if "%TEST_EXIT%"=="0" (
     echo   - Jika backup lokal sukses tetapi Drive kosong: pasang dan login
     echo     "Google Drive for desktop" di server ini, atau isi folder tujuan
     echo     lewat menu Pengaturan ^> Backup Data di aplikasi.
+    echo   - Drive Google bisa saja tidak terlihat dari sesi SSH. Uji ulang
+    echo     dari desktop/RDP: scripts\backup\run-backup.bat
+    echo   - Diagnosa folder tujuan: php scripts\backup\diagnose-drive.php
 )
 
 echo.

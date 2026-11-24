@@ -117,6 +117,71 @@ function cnf_value(string $value): string
 }
 
 /**
+ * Folder virtual Google Drive (File Stream) kadang menolak mkdir dari PHP,
+ * sehingga dicoba juga lewat cmd sebelum menyerah.
+ */
+function ensure_dir(string $dir, ?string &$detail = null): bool
+{
+    if (is_dir($dir)) {
+        return true;
+    }
+
+    @mkdir($dir, 0755, true);
+    clearstatcache(true, $dir);
+    if (is_dir($dir)) {
+        return true;
+    }
+
+    $last = error_get_last();
+    $detail = isset($last['message']) ? (string)$last['message'] : '';
+
+    $out = [];
+    @exec('cmd /c mkdir "' . $dir . '" 2>&1', $out, $rc);
+    clearstatcache(true, $dir);
+    if (is_dir($dir)) {
+        return true;
+    }
+
+    $volume = substr($dir, 0, 2);
+    if (!is_dir($volume . '\\')) {
+        $detail = 'drive ' . $volume . ' tidak terlihat dari sesi ini; jalankan backup dari desktop/RDP '
+            . 'atau pastikan Google Drive for desktop login untuk user ini';
+    } elseif ($detail === '') {
+        $detail = trim(implode(' ', $out)) ?: 'akses ditolak';
+    }
+
+    return false;
+}
+
+function copy_to_drive(string $src, string $dest, ?string &$detail = null): bool
+{
+    $srcSize = (int)filesize($src);
+    $copied  = @copy($src, $dest);
+
+    if ($copied) {
+        for ($i = 0; $i < 3; $i++) {
+            clearstatcache(true, $dest);
+            if (@filesize($dest) === $srcSize) {
+                return true;
+            }
+            sleep(2);
+        }
+    }
+
+    // Cadangan: salin lewat cmd bila PHP ditolak folder virtual Drive.
+    $out = [];
+    @exec('cmd /c copy /b /y "' . $src . '" "' . $dest . '" 2>&1', $out, $rc);
+    clearstatcache(true, $dest);
+    if (@filesize($dest) === $srcSize) {
+        return true;
+    }
+
+    $last = error_get_last();
+    $detail = isset($last['message']) ? (string)$last['message'] : trim(implode(' ', $out));
+    return false;
+}
+
+/**
  * Tambahkan seluruh isi folder ke zip. File yang tidak bisa dibaca dilewati
  * dan dicatat, karena satu file terkunci (mis. sedang dibuka) membuat
  * ZipArchive::close() gagal dan seluruh arsip batal.
@@ -296,29 +361,25 @@ try {
 
     // ── Salin ke Google Drive ───────────────────────────────────────────────
     $driveDir = backup_detect_drive_dir($cfg);
+    $detail   = '';
 
     if ($driveDir === '') {
         $message = 'Google Drive tidak terdeteksi; backup hanya tersimpan lokal.';
         b_log('PERINGATAN: ' . $message);
-    } elseif (!is_dir($driveDir) && !mkdir($driveDir, 0755, true) && !is_dir($driveDir)) {
-        $message = 'Folder tujuan Google Drive tidak dapat dibuat: ' . $driveDir;
+    } elseif (!ensure_dir($driveDir, $detail)) {
+        $message = 'Folder tujuan Google Drive tidak dapat dipakai: ' . $driveDir
+            . ($detail !== '' ? ' (' . $detail . ')' : '');
         b_log('PERINGATAN: ' . $message);
     } else {
         $dest = $driveDir . DIRECTORY_SEPARATOR . basename($zipPath);
-        $copied = @copy($zipPath, $dest);
-        $sizeOk = $copied && filesize($dest) === filesize($zipPath);
-        if (!$sizeOk && $copied) {
-            sleep(2);
-            clearstatcache(true, $dest);
-            $sizeOk = filesize($dest) === filesize($zipPath);
-        }
-
-        if (!$sizeOk) {
-            $message = 'Gagal menyalin backup ke Google Drive.';
-            b_log('PERINGATAN: ' . $message);
-        } else {
+        if (copy_to_drive($zipPath, $dest, $detail)) {
             $driveOk = true;
             b_log('Backup disalin ke Google Drive: ' . $dest);
+        } else {
+            @unlink($dest);
+            $message = 'Gagal menyalin backup ke Google Drive'
+                . ($detail !== '' ? ' (' . $detail . ')' : '') . '.';
+            b_log('PERINGATAN: ' . $message);
         }
     }
 
