@@ -19,7 +19,7 @@ echo MEMULAI DEPLOYMENT DENGAN GIT PULL DAN MIGRASI DB
 echo ======================================================
 
 :: 1. Commit (jika ada perubahan) lalu Push ke remote
-echo [1/3] Mendorong perubahan lokal ke Repository...
+echo [1/4] Mendorong perubahan lokal ke Repository...
 
 git add .
 
@@ -41,7 +41,7 @@ if errorlevel 1 (
 :: 2. Git Pull di Server via SSH
 :: Shell remote sudah cmd — jangan bungkus cmd /c lagi (PATH SSH tanpa System32)
 echo.
-echo [2/3] Menjalankan 'git pull' di server...
+echo [2/4] Menjalankan 'git pull' di server...
 echo *(Jika diminta password SSH, masukkan password akun server)*
 echo.
 
@@ -56,13 +56,24 @@ if errorlevel 1 (
 
 :: 3. Jalankan PHP Migration di Server via SSH
 echo.
-echo [3/3] Menjalankan migrasi database di server...
+echo [3/4] Menjalankan migrasi database di server...
 
 ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && %REMOTE_PHP% migrate.php"
 
 if errorlevel 1 (
     echo.
     echo Migrasi CLI server gagal. Anda juga bisa membuka http://file.cdkbojonegoro.my.id/migrate.php di browser.
+)
+
+:: 4. Daftarkan / segarkan backup harian + uji sekali di server
+echo.
+echo [4/4] Menyiapkan backup harian di server...
+ssh -p %SERVER_PORT% %SERVER_USER%@%SERVER_IP% "cd /d %REMOTE_DIR% && scripts\backup\setup-server.bat"
+
+if errorlevel 1 (
+    echo.
+    echo Peringatan: pendaftaran backup harian di server gagal.
+    echo Jalankan manual di server: scripts\backup\setup-server.bat
 )
 
 echo.

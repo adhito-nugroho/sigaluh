@@ -101,6 +101,10 @@ function get_active_class($page_name, $current_page) {
             <span class="material-symbols-outlined">edit_note</span>
             <span>Pejabat Penandatangan</span>
         </a>
+        <a href="<?= BASE_URL ?>/index.php?page=settings/backup" class="nav-link <?= get_active_class('settings/backup', $current_page) ?>">
+            <span class="material-symbols-outlined">backup</span>
+            <span>Backup Data</span>
+        </a>
         <?php endif; ?>
         <?php endif; ?>
 

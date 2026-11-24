@@ -94,6 +94,7 @@ function get_breadcrumb($page) {
         'master/aktivitas' => ['Master Data', 'Aktivitas Harian'],
         'settings/wilayah' => ['Pengaturan', 'Wilayah Administratif'],
         'settings/app' => ['Pengaturan', 'Pejabat Penandatangan'],
+        'settings/backup' => ['Pengaturan', 'Backup Data'],
         'logs' => ['Sistem', 'Log Aktivitas'],
         'panduan' => ['Bantuan', 'Panduan Penggunaan'],
         'profile/password' => ['Profil', 'Ganti Password'],

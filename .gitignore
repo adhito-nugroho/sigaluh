@@ -24,6 +24,11 @@
 *.bak
 *.tmp
 *.log
+/backups/*
+!/backups/.htaccess
+/scripts/backup/config.ini
+/scripts/backup/php-path.txt
+!/scripts/backup/.htaccess
 
 # IDE & OS files
 .DS_Store
