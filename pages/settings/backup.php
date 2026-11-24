@@ -11,6 +11,8 @@ require_once __DIR__ . '/../../scripts/backup/lib.php';
 $flash = $_SESSION['backup_flash'] ?? null;
 unset($_SESSION['backup_flash']);
 
+$cfg = backup_load_config();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token($_POST['csrf_token'] ?? '');
 
@@ -23,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $drive   = $clean($_POST['drive_dir'] ?? '');
         $rcloneTo  = $clean($_POST['rclone_remote'] ?? '');
         $rcloneExe = $clean($_POST['rclone_exe'] ?? '');
+        $scriptUrl = $clean($_POST['apps_script_url'] ?? '');
         $local   = max(1, min(60, (int)($_POST['local_keep'] ?? 7)));
         $keepDrv = max(1, min(120, (int)($_POST['drive_keep'] ?? 14)));
 
@@ -30,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             . 'drive_dir = "' . $drive . '"' . "\n"
             . 'rclone_remote = "' . $rcloneTo . '"' . "\n"
             . 'rclone_exe = "' . $rcloneExe . '"' . "\n"
+            . 'apps_script_url = "' . $scriptUrl . '"' . "\n"
             . 'local_keep = ' . $local . "\n"
             . 'drive_keep = ' . $keepDrv . "\n";
 
@@ -37,6 +41,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Gagal menyimpan konfigurasi. Pastikan folder scripts/backup dapat ditulis.';
         } else {
             $notice = 'Konfigurasi backup berhasil disimpan.';
+        }
+    } elseif ($action === 'send') {
+        $file   = basename((string)($_POST['file'] ?? ''));
+        $path   = backup_root() . DIRECTORY_SEPARATOR . $file;
+        $url    = trim((string)($cfg['apps_script_url'] ?? ''));
+        $keepDrv = max(1, min(120, (int)($cfg['drive_keep'] ?? 14)));
+
+        if (!preg_match('/^sigaluh2_backup_\d{8}_\d{6}\.zip$/', $file) || !is_file($path)) {
+            $error = 'File arsip tidak ditemukan di server.';
+        } elseif ($url === '' || !preg_match('#^https://script\.google\.com/#', $url)) {
+            $error = 'URL Apps Script belum diisi. Salin URL /exec hasil Deploy Web App ke pengaturan di bawah.';
+        } else {
+            @set_time_limit(300);
+            @ini_set('memory_limit', '512M');
+
+            $result = backup_send_to_apps_script($path, $url, 'Backup SI GALUH', $keepDrv);
+
+            @file_put_contents(
+                backup_root() . DIRECTORY_SEPARATOR . 'backup.log',
+                '[' . date('Y-m-d H:i:s') . '] Kirim manual ke Drive: ' . $file . ' -> '
+                . ($result['ok'] ? 'OK' : 'GAGAL: ' . ($result['error'] ?? '')) . PHP_EOL,
+                FILE_APPEND
+            );
+
+            if ($result['ok']) {
+                $notice = 'Arsip ' . $file . ' terkirim ke Google Drive.';
+            } else {
+                $error = 'Gagal mengirim ke Google Drive. ' . ($result['error'] ?? '');
+            }
         }
     } elseif ($action === 'run') {
         $bat = backup_app_dir() . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR
@@ -60,7 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$cfg      = backup_load_config();
 $driveDir = backup_detect_drive_dir($cfg);
 $status   = backup_read_status();
 $logs     = backup_log_tail(25);
@@ -79,6 +111,8 @@ $configuredRcloneExe = (string)($cfg['rclone_exe'] ?? '');
 $rcloneExe = backup_find_rclone($cfg);
 $rcloneTo  = backup_rclone_target($cfg);
 $usingRclone = $rcloneTo !== '' && $rcloneExe !== '';
+$configuredScriptUrl = (string)($cfg['apps_script_url'] ?? '');
+$appsScriptUrl = preg_match('#^https://script\.google\.com/#', $configuredScriptUrl) ? $configuredScriptUrl : '';
 
 $lastRun   = (string)($status['finished_at'] ?? '');
 $localOk   = !empty($status['ok']);
@@ -218,7 +252,7 @@ $fmtSize = static function (string $path): string {
         </div>
 
         <div class="mb-3 p-3" style="background:var(--md-sys-color-surface-container-low);border-radius:10px;">
-            <label class="form-label mb-1">Unggah langsung via rclone (disarankan)</label>
+            <label class="form-label mb-1">Unggah otomatis via rclone (opsional)</label>
             <p class="text-muted mb-2" style="font-size:11px;">
                 Tidak butuh drive letter/sesi login. Cukup isi rclone.exe di server dan tujuan remote, mis.
                 <span class="font-mono">gdrive:Backup SI GALUH</span>.
@@ -236,6 +270,18 @@ $fmtSize = static function (string $path): string {
                         placeholder="C:\laragon\www\sigaluh2\scripts\backup\rclone.exe" class="form-control font-mono">
                 </div>
             </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">URL Web App Apps Script (Kirim ke Drive manual)</label>
+            <input type="text" name="apps_script_url" value="<?= e($configuredScriptUrl) ?>"
+                placeholder="https://script.google.com/macros/s/xxxxxxxx/exec" class="form-control font-mono">
+            <p class="text-muted mt-1 mb-0" style="font-size:11px;">
+                Sekali saja: buka <span class="font-mono">script.google.com</span> &rarr; New project &rarr; tempel isi
+                <span class="font-mono">scripts\backup\gdrive-apps-script.gs</span> &rarr; Deploy &rarr; Web app
+                (Execute as: Me, Who has access: Anyone) &rarr; salin URL <span class="font-mono">/exec</span> ke sini.
+                Tombol <b>Kirim ke Drive</b> di daftar arsip akan mengunggah zip ke folder Drive milik akun itu.
+            </p>
         </div>
 
         <div class="d-flex gap-3 flex-wrap">
@@ -264,6 +310,12 @@ $fmtSize = static function (string $path): string {
     <div class="card-body">
         <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-2">Arsip Backup di Server</p>
 
+        <?php if ($appsScriptUrl === ''): ?>
+            <p class="text-muted mb-0" style="font-size:11.5px;">
+                Isi <b>URL Web App Apps Script</b> di pengaturan bawah untuk menampilkan tombol
+                <b>Kirim ke Drive</b> pada tiap arsip.
+            </p>
+        <?php endif; ?>
         <?php if (!$localArchives): ?>
             <p class="text-muted mb-0" style="font-size:12.5px;">Belum ada arsip. Jalankan backup untuk membuat arsip pertama.</p>
         <?php else: ?>
@@ -275,10 +327,22 @@ $fmtSize = static function (string $path): string {
                         <?= e(date('d M Y H:i', (int)filemtime($archive))) ?> &middot; <?= $fmtSize($archive) ?>
                     </div>
                 </div>
-                <a class="btn btn-outline-secondary btn-sm flex-shrink-0"
-                   href="<?= BASE_URL ?>/index.php?page=settings/download_backup&amp;file=<?= urlencode(basename($archive)) ?>&amp;token=<?= urlencode($backupToken) ?>">
-                    <span class="material-symbols-outlined" style="font-size:16px;">download</span> Unduh
-                </a>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <?php if ($appsScriptUrl !== ''): ?>
+                    <form method="POST" class="mb-0">
+                        <input type="hidden" name="csrf_token" value="<?= e($backupToken) ?>">
+                        <input type="hidden" name="action" value="send">
+                        <input type="hidden" name="file" value="<?= e(basename($archive)) ?>">
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            <span class="material-symbols-outlined" style="font-size:16px;">cloud_upload</span> Kirim ke Drive
+                        </button>
+                    </form>
+                    <?php endif; ?>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       href="<?= BASE_URL ?>/index.php?page=settings/download_backup&amp;file=<?= urlencode(basename($archive)) ?>&amp;token=<?= urlencode($backupToken) ?>">
+                        <span class="material-symbols-outlined" style="font-size:16px;">download</span> Unduh
+                    </a>
+                </div>
             </div>
             <?php endforeach; ?>
             <p class="text-muted mt-2 mb-0" style="font-size:11px;">
@@ -302,8 +366,14 @@ $fmtSize = static function (string $path): string {
             </p>
         <?php elseif ($driveDir === ''): ?>
             <p class="text-muted mb-0" style="font-size:12.5px;">
-                Google Drive belum terdeteksi. Pasang dan login "Google Drive for desktop" di server,
-                atau isi folder tujuan di pengaturan di atas.
+                <?php if ($appsScriptUrl !== ''): ?>
+                    Arsip dikirim manual lewat tombol <b>Kirim ke Drive</b> ke folder
+                    <span class="font-mono">Backup SI GALUH</span> di Google Drive (retensi <?= $driveKeep ?> arsip terakhir).
+                    Daftar file dilihat langsung di Google Drive.
+                <?php else: ?>
+                    Google Drive belum terhubung. Isi URL Web App Apps Script di pengaturan untuk mengaktifkan
+                    tombol Kirim ke Drive, atau pasang/login "Google Drive for desktop" di server.
+                <?php endif; ?>
             </p>
         <?php elseif (!$driveArchives): ?>
             <p class="text-muted mb-0" style="font-size:12.5px;">Belum ada arsip di folder Drive ini.</p>

@@ -139,6 +139,72 @@ function backup_rclone_config(array $cfg = []): string
     return '';
 }
 
+/**
+ * Kirim satu file arsip ke Web App Google Apps Script (disimpan ke Drive pemilik script).
+ *
+ * @return array{ok:bool,error?:string,url?:string,name?:string}
+ */
+function backup_send_to_apps_script(string $path, string $url, string $folder, int $keep): array
+{
+    if (!is_file($path)) {
+        return ['ok' => false, 'error' => 'File arsip tidak ditemukan di server.'];
+    }
+    if (!function_exists('curl_init')) {
+        return ['ok' => false, 'error' => 'Ekstensi curl PHP tidak tersedia di server.'];
+    }
+
+    $size = (int)filesize($path);
+    if ($size > 30 * 1048576) {
+        return ['ok' => false, 'error' => 'File lebih dari 30 MB; unduh lalu unggah manual lewat Google Drive di browser.'];
+    }
+
+    $payload = json_encode([
+        'name'    => basename($path),
+        'folder'  => $folder,
+        'keep'    => $keep,
+        'content' => base64_encode((string)file_get_contents($path)),
+    ]);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 5,
+        CURLOPT_CONNECTTIMEOUT => 20,
+        CURLOPT_TIMEOUT        => 300,
+    ]);
+
+    $response = curl_exec($ch);
+    $status   = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr  = curl_error($ch);
+    curl_close($ch);
+
+    if ($response === false) {
+        return ['ok' => false, 'error' => 'Koneksi ke Apps Script gagal: ' . $curlErr];
+    }
+
+    $json = json_decode((string)$response, true);
+    if (!is_array($json)) {
+        return [
+            'ok' => false,
+            'error' => 'Respons bukan JSON (HTTP ' . $status . '). Pastikan URL berakhiran /exec dan '
+                . 'deployment Web App memakai akses "Anyone".',
+        ];
+    }
+    if (empty($json['ok'])) {
+        return ['ok' => false, 'error' => (string)($json['error'] ?? 'Apps Script menolak permintaan.')];
+    }
+
+    return [
+        'ok'   => true,
+        'name' => (string)($json['name'] ?? basename($path)),
+        'url'  => (string)($json['url'] ?? ''),
+    ];
+}
+
 function backup_read_status(): array
 {    $path = backup_root() . DIRECTORY_SEPARATOR . 'status.json';
     if (!is_file($path)) {
