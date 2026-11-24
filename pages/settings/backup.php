@@ -74,6 +74,23 @@ $lastRun   = (string)($status['finished_at'] ?? '');
 $localOk   = !empty($status['ok']);
 $driveOk   = !empty($status['drive_ok']);
 $statusMsg = (string)($status['message'] ?? '');
+
+$localArchives = array_reverse($files);
+
+$driveArchives = [];
+if ($driveDir !== '' && is_dir($driveDir)) {
+    $driveArchives = glob($driveDir . DIRECTORY_SEPARATOR . 'sigaluh2_backup_*.zip') ?: [];
+    rsort($driveArchives);
+}
+
+$backupToken = generate_csrf_token();
+
+$fmtSize = static function (string $path): string {
+    $bytes = (int)@filesize($path);
+    return $bytes >= 1048576
+        ? number_format($bytes / 1048576, 2, ',', '.') . ' MB'
+        : number_format($bytes / 1024, 0, ',', '.') . ' KB';
+};
 ?>
 
 <div class="mb-4">
@@ -199,6 +216,71 @@ $statusMsg = (string)($status['message'] ?? '');
             </button>
         </div>
     </form>
+</div>
+
+<!-- Arsip backup -->
+<div class="card mt-4">
+    <div class="card-body">
+        <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-2">Arsip Backup di Server</p>
+
+        <?php if (!$localArchives): ?>
+            <p class="text-muted mb-0" style="font-size:12.5px;">Belum ada arsip. Jalankan backup untuk membuat arsip pertama.</p>
+        <?php else: ?>
+            <?php foreach ($localArchives as $archive): ?>
+            <div class="d-flex align-items-center justify-content-between gap-2 py-2" style="border-top:1px solid var(--md-sys-color-outline-variant);">
+                <div class="min-w-0">
+                    <div class="font-mono text-truncate" style="font-size:12px;"><?= e(basename($archive)) ?></div>
+                    <div class="text-muted" style="font-size:11px;">
+                        <?= e(date('d M Y H:i', (int)filemtime($archive))) ?> &middot; <?= $fmtSize($archive) ?>
+                    </div>
+                </div>
+                <a class="btn btn-outline-secondary btn-sm flex-shrink-0"
+                   href="<?= BASE_URL ?>/index.php?page=settings/download_backup&amp;file=<?= urlencode(basename($archive)) ?>&amp;token=<?= urlencode($backupToken) ?>">
+                    <span class="material-symbols-outlined" style="font-size:16px;">download</span> Unduh
+                </a>
+            </div>
+            <?php endforeach; ?>
+            <p class="text-muted mt-2 mb-0" style="font-size:11px;">
+                Arsip lokal lama otomatis dihapus sesuai retensi (<?= $localKeep ?> arsip). Folder di server:
+                <span class="font-mono"><?= e(backup_root()) ?></span>
+            </p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- Arsip di Drive -->
+<div class="card mt-4">
+    <div class="card-body">
+        <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-2">Arsip di Google Drive</p>
+
+        <?php if ($driveDir === ''): ?>
+            <p class="text-muted mb-0" style="font-size:12.5px;">
+                Google Drive belum terdeteksi. Pasang dan login "Google Drive for desktop" di server,
+                atau isi folder tujuan di pengaturan di atas.
+            </p>
+        <?php elseif (!$driveArchives): ?>
+            <p class="text-muted mb-0" style="font-size:12.5px;">Belum ada arsip di folder Drive ini.</p>
+        <?php else: ?>
+            <?php foreach ($driveArchives as $archive): ?>
+            <div class="d-flex align-items-center justify-content-between gap-2 py-2" style="border-top:1px solid var(--md-sys-color-outline-variant);">
+                <div class="min-w-0">
+                    <div class="font-mono text-truncate" style="font-size:12px;"><?= e(basename($archive)) ?></div>
+                    <div class="text-muted" style="font-size:11px;">
+                        <?= e(date('d M Y H:i', (int)filemtime($archive))) ?> &middot; <?= $fmtSize($archive) ?>
+                    </div>
+                </div>
+                <span class="badge flex-shrink-0" style="background:var(--md-sys-color-surface-container);color:var(--md-sys-color-on-surface-variant);">Drive</span>
+            </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+        <?php if ($driveDir !== ''): ?>
+            <p class="text-muted mt-2 mb-0" style="font-size:11px;">
+                Folder: <span class="font-mono"><?= e($driveDir) ?></span> &middot; retensi <?= $driveKeep ?> arsip.
+                Daftar ini mengikuti isi folder Drive; jika baru disalin, tunggu proses sinkron selesai.
+            </p>
+        <?php endif; ?>
+    </div>
 </div>
 
 <!-- Log -->
