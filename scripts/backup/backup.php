@@ -144,7 +144,10 @@ function zip_add_tree(ZipArchive $zip, string $src, string $prefix, array &$skip
 
         $handle = @fopen($full, 'rb');
         if ($handle === false) {
-            $skipped[] = $local;
+            $last = error_get_last();
+            $reason = isset($last['message']) ? (string)$last['message'] : 'tidak dapat dibuka';
+            $reason = preg_replace('/^fopen\([^)]*\):\s*/', '', $reason) ?: $reason;
+            $skipped[] = $local . ' [' . $reason . ']';
             continue;
         }
         fclose($handle);
