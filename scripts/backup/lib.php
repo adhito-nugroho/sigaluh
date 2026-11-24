@@ -74,9 +74,73 @@ function backup_detect_drive_dir(array $cfg = []): string
     return '';
 }
 
-function backup_read_status(): array
+/** Lokasi rclone.exe: env RCLONE_EXE > config.ini > folder scripts/backup > PATH. */
+function backup_find_rclone(array $cfg = []): string
 {
-    $path = backup_root() . DIRECTORY_SEPARATOR . 'status.json';
+    $candidates = [];
+    $env = getenv('RCLONE_EXE') ?: '';
+    if ($env !== '') {
+        $candidates[] = $env;
+    }
+    if (!empty($cfg['rclone_exe'])) {
+        $candidates[] = (string)$cfg['rclone_exe'];
+    }
+    $candidates[] = __DIR__ . DIRECTORY_SEPARATOR . 'rclone.exe';
+    $candidates[] = backup_app_dir() . DIRECTORY_SEPARATOR . 'rclone.exe';
+
+    foreach ($candidates as $candidate) {
+        if ($candidate !== '' && is_file($candidate)) {
+            return $candidate;
+        }
+    }
+
+    $whereExe = (getenv('SystemRoot') ?: 'C:\\Windows') . '\\System32\\where.exe';
+    $found = @shell_exec('"' . $whereExe . '" rclone 2>nul');
+    if (is_string($found)) {
+        foreach (preg_split('/\r\n|\r|\n/', trim($found)) ?: [] as $line) {
+            if (is_file($line)) {
+                return $line;
+            }
+        }
+    }
+
+    return '';
+}
+
+/** Tujuan rclone, mis. "gdrive:Backup SI GALUH". Kosong bila tidak diset. */
+function backup_rclone_target(array $cfg = []): string
+{
+    $remote = getenv('RCLONE_DEST') ?: '';
+    if ($remote === '' && !empty($cfg['rclone_remote'])) {
+        $remote = (string)$cfg['rclone_remote'];
+    }
+    return trim($remote);
+}
+
+/** File rclone.conf berisi token OAuth Google Drive. */
+function backup_rclone_config(array $cfg = []): string
+{
+    $candidates = [];
+    if (!empty($cfg['rclone_conf'])) {
+        $candidates[] = (string)$cfg['rclone_conf'];
+    }
+    $candidates[] = __DIR__ . DIRECTORY_SEPARATOR . 'rclone.conf';
+    $home = getenv('USERPROFILE') ?: '';
+    if ($home !== '') {
+        $candidates[] = $home . '\\AppData\\Roaming\\rclone\\rclone.conf';
+    }
+
+    foreach ($candidates as $candidate) {
+        if ($candidate !== '' && is_file($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return '';
+}
+
+function backup_read_status(): array
+{    $path = backup_root() . DIRECTORY_SEPARATOR . 'status.json';
     if (!is_file($path)) {
         return [];
     }

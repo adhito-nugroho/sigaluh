@@ -28,6 +28,8 @@
 !/backups/.htaccess
 /scripts/backup/config.ini
 /scripts/backup/php-path.txt
+/scripts/backup/rclone.conf
+/scripts/backup/rclone.exe
 !/scripts/backup/.htaccess
 
 # IDE & OS files

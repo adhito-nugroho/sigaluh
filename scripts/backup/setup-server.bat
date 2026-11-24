@@ -97,6 +97,8 @@ if "%TEST_EXIT%"=="0" (
     echo     lewat menu Pengaturan ^> Backup Data di aplikasi.
     echo   - Drive Google bisa saja tidak terlihat dari sesi SSH. Uji ulang
     echo     dari desktop/RDP: scripts\backup\run-backup.bat
+    echo   - Untuk server tanpa sesi login, pakai rclone: isi "Tujuan rclone"
+    echo     di Pengaturan ^> Backup Data (mis. gdrive:Backup SI GALUH).
     echo   - Diagnosa folder tujuan: php scripts\backup\diagnose-drive.php
 )
 

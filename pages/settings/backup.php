@@ -19,12 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error   = '';
 
     if ($action === 'save') {
-        $drive   = str_replace(["\r", "\n", '"'], '', trim((string)($_POST['drive_dir'] ?? '')));
+        $clean   = static fn ($v): string => str_replace(["\r", "\n", '"'], '', trim((string)$v));
+        $drive   = $clean($_POST['drive_dir'] ?? '');
+        $rcloneTo  = $clean($_POST['rclone_remote'] ?? '');
+        $rcloneExe = $clean($_POST['rclone_exe'] ?? '');
         $local   = max(1, min(60, (int)($_POST['local_keep'] ?? 7)));
         $keepDrv = max(1, min(120, (int)($_POST['drive_keep'] ?? 14)));
 
         $ini = "; Konfigurasi backup SI GALUH (diubah dari Pengaturan > Backup Data)\n"
             . 'drive_dir = "' . $drive . '"' . "\n"
+            . 'rclone_remote = "' . $rcloneTo . '"' . "\n"
+            . 'rclone_exe = "' . $rcloneExe . '"' . "\n"
             . 'local_keep = ' . $local . "\n"
             . 'drive_keep = ' . $keepDrv . "\n";
 
@@ -69,6 +74,11 @@ foreach ($files as $file) {
 $localKeep = (int)(getenv('BACKUP_LOCAL_KEEP') ?: ($cfg['local_keep'] ?? 7));
 $driveKeep = (int)(getenv('BACKUP_DRIVE_KEEP') ?: ($cfg['drive_keep'] ?? 14));
 $configuredDrive = (string)($cfg['drive_dir'] ?? '');
+$configuredRcloneTo  = (string)($cfg['rclone_remote'] ?? '');
+$configuredRcloneExe = (string)($cfg['rclone_exe'] ?? '');
+$rcloneExe = backup_find_rclone($cfg);
+$rcloneTo  = backup_rclone_target($cfg);
+$usingRclone = $rcloneTo !== '' && $rcloneExe !== '';
 
 $lastRun   = (string)($status['finished_at'] ?? '');
 $localOk   = !empty($status['ok']);
@@ -136,7 +146,13 @@ $fmtSize = static function (string $path): string {
 
                 <dt class="text-muted fw-normal">Tujuan Drive</dt>
                 <dd class="mb-0 font-mono" style="word-break:break-all;">
-                    <?= $driveDir !== '' ? e($driveDir) : 'Tidak terdeteksi' ?>
+                    <?php if ($rcloneTo !== ''): ?>
+                        <?= e($rcloneTo) ?> (rclone)
+                    <?php elseif ($driveDir !== ''): ?>
+                        <?= e($driveDir) ?>
+                    <?php else: ?>
+                        Tidak terdeteksi
+                    <?php endif; ?>
                 </dd>
 
                 <dt class="text-muted fw-normal">Arsip lokal</dt>
@@ -159,8 +175,12 @@ $fmtSize = static function (string $path): string {
             </div>
             <p class="text-muted mb-3" style="font-size:12px;">
                 Windows Task Scheduler: <span class="font-mono">SI GALUH - Backup Harian</span>. Didaftarkan oleh
-                <span class="font-mono">scripts\backup\setup-server.bat</span> di server. Tugas berjalan saat user Windows server login,
-                karena Google Drive desktop membutuhkan sesi login.
+                <span class="font-mono">scripts\backup\setup-server.bat</span> di server.
+                <?php if ($usingRclone): ?>
+                    Pengunggahan memakai rclone, jadi tidak bergantung sesi login Windows.
+                <?php else: ?>
+                    Tugas menyalin ke folder Drive lokal, sehingga user Windows server perlu login saat jadwal berjalan.
+                <?php endif; ?>
             </p>
 
             <form method="POST" class="mb-0">
@@ -192,9 +212,30 @@ $fmtSize = static function (string $path): string {
                 placeholder="Kosongkan untuk deteksi otomatis (mis. G:\My Drive\Backup SI GALUH)"
                 class="form-control font-mono">
             <p class="text-muted mt-1 mb-0" style="font-size:11px;">
-                Isi folder lengkap di komputer server. Saat ini terdeteksi:
+                Hanya terlihat pada sesi desktop yang login ke Google Drive for desktop. Saat ini:
                 <span class="font-mono"><?= $driveDir !== '' ? e($driveDir) : 'tidak ada' ?></span>
             </p>
+        </div>
+
+        <div class="mb-3 p-3" style="background:var(--md-sys-color-surface-container-low);border-radius:10px;">
+            <label class="form-label mb-1">Unggah langsung via rclone (disarankan)</label>
+            <p class="text-muted mb-2" style="font-size:11px;">
+                Tidak butuh drive letter/sesi login. Cukup isi rclone.exe di server dan tujuan remote, mis.
+                <span class="font-mono">gdrive:Backup SI GALUH</span>.
+                rclone terdeteksi: <span class="font-mono"><?= $rcloneExe !== '' ? e($rcloneExe) : 'belum ada' ?></span>
+            </p>
+            <div class="d-flex gap-3 flex-wrap">
+                <div style="flex:1 1 240px;">
+                    <label class="form-label">Tujuan rclone</label>
+                    <input type="text" name="rclone_remote" value="<?= e($configuredRcloneTo) ?>"
+                        placeholder="gdrive:Backup SI GALUH" class="form-control font-mono">
+                </div>
+                <div style="flex:1 1 240px;">
+                    <label class="form-label">Path rclone.exe (opsional)</label>
+                    <input type="text" name="rclone_exe" value="<?= e($configuredRcloneExe) ?>"
+                        placeholder="C:\laragon\www\sigaluh2\scripts\backup\rclone.exe" class="form-control font-mono">
+                </div>
+            </div>
         </div>
 
         <div class="d-flex gap-3 flex-wrap">
@@ -253,7 +294,13 @@ $fmtSize = static function (string $path): string {
     <div class="card-body">
         <p class="text-xs fw-bold text-uppercase tracking-wider text-muted mb-2">Arsip di Google Drive</p>
 
-        <?php if ($driveDir === ''): ?>
+        <?php if ($usingRclone): ?>
+            <p class="text-muted mb-0" style="font-size:12.5px;">
+                Arsip diunggah ke <span class="font-mono"><?= e($rcloneTo) ?></span> lewat rclone.
+                Daftar arsip dilihat langsung di Google Drive; retensi otomatis menyisakan
+                <?= $driveKeep ?> arsip terakhir.
+            </p>
+        <?php elseif ($driveDir === ''): ?>
             <p class="text-muted mb-0" style="font-size:12.5px;">
                 Google Drive belum terdeteksi. Pasang dan login "Google Drive for desktop" di server,
                 atau isi folder tujuan di pengaturan di atas.
@@ -274,7 +321,7 @@ $fmtSize = static function (string $path): string {
             <?php endforeach; ?>
         <?php endif; ?>
 
-        <?php if ($driveDir !== ''): ?>
+        <?php if ($driveDir !== '' && !$usingRclone): ?>
             <p class="text-muted mt-2 mb-0" style="font-size:11px;">
                 Folder: <span class="font-mono"><?= e($driveDir) ?></span> &middot; retensi <?= $driveKeep ?> arsip.
                 Daftar ini mengikuti isi folder Drive; jika baru disalin, tunggu proses sinkron selesai.

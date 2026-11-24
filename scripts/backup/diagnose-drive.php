@@ -33,6 +33,15 @@ if ($who !== '') {
 }
 echo 'drive_dir  : ' . ($explicit !== '' ? $explicit : '(tidak diset)') . "\n";
 echo 'deteksi    : ' . ($detected !== '' ? $detected : '(tidak ada)') . "\n";
+$rcloneExe = backup_find_rclone($cfg);
+$rcloneTo  = backup_rclone_target($cfg);
+echo 'rclone exe : ' . ($rcloneExe !== '' ? $rcloneExe : '(tidak ditemukan)') . "\n";
+echo 'rclone dest: ' . ($rcloneTo !== '' ? $rcloneTo : '(tidak diset)') . "\n";
+if ($rcloneExe !== '') {
+    $out = [];
+    @exec('"' . $rcloneExe . '" version 2>&1', $out, $rc);
+    echo 'rclone ver : ' . ($rc === 0 ? trim((string)($out[0] ?? '')) : 'GAGAL dijalankan') . "\n";
+}
 echo "------------------------------------------------------\n";
 
 $visible = [];

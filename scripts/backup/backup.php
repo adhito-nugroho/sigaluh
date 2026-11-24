@@ -192,6 +192,78 @@ function copy_to_drive(string $src, string $dest, ?string &$detail = null): bool
     return false;
 }
 
+/** Jalankan rclone; kembalikan exit code, output gabungan ke $out. */
+function rclone_run(string $exe, array $args, ?string &$out = null): int
+{
+    $proc = @proc_open(array_merge([$exe], $args), [
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ], $pipes);
+
+    if (!is_resource($proc)) {
+        $out = 'rclone tidak dapat dijalankan';
+        return -1;
+    }
+
+    $stdout = (string)stream_get_contents($pipes[1]);
+    $stderr = (string)stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $code = proc_close($proc);
+    $out = trim($stdout . "\n" . $stderr);
+    return $code;
+}
+
+function rclone_args(array $args, string $conf): array
+{
+    if ($conf !== '') {
+        $args[] = '--config';
+        $args[] = $conf;
+    }
+    return $args;
+}
+
+function rclone_upload(string $exe, string $remote, string $src, string $conf, ?string &$detail = null): bool
+{
+    $dest = rtrim(str_replace('\\', '/', $remote), '/') . '/' . basename($src);
+    $out  = '';
+    $code = rclone_run($exe, rclone_args(['copyto', $src, $dest, '--ignore-times', '--retries', '3'], $conf), $out);
+
+    if ($code === 0) {
+        return true;
+    }
+    $detail = $out !== '' ? $out : ('kode ' . $code);
+    return false;
+}
+
+function rclone_prune(string $exe, string $remote, string $conf, int $keep): void
+{
+    if ($keep < 1) {
+        return;
+    }
+
+    $base = rtrim(str_replace('\\', '/', $remote), '/');
+    $out  = '';
+    if (rclone_run($exe, rclone_args(['lsf', $base, '--files-only'], $conf), $out) !== 0) {
+        return;
+    }
+
+    $files = array_values(array_filter(
+        preg_split('/\r\n|\r|\n/', $out) ?: [],
+        static fn (string $name): bool => (bool)preg_match('/^sigaluh2_backup_\d{8}_\d{6}\.zip$/', trim($name))
+    ));
+    $files = array_map('trim', $files);
+    sort($files);
+
+    $excess = count($files) - $keep;
+    for ($i = 0; $i < $excess; $i++) {
+        $delOut = '';
+        if (rclone_run($exe, rclone_args(['deletefile', $base . '/' . $files[$i]], $conf), $delOut) === 0) {
+            b_log('Hapus backup lama di Drive: ' . $files[$i]);
+        }
+    }
+}
+
 /**
  * Tambahkan seluruh isi folder ke zip. File yang tidak bisa dibaca dilewati
  * dan dicatat, karena satu file terkunci (mis. sedang dibuka) membuat
@@ -371,26 +443,60 @@ try {
     b_log('Isi: database + ' . $fotoCount . ' file foto + ' . $ttdCount . ' file TTD');
 
     // ── Salin ke Google Drive ───────────────────────────────────────────────
-    $driveDir = backup_detect_drive_dir($cfg);
-    $detail   = '';
+    $driveDir   = backup_detect_drive_dir($cfg);
+    $rclone     = backup_find_rclone($cfg);
+    $rcloneTo   = backup_rclone_target($cfg);
+    $rcloneConf = $rclone !== '' ? backup_rclone_config($cfg) : '';
+    $viaRclone  = false;
+    $detail     = '';
 
-    if ($driveDir === '') {
-        $message = 'Google Drive tidak terdeteksi; backup hanya tersimpan lokal.';
-        b_log('PERINGATAN: ' . $message);
-    } elseif (!ensure_dir($driveDir, $detail)) {
-        $message = 'Folder tujuan Google Drive tidak dapat dipakai: ' . $driveDir
-            . ($detail !== '' ? ' (' . $detail . ')' : '');
-        b_log('PERINGATAN: ' . $message);
-    } else {
-        $dest = $driveDir . DIRECTORY_SEPARATOR . basename($zipPath);
-        if (copy_to_drive($zipPath, $dest, $detail)) {
-            $driveOk = true;
-            b_log('Backup disalin ke Google Drive: ' . $dest);
+    // rclone tidak bergantung drive letter/sesi login, jadi didahulukan.
+    if ($rclone !== '' && $rcloneTo !== '') {
+        if (rclone_upload($rclone, $rcloneTo, $zipPath, $rcloneConf, $detail)) {
+            $driveOk   = true;
+            $viaRclone = true;
+            $driveDir  = $rcloneTo;
+            b_log('Backup diunggah ke Google Drive (rclone): ' . rtrim($rcloneTo, '/\\') . '/' . basename($zipPath));
         } else {
-            @unlink($dest);
-            $message = 'Gagal menyalin backup ke Google Drive'
+            $message = 'Gagal mengunggah backup ke Google Drive via rclone'
                 . ($detail !== '' ? ' (' . $detail . ')' : '') . '.';
             b_log('PERINGATAN: ' . $message);
+        }
+    } elseif ($rclone !== '' || $rcloneTo !== '') {
+        b_log('PERINGATAN: rclone belum lengkap (exe: ' . ($rclone !== '' ? $rclone : '-')
+            . ', tujuan: ' . ($rcloneTo !== '' ? $rcloneTo : '-') . ').');
+    }
+
+    // Cadangan: salin ke folder Drive lokal bila rclone tidak dipakai/gagal.
+    if (!$driveOk) {
+        $detail = '';
+
+        if ($driveDir === '') {
+            if ($message === '') {
+                $message = 'Google Drive tidak terdeteksi; backup hanya tersimpan lokal.';
+                b_log('PERINGATAN: ' . $message);
+            }
+        } elseif (!ensure_dir($driveDir, $detail)) {
+            b_log('PERINGATAN: folder tujuan Drive tidak dapat dipakai: ' . $driveDir
+                . ($detail !== '' ? ' (' . $detail . ')' : ''));
+            if ($message === '') {
+                $message = 'Folder tujuan Google Drive tidak dapat dipakai: ' . $driveDir
+                    . ($detail !== '' ? ' (' . $detail . ')' : '');
+            }
+        } else {
+            $dest = $driveDir . DIRECTORY_SEPARATOR . basename($zipPath);
+            if (copy_to_drive($zipPath, $dest, $detail)) {
+                $driveOk = true;
+                b_log('Backup disalin ke Google Drive: ' . $dest);
+            } else {
+                @unlink($dest);
+                b_log('PERINGATAN: gagal menyalin ke folder Drive'
+                    . ($detail !== '' ? ' (' . $detail . ')' : ''));
+                if ($message === '') {
+                    $message = 'Gagal menyalin backup ke Google Drive'
+                        . ($detail !== '' ? ' (' . $detail . ')' : '') . '.';
+                }
+            }
         }
     }
 
@@ -411,7 +517,11 @@ try {
 
     $prune($backupDir, $localKeep);
     if ($driveOk) {
-        $prune($driveDir, $driveKeep);
+        if ($viaRclone) {
+            rclone_prune($rclone, $rcloneTo, $rcloneConf, $driveKeep);
+        } else {
+            $prune($driveDir, $driveKeep);
+        }
     }
 
     b_log('=== Backup selesai' . ($driveOk ? ' (lokal + Google Drive)' : ' (lokal saja)') . ' ===');
